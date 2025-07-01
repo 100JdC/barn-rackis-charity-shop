@@ -1,5 +1,6 @@
+
 import { useState, useMemo } from "react";
-import { Plus, Search, Filter, QrCode, Eye, Edit, Trash2, Check, X as XIcon } from "lucide-react";
+import { Plus, Search, Filter, QrCode, Eye, Edit, Trash2, Check, X as XIcon, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import { ItemForm } from "@/components/ItemForm";
 import { ItemDetail } from "@/components/ItemDetail";
 import { QRCodeModal } from "@/components/QRCodeModal";
 import { Header } from "@/components/Header";
+import { LoginForm } from "@/components/LoginForm";
 import { mockItems } from "@/data/mockItems";
 import type { Item, UserRole } from "@/types/item";
 
@@ -24,9 +26,12 @@ const Index = () => {
   const [showItemDetail, setShowItemDetail] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
 
-  // Mock user role - in real app this would come from auth
-  const userRole: UserRole = "donator" as UserRole; // Change this to "admin" to test admin mode
+  // Show login form if user is not logged in
+  if (!userRole) {
+    return <LoginForm onLogin={setUserRole} />;
+  }
 
   const filteredItems = useMemo(() => {
     let itemsToShow = items;
@@ -107,6 +112,10 @@ const Index = () => {
     setShowQRCode(true);
   };
 
+  const handleLogout = () => {
+    setUserRole(null);
+  };
+
   function getStatusColor(status: string) {
     switch (status) {
       case 'available': return 'bg-green-100 text-green-800';
@@ -135,13 +144,19 @@ const Index = () => {
   if (showItemForm) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header 
-          userRole={userRole}
-          onBack={() => {
-            setShowItemForm(false);
-            setEditingItem(null);
-          }}
-        />
+        <div className="flex justify-between items-center p-4 bg-white shadow-sm">
+          <Header 
+            userRole={userRole}
+            onBack={() => {
+              setShowItemForm(false);
+              setEditingItem(null);
+            }}
+          />
+          <Button variant="outline" onClick={handleLogout}>
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout ({userRole})
+          </Button>
+        </div>
         <div className="p-4">
           <ItemForm
             item={editingItem}
@@ -160,13 +175,19 @@ const Index = () => {
   if (showItemDetail && selectedItem) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header 
-          userRole={userRole}
-          onBack={() => {
-            setShowItemDetail(false);
-            setSelectedItem(null);
-          }}
-        />
+        <div className="flex justify-between items-center p-4 bg-white shadow-sm">
+          <Header 
+            userRole={userRole}
+            onBack={() => {
+              setShowItemDetail(false);
+              setSelectedItem(null);
+            }}
+          />
+          <Button variant="outline" onClick={handleLogout}>
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout ({userRole})
+          </Button>
+        </div>
         <div className="p-4">
           <ItemDetail
             item={selectedItem}
@@ -193,11 +214,17 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header userRole={userRole} />
+      <div className="flex justify-between items-center p-4 bg-white shadow-sm">
+        <Header userRole={userRole} />
+        <Button variant="outline" onClick={handleLogout}>
+          <LogOut className="h-4 w-4 mr-2" />
+          Logout ({userRole})
+        </Button>
+      </div>
       
       <div className="p-4 space-y-6">
         {/* Pending Approval Section - Admin Only */}
-        {(userRole as UserRole) === 'admin' && pendingApprovalItems.length > 0 && (
+        {userRole === 'admin' && pendingApprovalItems.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="text-orange-600">
@@ -312,7 +339,7 @@ const Index = () => {
                   <SelectItem value="reserved">Reserved</SelectItem>
                   <SelectItem value="sold">Sold</SelectItem>
                   <SelectItem value="donated">Donated</SelectItem>
-                  {(userRole as UserRole) === 'admin' && <SelectItem value="pending_approval">Pending Approval</SelectItem>}
+                  {userRole === 'admin' && <SelectItem value="pending_approval">Pending Approval</SelectItem>}
                 </SelectContent>
               </Select>
 
@@ -337,7 +364,7 @@ const Index = () => {
           className="w-full md:w-auto bg-green-600 hover:bg-green-700"
         >
           <Plus className="h-4 w-4 mr-2" />
-          {(userRole as UserRole) === 'admin' ? 'Add New Item' : 'Donate Item'}
+          {userRole === 'admin' ? 'Add New Item' : 'Donate Item'}
         </Button>
 
         {/* Items Grid */}

@@ -27,6 +27,12 @@ const CATEGORY_SUBCATEGORIES = {
   other: ['other']
 };
 
+const LOCATION_OPTIONS = [
+  '32 basement',
+  'bike cellar',
+  'other'
+];
+
 export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) => {
   const [formData, setFormData] = useState<{
     name: string;
@@ -283,13 +289,19 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
             )}
 
             <div>
-              <Label htmlFor="location">Location (optional)</Label>
-              <Input
-                id="location"
-                value={formData.location}
-                onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                placeholder="Storage location (optional)"
-              />
+              <Label htmlFor="location">Location</Label>
+              <Select value={formData.location} onValueChange={(value) => setFormData(prev => ({ ...prev, location: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select location" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LOCATION_OPTIONS.map(location => (
+                    <SelectItem key={location} value={location}>
+                      {location}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {userRole === 'admin' && (
