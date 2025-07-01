@@ -186,8 +186,8 @@ const Index = () => {
 
   if (showItemForm) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="flex justify-between items-center p-4 bg-white shadow-sm">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
+        <div className="flex justify-between items-center p-4 bg-white/80 backdrop-blur-sm shadow-sm">
           <Header 
             userRole={userRole}
             onBack={() => {
@@ -228,8 +228,8 @@ const Index = () => {
 
   if (showItemDetail && selectedItem) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="flex justify-between items-center p-4 bg-white shadow-sm">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
+        <div className="flex justify-between items-center p-4 bg-white/80 backdrop-blur-sm shadow-sm">
           <Header 
             userRole={userRole}
             onBack={() => {
@@ -275,8 +275,8 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="flex justify-between items-center p-4 bg-white shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
+      <div className="flex justify-between items-center p-4 bg-white/80 backdrop-blur-sm shadow-sm">
         <Header userRole={userRole} />
         <div className="flex gap-2">
           {userRole === 'admin' && (
@@ -295,7 +295,7 @@ const Index = () => {
       <div className="p-4 space-y-6">
         {/* Pending Approval Section - Admin Only */}
         {userRole === 'admin' && pendingApprovalItems.length > 0 && (
-          <Card>
+          <Card className="bg-white/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-orange-600">
                 Pending Approval ({pendingApprovalItems.length})
@@ -304,7 +304,7 @@ const Index = () => {
             <CardContent>
               <div className="space-y-3">
                 {pendingApprovalItems.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+                  <div key={item.id} className="flex items-center justify-between p-3 bg-orange-50/80 rounded-lg backdrop-blur-sm">
                     <div className="flex-1">
                       <div className="font-medium">{item.name}</div>
                       <div className="text-sm text-gray-600">
@@ -335,7 +335,7 @@ const Index = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card>
+          <Card className="bg-white/80 backdrop-blur-sm">
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-green-600">
                 {items.filter(item => item.status === 'available').length}
@@ -343,7 +343,7 @@ const Index = () => {
               <div className="text-sm text-gray-600">Available</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-white/80 backdrop-blur-sm">
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-yellow-600">
                 {items.filter(item => item.status === 'reserved').length}
@@ -351,7 +351,7 @@ const Index = () => {
               <div className="text-sm text-gray-600">Reserved</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-white/80 backdrop-blur-sm">
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-blue-600">
                 {items.filter(item => item.status === 'sold').length}
@@ -359,7 +359,7 @@ const Index = () => {
               <div className="text-sm text-gray-600">Sold</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-white/80 backdrop-blur-sm">
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-purple-600">
                 {items.filter(item => item.status !== 'pending_approval').length}
@@ -370,7 +370,7 @@ const Index = () => {
         </div>
 
         {/* Search and Filters */}
-        <Card>
+        <Card className="bg-white/80 backdrop-blur-sm">
           <CardContent className="p-4 space-y-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -433,7 +433,7 @@ const Index = () => {
         {userRole !== 'buyer' && (
           <Button 
             onClick={() => setShowItemForm(true)}
-            className="w-full md:w-auto bg-green-600 hover:bg-green-700"
+            className="w-full md:w-auto bg-blue-600 hover:bg-blue-700"
           >
             <Plus className="h-4 w-4 mr-2" />
             {userRole === 'admin' ? 'Add New Item' : 'Donate Item'}
@@ -443,7 +443,7 @@ const Index = () => {
         {/* Items Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredItems.map((item) => (
-            <Card key={item.id} className="overflow-hidden">
+            <Card key={item.id} className="overflow-hidden bg-white/80 backdrop-blur-sm hover:shadow-lg transition-shadow">
               <CardContent className="p-4">
                 {/* Show first photo if available */}
                 {item.photos && item.photos.length > 0 && (
@@ -513,7 +513,7 @@ const Index = () => {
         </div>
 
         {filteredItems.length === 0 && (
-          <Card>
+          <Card className="bg-white/80 backdrop-blur-sm">
             <CardContent className="p-8 text-center">
               <div className="text-gray-500">No items found matching your criteria.</div>
             </CardContent>
