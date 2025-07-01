@@ -277,11 +277,11 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white relative">
       {/* Background image - woman in underwear */}
-      <div className="fixed inset-0 opacity-10 pointer-events-none">
+      <div className="fixed inset-0 opacity-30 pointer-events-none">
         <img 
-          src="/lovable-uploads/74b13bd1-2a11-44cc-986f-298a9ebc67b6.png" 
+          src="/lovable-uploads/woman-underwear.png" 
           alt="Background" 
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-top"
         />
       </div>
 
