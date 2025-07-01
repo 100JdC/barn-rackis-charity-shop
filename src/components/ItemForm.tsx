@@ -10,7 +10,8 @@ import type { Item } from "@/types/item";
 
 interface ItemFormProps {
   item?: Item | null;
-  userRole: 'admin' | 'donator';
+  userRole: 'admin' | 'donator' | 'buyer';
+  currentUsername?: string | null;
   onSubmit?: (item: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>, addAnother?: boolean) => void;
   onEdit?: (item: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>) => void;
   onCancel: () => void;
@@ -34,7 +35,7 @@ const LOCATION_OPTIONS = [
   'other'
 ];
 
-export const ItemForm = ({ item, userRole, onSubmit, onEdit, onCancel, isEditing = false }: ItemFormProps) => {
+export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, onCancel, isEditing = false }: ItemFormProps) => {
   const [formData, setFormData] = useState<{
     name: string;
     description: string;
@@ -50,6 +51,7 @@ export const ItemForm = ({ item, userRole, onSubmit, onEdit, onCancel, isEditing
     custom_location: string;
     photos: string[];
     internal_notes: string;
+    donor_name: string;
   }>({
     name: '',
     description: '',
@@ -65,6 +67,7 @@ export const ItemForm = ({ item, userRole, onSubmit, onEdit, onCancel, isEditing
     custom_location: '',
     photos: [],
     internal_notes: '',
+    donor_name: currentUsername || '',
   });
 
   useEffect(() => {
@@ -84,9 +87,16 @@ export const ItemForm = ({ item, userRole, onSubmit, onEdit, onCancel, isEditing
         custom_location: LOCATION_OPTIONS.includes(item.location || '') ? '' : item.location || '',
         photos: item.photos,
         internal_notes: item.internal_notes || '',
+        donor_name: item.donor_name || '',
       });
+    } else if (currentUsername && userRole === 'donator') {
+      // Auto-fill donor name for new donations
+      setFormData(prev => ({
+        ...prev,
+        donor_name: currentUsername
+      }));
     }
-  }, [item]);
+  }, [item, currentUsername, userRole]);
 
   const handleCategoryChange = (value: string) => {
     const category = value as keyof typeof CATEGORY_SUBCATEGORIES;
@@ -166,6 +176,7 @@ export const ItemForm = ({ item, userRole, onSubmit, onEdit, onCancel, isEditing
           final_price: undefined,
           photos: [],
           custom_location: '',
+          donor_name: currentUsername || '',
         }));
       }
     }
@@ -254,6 +265,19 @@ export const ItemForm = ({ item, userRole, onSubmit, onEdit, onCancel, isEditing
                 required
               />
             </div>
+
+            {/* Donor Name Field - Show for donors and admins */}
+            {(userRole === 'donator' || userRole === 'admin') && (
+              <div>
+                <Label htmlFor="donor_name">Donor Name</Label>
+                <Input
+                  id="donor_name"
+                  value={formData.donor_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, donor_name: e.target.value }))}
+                  placeholder="Enter donor name"
+                />
+              </div>
+            )}
 
             <div>
               <Label htmlFor="description">Description (optional)</Label>

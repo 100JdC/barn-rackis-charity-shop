@@ -26,6 +26,7 @@ const Index = () => {
   const [showQRCode, setShowQRCode] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [currentUsername, setCurrentUsername] = useState<string | null>(null);
 
   // Always call hooks - move filtering logic inside useMemo
   const filteredItems = useMemo(() => {
@@ -36,6 +37,10 @@ const Index = () => {
     // For donators, only show approved items (not pending_approval)
     if (userRole === 'donator') {
       itemsToShow = items.filter(item => item.status !== 'pending_approval');
+    }
+    // For buyers, only show available items
+    else if (userRole === 'buyer') {
+      itemsToShow = items.filter(item => item.status === 'available');
     }
     // For admin, show all items including pending_approval
 
@@ -59,7 +64,10 @@ const Index = () => {
 
   // Show login form if user is not logged in
   if (!userRole) {
-    return <LoginForm onLogin={setUserRole} />;
+    return <LoginForm onLogin={(role, username) => {
+      setUserRole(role);
+      if (username) setCurrentUsername(username);
+    }} />;
   }
 
   const handleAddItem = (newItem: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>, addAnother: boolean = false) => {
@@ -121,6 +129,7 @@ const Index = () => {
 
   const handleLogout = () => {
     setUserRole(null);
+    setCurrentUsername(null);
   };
 
   function getStatusColor(status: string) {
@@ -168,6 +177,7 @@ const Index = () => {
           <ItemForm
             item={editingItem}
             userRole={userRole}
+            currentUsername={currentUsername}
             onSubmit={handleAddItem}
             onEdit={handleEditItem}
             onCancel={() => {
@@ -248,6 +258,7 @@ const Index = () => {
                       <div className="font-medium">{item.name}</div>
                       <div className="text-sm text-gray-600">
                         {getCategoryDisplayName(item.category)} - {item.subcategory} | Qty: {item.quantity} | {item.original_price} SEK
+                        {item.donor_name && <span> | Donor: {item.donor_name}</span>}
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -367,30 +378,86 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        {/* Add Item Button */}
-        <Button 
-          onClick={() => setShowItemForm(true)}
-          className="w-full md:w-auto bg-green-600 hover:bg-green-700"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          {userRole === 'admin' ? 'Add New Item' : 'Donate Item'}
-        </Button>
+        {/* Add Item Button - Hide for buyers */}
+        {userRole !== 'buyer' && (
+          <Button 
+            onClick={() => setShowItemForm(true)}
+            className="w-full md:w-auto bg-green-600 hover:bg-green-700"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            {userRole === 'admin' ? 'Add New Item' : 'Donate Item'}
+          </Button>
+        )}
 
         {/* Items Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredItems.map((item) => (
-            <ItemCard
-              key={item.id}
-              item={item}
-              userRole={userRole}
-              onView={() => handleViewItem(item)}
-              onEdit={() => {
-                setEditingItem(item);
-                setShowItemForm(true);
-              }}
-              onDelete={() => handleDeleteItem(item.id)}
-              onShowQRCode={() => handleShowQRCode(item)}
-            />
+            <Card key={item.id} className="overflow-hidden">
+              <CardContent className="p-4">
+                {/* Show first photo if available */}
+                {item.photos && item.photos.length > 0 && (
+                  <div className="mb-3">
+                    <img 
+                      src={item.photos[0]} 
+                      alt={item.name}
+                      className="w-full h-40 object-cover rounded-md"
+                    />
+                  </div>
+                )}
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-semibold text-lg">{item.name}</h3>
+                    <Badge className={getStatusColor(item.status)}>
+                      {item.status.replace('_', ' ')}
+                    </Badge>
+                  </div>
+                  
+                  <div className="text-sm text-gray-600">
+                    {getCategoryDisplayName(item.category)} - {item.subcategory}
+                  </div>
+                  
+                  <div className="text-sm">
+                    <span className="font-medium">Qty:</span> {item.quantity} | 
+                    <span className="font-medium"> Price:</span> {item.suggested_price} SEK
+                  </div>
+                  
+                  {item.donor_name && (
+                    <div className="text-sm text-gray-600">
+                      <span className="font-medium">Donor:</span> {item.donor_name}
+                    </div>
+                  )}
+                  
+                  <div className="flex gap-2 pt-2">
+                    <Button size="sm" onClick={() => handleViewItem(item)} variant="outline">
+                      <Eye className="h-3 w-3 mr-1" />
+                      View
+                    </Button>
+                    
+                    {userRole === 'admin' && (
+                      <>
+                        <Button size="sm" onClick={() => {
+                          setEditingItem(item);
+                          setShowItemForm(true);
+                        }} variant="outline">
+                          <Edit className="h-3 w-3 mr-1" />
+                          Edit
+                        </Button>
+                        <Button size="sm" onClick={() => handleDeleteItem(item.id)} variant="outline" className="text-red-600">
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          Delete
+                        </Button>
+                      </>
+                    )}
+                    
+                    <Button size="sm" onClick={() => handleShowQRCode(item)} variant="outline">
+                      <QrCode className="h-3 w-3 mr-1" />
+                      QR
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
 

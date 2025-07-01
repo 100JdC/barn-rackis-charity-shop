@@ -14,10 +14,11 @@ export interface Item {
   location?: string;
   photos: string[];
   internal_notes?: string;
+  donor_name?: string;
   created_by: string;
   updated_by: string;
   created_at: string;
   updated_at: string;
 }
 
-export type UserRole = 'admin' | 'donator';
+export type UserRole = 'admin' | 'donator' | 'buyer';
