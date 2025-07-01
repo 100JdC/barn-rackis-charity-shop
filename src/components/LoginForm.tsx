@@ -114,3 +114,63 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     </div>
   );
 };
+if (view === 'admin') {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center text-center px-4 py-12 bg-gradient-to-br from-blue-600 to-blue-800">
+      <img
+        src="/lovable-uploads/f66a4279-172c-4960-8e91-d687f82c9610.png"
+        alt="Rackis for Barn Logo"
+        className="w-72 h-auto mb-8"
+      />
+
+      <h2 className="text-3xl text-white mb-6 font-semibold">Admin Login</h2>
+
+      <form onSubmit={handleAdminSubmit} className="space-y-4 w-full max-w-sm">
+        <div className="text-left">
+          <Label htmlFor="username" className="text-white">Username</Label>
+          <Input
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            placeholder="Enter admin username"
+            className="bg-white/20 border-white/30 text-white placeholder:text-white/60"
+          />
+        </div>
+
+        <div className="text-left">
+          <Label htmlFor="password" className="text-white">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            placeholder="Enter admin password"
+            className="bg-white/20 border-white/30 text-white placeholder:text-white/60"
+          />
+        </div>
+
+        {error && (
+          <div className="text-red-300 text-sm">{error}</div>
+        )}
+
+        <Button
+          type="submit"
+          className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30"
+          variant="outline"
+        >
+          Login as Admin
+        </Button>
+
+        <Button
+          variant="ghost"
+          onClick={() => setView('options')}
+          className="w-full text-white/80 hover:text-white hover:bg-white/10"
+        >
+          Back to Home
+        </Button>
+      </form>
+    </div>
+  );
+}
