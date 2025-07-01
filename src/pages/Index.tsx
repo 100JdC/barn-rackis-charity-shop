@@ -26,7 +26,7 @@ const Index = () => {
   const [editingItem, setEditingItem] = useState<Item | null>(null);
 
   // Mock user role - in real app this would come from auth
-  const userRole: UserRole = "donator"; // Change this to "admin" to test admin mode
+  const userRole: UserRole = "donator" as UserRole; // Change this to "admin" to test admin mode
 
   const filteredItems = useMemo(() => {
     let itemsToShow = items;
@@ -197,7 +197,7 @@ const Index = () => {
       
       <div className="p-4 space-y-6">
         {/* Pending Approval Section - Admin Only */}
-        {userRole === 'admin' && pendingApprovalItems.length > 0 && (
+        {(userRole as UserRole) === 'admin' && pendingApprovalItems.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="text-orange-600">
@@ -312,7 +312,7 @@ const Index = () => {
                   <SelectItem value="reserved">Reserved</SelectItem>
                   <SelectItem value="sold">Sold</SelectItem>
                   <SelectItem value="donated">Donated</SelectItem>
-                  {userRole === 'admin' && <SelectItem value="pending_approval">Pending Approval</SelectItem>}
+                  {(userRole as UserRole) === 'admin' && <SelectItem value="pending_approval">Pending Approval</SelectItem>}
                 </SelectContent>
               </Select>
 
@@ -337,7 +337,7 @@ const Index = () => {
           className="w-full md:w-auto bg-green-600 hover:bg-green-700"
         >
           <Plus className="h-4 w-4 mr-2" />
-          {userRole === 'admin' ? 'Add New Item' : 'Donate Item'}
+          {(userRole as UserRole) === 'admin' ? 'Add New Item' : 'Donate Item'}
         </Button>
 
         {/* Items Grid */}
