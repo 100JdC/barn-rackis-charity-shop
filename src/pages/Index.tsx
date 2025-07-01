@@ -1,3 +1,4 @@
+
 import { useState, useMemo, useEffect } from "react";
 import { Plus, Search, Filter, QrCode, Eye, Edit, Trash2, Check, X as XIcon, LogOut, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -279,7 +280,7 @@ const Index = () => {
       {/* Background image - woman in underwear */}
       <div className="fixed inset-0 opacity-30 pointer-events-none">
         <img 
-          src="/lovable-uploads/woman-underwear.png" 
+          src="/lovable-uploads/7d133c9f-81a4-4f3d-8168-abc8068cb85a.png" 
           alt="Background" 
           className="w-full h-full object-cover object-top"
         />
