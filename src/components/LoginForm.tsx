@@ -20,39 +20,42 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     if (username === "Jacob" && password === "Rackis") {
       onLogin('admin');
     } else {
-      // Default to donator for any other credentials
-      onLogin('donator');
+      setError("Invalid admin credentials");
     }
+  };
+
+  const handleDonatorLogin = () => {
+    onLogin('donator');
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Login to Inventory System</CardTitle>
+          <CardTitle>Access Inventory System</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">Admin Username</Label>
               <Input
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                placeholder="Enter username"
+                placeholder="Enter admin username"
               />
             </div>
             
             <div>
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Admin Password</Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                placeholder="Enter password"
+                placeholder="Enter admin password"
               />
             </div>
 
@@ -61,14 +64,26 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
             )}
 
             <Button type="submit" className="w-full">
-              Login
+              Login as Admin
             </Button>
-            
-            <div className="text-sm text-gray-600 text-center">
-              <p>Admin: Jacob / Rackis</p>
-              <p>Any other credentials will login as donator</p>
-            </div>
           </form>
+          
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-gray-50 px-2 text-muted-foreground">Or</span>
+            </div>
+          </div>
+          
+          <Button 
+            variant="outline" 
+            onClick={handleDonatorLogin}
+            className="w-full"
+          >
+            Proceed as Donator
+          </Button>
         </CardContent>
       </Card>
     </div>

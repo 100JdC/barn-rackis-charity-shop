@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { Plus, Search, Filter, QrCode, Eye, Edit, Trash2, Check, X as XIcon, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,12 +27,10 @@ const Index = () => {
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
 
-  // Show login form if user is not logged in
-  if (!userRole) {
-    return <LoginForm onLogin={setUserRole} />;
-  }
-
+  // Always call hooks - move filtering logic inside useMemo
   const filteredItems = useMemo(() => {
+    if (!userRole) return [];
+    
     let itemsToShow = items;
     
     // For donators, only show approved items
@@ -55,8 +52,14 @@ const Index = () => {
   }, [items, searchTerm, categoryFilter, statusFilter, conditionFilter, userRole]);
 
   const pendingApprovalItems = useMemo(() => {
+    if (!userRole) return [];
     return items.filter(item => item.status === 'pending_approval');
-  }, [items]);
+  }, [items, userRole]);
+
+  // Show login form if user is not logged in
+  if (!userRole) {
+    return <LoginForm onLogin={setUserRole} />;
+  }
 
   const handleAddItem = (newItem: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>) => {
     const item: Item = {
