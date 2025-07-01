@@ -11,7 +11,7 @@ import { ItemDetail } from "@/components/ItemDetail";
 import { QRCodeModal } from "@/components/QRCodeModal";
 import { Header } from "@/components/Header";
 import { mockItems } from "@/data/mockItems";
-import type { Item } from "@/types/item";
+import type { Item, UserRole } from "@/types/item";
 
 const Index = () => {
   const [items, setItems] = useState<Item[]>(mockItems);
@@ -26,7 +26,7 @@ const Index = () => {
   const [editingItem, setEditingItem] = useState<Item | null>(null);
 
   // Mock user role - in real app this would come from auth
-  const userRole = "donator"; // Change this to "admin" to test admin mode
+  const userRole: UserRole = "donator"; // Change this to "admin" to test admin mode
 
   const filteredItems = useMemo(() => {
     let itemsToShow = items;
