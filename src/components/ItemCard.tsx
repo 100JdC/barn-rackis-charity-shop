@@ -21,6 +21,7 @@ export const ItemCard = ({ item, userRole, onView, onEdit, onDelete, onShowQRCod
       case 'reserved': return 'bg-yellow-100 text-yellow-800';
       case 'sold': return 'bg-blue-100 text-blue-800';
       case 'donated': return 'bg-purple-100 text-purple-800';
+      case 'pending_approval': return 'bg-orange-100 text-orange-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -34,6 +35,20 @@ export const ItemCard = ({ item, userRole, onView, onEdit, onDelete, onShowQRCod
     }
   };
 
+  const getCategoryDisplayName = (category: string) => {
+    const names: Record<string, string> = {
+      bedding: 'Bedding',
+      bathroom: 'Bathroom',
+      decoration: 'Decoration',
+      other_room_inventory: 'Other Room Inventory',
+      kitchen: 'Kitchen',
+      bike_sports: 'Bike & Sports',
+      electronics: 'Electronics',
+      other: 'Other'
+    };
+    return names[category] || category;
+  };
+
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-4">
@@ -41,19 +56,31 @@ export const ItemCard = ({ item, userRole, onView, onEdit, onDelete, onShowQRCod
           <div className="flex justify-between items-start">
             <h3 className="font-semibold text-lg truncate">{item.name}</h3>
             <Badge className={getStatusColor(item.status)}>
-              {item.status}
+              {item.status.replace('_', ' ')}
             </Badge>
           </div>
           
-          <p className="text-gray-600 text-sm line-clamp-2">{item.description}</p>
+          {item.description && (
+            <p className="text-gray-600 text-sm line-clamp-2">{item.description}</p>
+          )}
           
           <div className="flex justify-between items-center">
             <Badge variant="outline" className="capitalize">
-              {item.category}
+              {getCategoryDisplayName(item.category)}
             </Badge>
             <Badge className={getConditionColor(item.condition)}>
               {item.condition.replace('_', ' ')}
             </Badge>
+          </div>
+
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Subcategory:</span>
+            <span className="font-medium capitalize">{item.subcategory}</span>
+          </div>
+
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Quantity:</span>
+            <span className="font-medium">{item.quantity}</span>
           </div>
           
           <div className="space-y-2">
@@ -65,7 +92,7 @@ export const ItemCard = ({ item, userRole, onView, onEdit, onDelete, onShowQRCod
               <span className="text-gray-600">Suggested:</span>
               <span className="font-medium text-green-600">{item.suggested_price} SEK</span>
             </div>
-            {item.final_price && (
+            {item.final_price && userRole === 'admin' && (
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Final:</span>
                 <span className="font-bold text-blue-600">{item.final_price} SEK</span>
@@ -73,10 +100,12 @@ export const ItemCard = ({ item, userRole, onView, onEdit, onDelete, onShowQRCod
             )}
           </div>
           
-          <div className="flex items-center gap-1 text-sm text-gray-500">
-            <MapPin className="h-3 w-3" />
-            <span>{item.location}</span>
-          </div>
+          {item.location && (
+            <div className="flex items-center gap-1 text-sm text-gray-500">
+              <MapPin className="h-3 w-3" />
+              <span>{item.location}</span>
+            </div>
+          )}
         </div>
       </CardContent>
       
@@ -90,16 +119,15 @@ export const ItemCard = ({ item, userRole, onView, onEdit, onDelete, onShowQRCod
           <QrCode className="h-3 w-3" />
         </Button>
         
-        {(userRole === 'admin' || userRole === 'volunteer') && (
-          <Button variant="outline" size="sm" onClick={onEdit}>
-            <Edit className="h-3 w-3" />
-          </Button>
-        )}
-        
         {userRole === 'admin' && (
-          <Button variant="outline" size="sm" onClick={onDelete} className="text-red-600 hover:text-red-700">
-            <Trash2 className="h-3 w-3" />
-          </Button>
+          <>
+            <Button variant="outline" size="sm" onClick={onEdit}>
+              <Edit className="h-3 w-3" />
+            </Button>
+            <Button variant="outline" size="sm" onClick={onDelete} className="text-red-600 hover:text-red-700">
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </>
         )}
       </CardFooter>
     </Card>

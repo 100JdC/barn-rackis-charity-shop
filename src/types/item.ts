@@ -2,14 +2,16 @@
 export interface Item {
   id: string;
   name: string;
-  description: string;
-  category: 'furniture' | 'kitchen' | 'electronics' | 'decor' | 'other';
+  description?: string;
+  category: 'bedding' | 'bathroom' | 'decoration' | 'other_room_inventory' | 'kitchen' | 'bike_sports' | 'electronics' | 'other';
+  subcategory: string;
   condition: 'new' | 'lightly_used' | 'worn';
+  quantity: number;
   original_price: number;
   suggested_price: number;
   final_price?: number;
-  status: 'available' | 'reserved' | 'sold' | 'donated';
-  location: string;
+  status: 'available' | 'reserved' | 'sold' | 'donated' | 'pending_approval';
+  location?: string;
   photos: string[];
   internal_notes?: string;
   created_by: string;
@@ -18,4 +20,4 @@ export interface Item {
   updated_at: string;
 }
 
-export type UserRole = 'admin' | 'volunteer' | 'viewer';
+export type UserRole = 'admin' | 'donator';

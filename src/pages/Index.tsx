@@ -1,6 +1,6 @@
 
 import { useState, useMemo } from "react";
-import { Plus, Search, Filter, QrCode, Eye, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, Filter, QrCode, Eye, Edit, Trash2, Check, X as XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,13 +27,20 @@ const Index = () => {
   const [editingItem, setEditingItem] = useState<Item | null>(null);
 
   // Mock user role - in real app this would come from auth
-  const userRole = "admin"; // admin, volunteer, viewer
+  const userRole = "admin"; // Change this to "donator" to test donator mode
 
   const filteredItems = useMemo(() => {
-    return items.filter((item) => {
+    let itemsToShow = items;
+    
+    // For donators, only show approved items
+    if (userRole === 'donator') {
+      itemsToShow = items.filter(item => item.status !== 'pending_approval');
+    }
+
+    return itemsToShow.filter((item) => {
       const matchesSearch = 
         item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchTerm.toLowerCase());
+        (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()));
       
       const matchesCategory = categoryFilter === "all" || item.category === categoryFilter;
       const matchesStatus = statusFilter === "all" || item.status === statusFilter;
@@ -41,7 +48,11 @@ const Index = () => {
 
       return matchesSearch && matchesCategory && matchesStatus && matchesCondition;
     });
-  }, [items, searchTerm, categoryFilter, statusFilter, conditionFilter]);
+  }, [items, searchTerm, categoryFilter, statusFilter, conditionFilter, userRole]);
+
+  const pendingApprovalItems = useMemo(() => {
+    return items.filter(item => item.status === 'pending_approval');
+  }, [items]);
 
   const handleAddItem = (newItem: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>) => {
     const item: Item = {
@@ -75,6 +86,18 @@ const Index = () => {
     setItems(items.filter(item => item.id !== itemId));
   };
 
+  const handleApproveItem = (itemId: string) => {
+    setItems(items.map(item => 
+      item.id === itemId 
+        ? { ...item, status: 'available' as const, updated_by: "current-user", updated_at: new Date().toISOString() }
+        : item
+    ));
+  };
+
+  const handleRejectItem = (itemId: string) => {
+    setItems(items.filter(item => item.id !== itemId));
+  };
+
   const handleViewItem = (item: Item) => {
     setSelectedItem(item);
     setShowItemDetail(true);
@@ -91,8 +114,23 @@ const Index = () => {
       case 'reserved': return 'bg-yellow-100 text-yellow-800';
       case 'sold': return 'bg-blue-100 text-blue-800';
       case 'donated': return 'bg-purple-100 text-purple-800';
+      case 'pending_approval': return 'bg-orange-100 text-orange-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const getCategoryDisplayName = (category: string) => {
+    const names: Record<string, string> = {
+      bedding: 'Bedding',
+      bathroom: 'Bathroom',
+      decoration: 'Decoration',
+      other_room_inventory: 'Other Room Inventory',
+      kitchen: 'Kitchen',
+      bike_sports: 'Bike & Sports',
+      electronics: 'Electronics',
+      other: 'Other'
+    };
+    return names[category] || category;
   };
 
   if (showItemForm) {
@@ -108,6 +146,7 @@ const Index = () => {
         <div className="p-4">
           <ItemForm
             item={editingItem}
+            userRole={userRole}
             onSubmit={editingItem ? handleEditItem : handleAddItem}
             onCancel={() => {
               setShowItemForm(false);
@@ -158,6 +197,45 @@ const Index = () => {
       <Header userRole={userRole} />
       
       <div className="p-4 space-y-6">
+        {/* Pending Approval Section - Admin Only */}
+        {userRole === 'admin' && pendingApprovalItems.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-orange-600">
+                Pending Approval ({pendingApprovalItems.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {pendingApprovalItems.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+                    <div className="flex-1">
+                      <div className="font-medium">{item.name}</div>
+                      <div className="text-sm text-gray-600">
+                        {getCategoryDisplayName(item.category)} - {item.subcategory} | Qty: {item.quantity} | {item.original_price} SEK
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => handleViewItem(item)} variant="outline">
+                        <Eye className="h-3 w-3 mr-1" />
+                        View
+                      </Button>
+                      <Button size="sm" onClick={() => handleApproveItem(item.id)} className="bg-green-600 hover:bg-green-700">
+                        <Check className="h-3 w-3 mr-1" />
+                        Approve
+                      </Button>
+                      <Button size="sm" onClick={() => handleRejectItem(item.id)} variant="outline" className="text-red-600 hover:text-red-700">
+                        <XIcon className="h-3 w-3 mr-1" />
+                        Reject
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card>
@@ -187,7 +265,7 @@ const Index = () => {
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-purple-600">
-                {items.length}
+                {items.filter(item => item.status !== 'pending_approval').length}
               </div>
               <div className="text-sm text-gray-600">Total Items</div>
             </CardContent>
@@ -214,10 +292,13 @@ const Index = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="furniture">Furniture</SelectItem>
+                  <SelectItem value="bedding">Bedding</SelectItem>
+                  <SelectItem value="bathroom">Bathroom</SelectItem>
+                  <SelectItem value="decoration">Decoration</SelectItem>
+                  <SelectItem value="other_room_inventory">Other Room Inventory</SelectItem>
                   <SelectItem value="kitchen">Kitchen</SelectItem>
+                  <SelectItem value="bike_sports">Bike & Sports</SelectItem>
                   <SelectItem value="electronics">Electronics</SelectItem>
-                  <SelectItem value="decor">Decor</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
@@ -232,6 +313,7 @@ const Index = () => {
                   <SelectItem value="reserved">Reserved</SelectItem>
                   <SelectItem value="sold">Sold</SelectItem>
                   <SelectItem value="donated">Donated</SelectItem>
+                  {userRole === 'admin' && <SelectItem value="pending_approval">Pending Approval</SelectItem>}
                 </SelectContent>
               </Select>
 
@@ -251,15 +333,13 @@ const Index = () => {
         </Card>
 
         {/* Add Item Button */}
-        {(userRole === 'admin' || userRole === 'volunteer') && (
-          <Button 
-            onClick={() => setShowItemForm(true)}
-            className="w-full md:w-auto bg-green-600 hover:bg-green-700"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add New Item
-          </Button>
-        )}
+        <Button 
+          onClick={() => setShowItemForm(true)}
+          className="w-full md:w-auto bg-green-600 hover:bg-green-700"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          {userRole === 'admin' ? 'Add New Item' : 'Donate Item'}
+        </Button>
 
         {/* Items Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
