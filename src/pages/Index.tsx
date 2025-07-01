@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { Plus, Search, Filter, QrCode, Eye, Edit, Trash2, Check, X as XIcon, LogOut } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { Plus, Search, Filter, QrCode, Eye, Edit, Trash2, Check, X as XIcon, LogOut, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,11 +11,13 @@ import { ItemDetail } from "@/components/ItemDetail";
 import { QRCodeModal } from "@/components/QRCodeModal";
 import { Header } from "@/components/Header";
 import { LoginForm } from "@/components/LoginForm";
+import { UserManagement } from "@/components/UserManagement";
+import { storage } from "@/utils/storage";
 import { mockItems } from "@/data/mockItems";
 import type { Item, UserRole } from "@/types/item";
 
 const Index = () => {
-  const [items, setItems] = useState<Item[]>(mockItems);
+  const [items, setItems] = useState<Item[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -27,6 +29,26 @@ const Index = () => {
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [currentUsername, setCurrentUsername] = useState<string | null>(null);
+  const [showUserManagement, setShowUserManagement] = useState(false);
+
+  // Load items from storage on component mount
+  useEffect(() => {
+    const storedItems = storage.getItems();
+    if (storedItems.length === 0) {
+      // Initialize with mock data if no stored items
+      storage.setItems(mockItems);
+      setItems(mockItems);
+    } else {
+      setItems(storedItems);
+    }
+  }, []);
+
+  // Save items to storage whenever items change
+  useEffect(() => {
+    if (items.length > 0) {
+      storage.setItems(items);
+    }
+  }, [items]);
 
   // Always call hooks - move filtering logic inside useMemo
   const filteredItems = useMemo(() => {
@@ -68,6 +90,11 @@ const Index = () => {
       setUserRole(role);
       if (username) setCurrentUsername(username);
     }} />;
+  }
+
+  // Show user management if admin requested it
+  if (showUserManagement && userRole === 'admin') {
+    return <UserManagement onBack={() => setShowUserManagement(false)} />;
   }
 
   const handleAddItem = (newItem: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>, addAnother: boolean = false) => {
@@ -168,10 +195,18 @@ const Index = () => {
               setEditingItem(null);
             }}
           />
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Logout ({userRole})
-          </Button>
+          <div className="flex gap-2">
+            {userRole === 'admin' && (
+              <Button variant="outline" onClick={() => setShowUserManagement(true)}>
+                <Users className="h-4 w-4 mr-2" />
+                Users
+              </Button>
+            )}
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout ({userRole})
+            </Button>
+          </div>
         </div>
         <div className="p-4">
           <ItemForm
@@ -202,10 +237,18 @@ const Index = () => {
               setSelectedItem(null);
             }}
           />
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Logout ({userRole})
-          </Button>
+          <div className="flex gap-2">
+            {userRole === 'admin' && (
+              <Button variant="outline" onClick={() => setShowUserManagement(true)}>
+                <Users className="h-4 w-4 mr-2" />
+                Users
+              </Button>
+            )}
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout ({userRole})
+            </Button>
+          </div>
         </div>
         <div className="p-4">
           <ItemDetail
@@ -235,10 +278,18 @@ const Index = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="flex justify-between items-center p-4 bg-white shadow-sm">
         <Header userRole={userRole} />
-        <Button variant="outline" onClick={handleLogout}>
-          <LogOut className="h-4 w-4 mr-2" />
-          Logout ({userRole})
-        </Button>
+        <div className="flex gap-2">
+          {userRole === 'admin' && (
+            <Button variant="outline" onClick={() => setShowUserManagement(true)}>
+              <Users className="h-4 w-4 mr-2" />
+              Users
+            </Button>
+          )}
+          <Button variant="outline" onClick={handleLogout}>
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout ({userRole})
+          </Button>
+        </div>
       </div>
       
       <div className="p-4 space-y-6">

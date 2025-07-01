@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { storage } from "@/utils/storage";
 
 interface DonorRegistrationProps {
   onRegister: (username: string, password: string) => void;
@@ -27,6 +28,16 @@ export const DonorRegistration = ({ onRegister, onBack }: DonorRegistrationProps
       setError("Password is required");
       return;
     }
+
+    // Check if username already exists
+    const existingUsers = storage.getUsers();
+    if (existingUsers.some(user => user.username.toLowerCase() === username.trim().toLowerCase())) {
+      setError("Username already exists");
+      return;
+    }
+    
+    // Save user to storage
+    storage.addUser(username.trim());
     
     onRegister(username.trim(), password);
   };
