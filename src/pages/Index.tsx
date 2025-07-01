@@ -1,4 +1,3 @@
-
 import { useState, useMemo, useEffect } from "react";
 import { Plus, Search, Filter, QrCode, Eye, Edit, Trash2, Check, X as XIcon, LogOut, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -51,19 +50,15 @@ const Index = () => {
     }
   }, [items]);
 
-  // Always call hooks - move filtering logic inside useMemo
+  // Fixed filtering logic - show all items except pending_approval for non-admin users
   const filteredItems = useMemo(() => {
     if (!userRole) return [];
     
     let itemsToShow = items;
     
-    // For donators, only show approved items (not pending_approval)
-    if (userRole === 'donator') {
+    // For non-admin users, hide pending_approval items
+    if (userRole !== 'admin') {
       itemsToShow = items.filter(item => item.status !== 'pending_approval');
-    }
-    // For buyers, only show available items
-    else if (userRole === 'buyer') {
-      itemsToShow = items.filter(item => item.status === 'available');
     }
     // For admin, show all items including pending_approval
 
@@ -196,7 +191,33 @@ const Index = () => {
               setEditingItem(null);
             }}
           />
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            {/* Logo */}
+            <div className="w-16 h-16">
+              <img 
+                src="/lovable-uploads/e864de0e-0b29-4248-a8d7-0a94ae10521b.png" 
+                alt="Barncancerfonden Logo" 
+                className="w-full h-full object-contain"
+              />
+            </div>
+            
+            {/* Scientist with speech bubble */}
+            <div className="flex items-center gap-2">
+              <div className="relative bg-white border-2 border-gray-300 rounded-lg px-3 py-2 shadow-lg">
+                <div className="text-sm font-medium text-gray-800">Welcome to Rackis for Barn!</div>
+                {/* Speech bubble arrow */}
+                <div className="absolute top-1/2 -right-2 transform -translate-y-1/2 w-0 h-0 border-l-8 border-l-white border-t-4 border-t-transparent border-b-4 border-b-transparent"></div>
+                <div className="absolute top-1/2 -right-1 transform -translate-y-1/2 w-0 h-0 border-l-6 border-l-gray-300 border-t-3 border-t-transparent border-b-3 border-b-transparent"></div>
+              </div>
+              <div className="w-12 h-12">
+                <img 
+                  src="/lovable-uploads/74b13bd1-2a11-44cc-986f-298a9ebc67b6.png" 
+                  alt="Scientist" 
+                  className="w-full h-full object-cover rounded-full"
+                />
+              </div>
+            </div>
+            
             {userRole === 'admin' && (
               <Button variant="outline" onClick={() => setShowUserManagement(true)}>
                 <Users className="h-4 w-4 mr-2" />
@@ -238,7 +259,33 @@ const Index = () => {
               setSelectedItem(null);
             }}
           />
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            {/* Logo */}
+            <div className="w-16 h-16">
+              <img 
+                src="/lovable-uploads/e864de0e-0b29-4248-a8d7-0a94ae10521b.png" 
+                alt="Barncancerfonden Logo" 
+                className="w-full h-full object-contain"
+              />
+            </div>
+            
+            {/* Scientist with speech bubble */}
+            <div className="flex items-center gap-2">
+              <div className="relative bg-white border-2 border-gray-300 rounded-lg px-3 py-2 shadow-lg">
+                <div className="text-sm font-medium text-gray-800">Welcome to Rackis for Barn!</div>
+                {/* Speech bubble arrow pointing to the scientist */}
+                <div className="absolute top-1/2 -right-2 transform -translate-y-1/2 w-0 h-0 border-l-8 border-l-white border-t-4 border-t-transparent border-b-4 border-b-transparent"></div>
+                <div className="absolute top-1/2 -right-1 transform -translate-y-1/2 w-0 h-0 border-l-6 border-l-gray-300 border-t-3 border-t-transparent border-b-3 border-b-transparent"></div>
+              </div>
+              <div className="w-12 h-12">
+                <img 
+                  src="/lovable-uploads/74b13bd1-2a11-44cc-986f-298a9ebc67b6.png" 
+                  alt="Scientist" 
+                  className="w-full h-full object-cover rounded-full"
+                />
+              </div>
+            </div>
+            
             {userRole === 'admin' && (
               <Button variant="outline" onClick={() => setShowUserManagement(true)}>
                 <Users className="h-4 w-4 mr-2" />
@@ -278,7 +325,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white relative">
       {/* Background image - woman in underwear */}
-      <div className="fixed inset-0 opacity-30 pointer-events-none">
+      <div className="fixed inset-0 opacity-70 pointer-events-none">
         <img 
           src="/lovable-uploads/7d133c9f-81a4-4f3d-8168-abc8068cb85a.png" 
           alt="Background" 
@@ -288,7 +335,33 @@ const Index = () => {
 
       <div className="flex justify-between items-center p-4 bg-white/80 backdrop-blur-sm shadow-sm relative z-10">
         <Header userRole={userRole} />
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          {/* Logo */}
+          <div className="w-16 h-16">
+            <img 
+              src="/lovable-uploads/e864de0e-0b29-4248-a8d7-0a94ae10521b.png" 
+              alt="Barncancerfonden Logo" 
+              className="w-full h-full object-contain"
+            />
+          </div>
+          
+          {/* Scientist with speech bubble */}
+          <div className="flex items-center gap-2">
+            <div className="relative bg-white border-2 border-gray-300 rounded-lg px-3 py-2 shadow-lg">
+              <div className="text-sm font-medium text-gray-800">Welcome to Rackis for Barn!</div>
+              {/* Speech bubble arrow pointing to the scientist */}
+              <div className="absolute top-1/2 -right-2 transform -translate-y-1/2 w-0 h-0 border-l-8 border-l-white border-t-4 border-t-transparent border-b-4 border-b-transparent"></div>
+              <div className="absolute top-1/2 -right-1 transform -translate-y-1/2 w-0 h-0 border-l-6 border-l-gray-300 border-t-3 border-t-transparent border-b-3 border-b-transparent"></div>
+            </div>
+            <div className="w-12 h-12">
+              <img 
+                src="/lovable-uploads/74b13bd1-2a11-44cc-986f-298a9ebc67b6.png" 
+                alt="Scientist" 
+                className="w-full h-full object-cover rounded-full"
+              />
+            </div>
+          </div>
+          
           {userRole === 'admin' && (
             <Button variant="outline" onClick={() => setShowUserManagement(true)}>
               <Users className="h-4 w-4 mr-2" />
