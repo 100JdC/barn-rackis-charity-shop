@@ -7,12 +7,23 @@ const About = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
-      <div className="p-4">
+    <div className="min-h-screen relative">
+      {/* Background with Rackis logo positioned to show teddy bear */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-800">
+        <div className="absolute bottom-10 right-10 opacity-30">
+          <img 
+            src="/lovable-uploads/f66a4279-172c-4960-8e91-d687f82c9610.png" 
+            alt="Rackis for Barn Logo" 
+            className="w-80 h-auto object-contain"
+          />
+        </div>
+      </div>
+      
+      <div className="relative p-4">
         <Button
           variant="ghost"
           onClick={() => navigate('/')}
-          className="mb-6"
+          className="mb-6 text-white hover:bg-white/20"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Home

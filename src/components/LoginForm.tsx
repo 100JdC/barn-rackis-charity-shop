@@ -11,7 +11,7 @@ interface LoginFormProps {
 }
 
 export const LoginForm = ({ onLogin }: LoginFormProps) => {
-  const [view, setView] = useState<'options' | 'admin' | 'donor-register'>('options');
+  const [view, setView] = useState<'options' | 'admin' | 'donor-register' | 'donor-options'>('options');
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -36,8 +36,63 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     return (
       <DonorRegistration 
         onRegister={handleDonorRegister}
-        onBack={() => setView('options')}
+        onBack={() => setView('donor-options')}
       />
+    );
+  }
+
+  if (view === 'donor-options') {
+    return (
+      <div className="min-h-screen relative">
+        {/* Background with Rackis logo positioned to show teddy bear */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-800">
+          <div className="absolute bottom-10 right-10 opacity-30">
+            <img 
+              src="/lovable-uploads/f66a4279-172c-4960-8e91-d687f82c9610.png" 
+              alt="Rackis for Barn Logo" 
+              className="w-80 h-auto object-contain"
+            />
+          </div>
+        </div>
+        
+        <div className="relative flex items-center justify-center min-h-screen p-4">
+          <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-center text-2xl text-blue-800">Donate Items</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-center text-gray-600 mb-6">
+                Choose how you'd like to proceed with donating your items.
+              </p>
+              
+              <div className="space-y-3">
+                <Button 
+                  onClick={() => setView('donor-register')}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                >
+                  Register as New Donor
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  onClick={() => onLogin('donator')}
+                  className="w-full border-blue-300 hover:bg-blue-50"
+                >
+                  I'm Already Registered - Login
+                </Button>
+              </div>
+              
+              <Button 
+                variant="ghost" 
+                onClick={() => setView('options')}
+                className="w-full mt-4"
+              >
+                Back to Home
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     );
   }
 
@@ -45,19 +100,12 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     return (
       <div className="min-h-screen relative">
         {/* Background with images */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-blue-100">
-          <div className="absolute top-0 left-0 w-1/2 h-1/3 opacity-20">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-800">
+          <div className="absolute bottom-10 right-10 opacity-30">
             <img 
-              src="/lovable-uploads/74b13bd1-2a11-44cc-986f-298a9ebc67b6.png" 
-              alt="Background" 
-              className="w-full h-full object-cover rounded-br-3xl"
-            />
-          </div>
-          <div className="absolute top-8 right-8 w-32 h-32">
-            <img 
-              src="/lovable-uploads/e864de0e-0b29-4248-a8d7-0a94ae10521b.png" 
-              alt="Barncancerfonden Logo" 
-              className="w-full h-full object-contain"
+              src="/lovable-uploads/f66a4279-172c-4960-8e91-d687f82c9610.png" 
+              alt="Rackis for Barn Logo" 
+              className="w-80 h-auto object-contain"
             />
           </div>
         </div>
@@ -117,13 +165,13 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
 
   return (
     <div className="min-h-screen relative">
-      {/* Background with Rackis logo */}
+      {/* Background with Rackis logo positioned to show teddy bear */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-800">
-        <div className="absolute inset-0 flex items-center justify-center opacity-20">
+        <div className="absolute bottom-10 right-10 opacity-30">
           <img 
             src="/lovable-uploads/f66a4279-172c-4960-8e91-d687f82c9610.png" 
             alt="Rackis for Barn Logo" 
-            className="w-96 h-auto object-contain"
+            className="w-80 h-auto object-contain"
           />
         </div>
       </div>
@@ -161,7 +209,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
               
               <Button 
                 variant="outline" 
-                onClick={() => setView('donor-register')}
+                onClick={() => setView('donor-options')}
                 className="w-full border-blue-300 hover:bg-blue-50 h-12 text-lg"
               >
                 Here you can donate
