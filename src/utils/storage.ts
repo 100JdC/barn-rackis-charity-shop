@@ -9,6 +9,7 @@ const STORAGE_KEYS = {
 export interface RegisteredUser {
   id: string;
   username: string;
+  password?: string;
   role: 'donator';
   registeredAt: string;
 }
@@ -50,11 +51,12 @@ export const storage = {
     }
   },
 
-  addUser: (username: string): RegisteredUser => {
+  addUser: (username: string, password?: string): RegisteredUser => {
     const users = storage.getUsers();
     const newUser: RegisteredUser = {
       id: Date.now().toString(),
       username,
+      password,
       role: 'donator',
       registeredAt: new Date().toISOString()
     };

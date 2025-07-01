@@ -5,13 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DonorRegistration } from "./DonorRegistration";
+import { DonorLogin } from "./DonorLogin";
+import { storage } from "@/utils/storage";
 
 interface LoginFormProps {
   onLogin: (role: 'admin' | 'donator' | 'buyer', username?: string) => void;
 }
 
 export const LoginForm = ({ onLogin }: LoginFormProps) => {
-  const [view, setView] = useState<'options' | 'admin' | 'donor-register' | 'donor-options'>('options');
+  const [view, setView] = useState<'options' | 'admin' | 'donor-register' | 'donor-options' | 'donor-login'>('options');
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -27,8 +29,12 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
   };
 
   const handleDonorRegister = (donorUsername: string, donorPassword: string) => {
-    // In a real app, you'd save this to a database
-    // For now, we'll just proceed with the username
+    // Save user with password to storage
+    storage.addUser(donorUsername, donorPassword);
+    onLogin('donator', donorUsername);
+  };
+
+  const handleDonorLogin = (donorUsername: string) => {
     onLogin('donator', donorUsername);
   };
 
@@ -41,18 +47,27 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     );
   }
 
+  if (view === 'donor-login') {
+    return (
+      <DonorLogin 
+        onLogin={handleDonorLogin}
+        onBack={() => setView('donor-options')}
+      />
+    );
+  }
+
   if (view === 'donor-options') {
     return (
       <div className="min-h-screen relative">
         {/* Background with Rackis logo positioned to show teddy bear */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-800">
-          <div className="absolute bottom-10 right-10 opacity-30">
-            <img 
-              src="/lovable-uploads/f66a4279-172c-4960-8e91-d687f82c9610.png" 
-              alt="Rackis for Barn Logo" 
-              className="w-80 h-auto object-contain"
-            />
-          </div>
+        <div className="absolute bottom-10 right-10 opacity-60">
+          <img 
+            src="/lovable-uploads/f66a4279-172c-4960-8e91-d687f82c9610.png" 
+            alt="Rackis for Barn Logo" 
+            className="w-96 h-auto object-contain"
+          />
+        </div>
         </div>
         
         <div className="relative flex items-center justify-center min-h-screen p-4">
@@ -75,7 +90,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
                 
                 <Button 
                   variant="outline"
-                  onClick={() => onLogin('donator')}
+                  onClick={() => setView('donor-login')}
                   className="w-full border-blue-300 hover:bg-blue-50"
                 >
                   I'm Already Registered - Login
@@ -101,11 +116,11 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
       <div className="min-h-screen relative">
         {/* Background with images */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-800">
-          <div className="absolute bottom-10 right-10 opacity-30">
+          <div className="absolute bottom-10 right-10 opacity-60">
             <img 
               src="/lovable-uploads/f66a4279-172c-4960-8e91-d687f82c9610.png" 
               alt="Rackis for Barn Logo" 
-              className="w-80 h-auto object-contain"
+              className="w-96 h-auto object-contain"
             />
           </div>
         </div>
@@ -167,17 +182,17 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     <div className="min-h-screen relative">
       {/* Background with Rackis logo positioned to show teddy bear */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-800">
-        <div className="absolute bottom-10 right-10 opacity-30">
+        <div className="absolute bottom-10 right-10 opacity-60">
           <img 
             src="/lovable-uploads/f66a4279-172c-4960-8e91-d687f82c9610.png" 
             alt="Rackis for Barn Logo" 
-            className="w-80 h-auto object-contain"
+            className="w-96 h-auto object-contain"
           />
         </div>
       </div>
       
       <div className="relative flex items-center justify-center min-h-screen p-4">
-        <Card className="w-full max-w-2xl bg-white/95 backdrop-blur-sm shadow-xl">
+        <Card className="w-full max-w-2xl bg-white/90 backdrop-blur-sm shadow-xl">
           <CardHeader className="text-center">
             <CardTitle className="text-3xl text-blue-800 mb-4">👋 Welcome to Rackis for Barn!</CardTitle>
             <div className="text-lg text-gray-700 space-y-3 leading-relaxed">
