@@ -1,0 +1,181 @@
+
+import { Edit, Trash2, QrCode, MapPin, User, Calendar } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import type { Item, UserRole } from "@/types/item";
+
+interface ItemDetailProps {
+  item: Item;
+  userRole: UserRole;
+  onEdit: () => void;
+  onDelete: () => void;
+  onShowQRCode: () => void;
+}
+
+export const ItemDetail = ({ item, userRole, onEdit, onDelete, onShowQRCode }: ItemDetailProps) => {
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'available': return 'bg-green-100 text-green-800';
+      case 'reserved': return 'bg-yellow-100 text-yellow-800';
+      case 'sold': return 'bg-blue-100 text-blue-800';
+      case 'donated': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getConditionColor = (condition: string) => {
+    switch (condition) {
+      case 'new': return 'bg-emerald-100 text-emerald-800';
+      case 'lightly_used': return 'bg-amber-100 text-amber-800';
+      case 'worn': return 'bg-orange-100 text-orange-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('sv-SE', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle className="text-2xl">{item.name}</CardTitle>
+              <div className="flex gap-2 mt-2">
+                <Badge className={getStatusColor(item.status)}>
+                  {item.status}
+                </Badge>
+                <Badge variant="outline" className="capitalize">
+                  {item.category}
+                </Badge>
+                <Badge className={getConditionColor(item.condition)}>
+                  {item.condition.replace('_', ' ')}
+                </Badge>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={onShowQRCode}>
+                <QrCode className="h-4 w-4 mr-2" />
+                QR Code
+              </Button>
+              {(userRole === 'admin' || userRole === 'volunteer') && (
+                <Button variant="outline" onClick={onEdit}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+              )}
+              {userRole === 'admin' && (
+                <Button variant="outline" onClick={onDelete} className="text-red-600 hover:text-red-700">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          <div>
+            <h3 className="font-semibold mb-2">Description</h3>
+            <p className="text-gray-700">{item.description}</p>
+          </div>
+
+          <Separator />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold mb-3">Pricing Information</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Original Price:</span>
+                    <span className="font-medium">{item.original_price} SEK</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Suggested Price:</span>
+                    <span className="font-medium text-green-600">{item.suggested_price} SEK</span>
+                  </div>
+                  {item.final_price && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Final Price:</span>
+                      <span className="font-bold text-blue-600">{item.final_price} SEK</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">Location</h3>
+                <div className="flex items-center gap-2 text-gray-700">
+                  <MapPin className="h-4 w-4" />
+                  <span>{item.location}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold mb-3">Item Details</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Category:</span>
+                    <span className="font-medium capitalize">{item.category}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Condition:</span>
+                    <span className="font-medium">{item.condition.replace('_', ' ')}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Status:</span>
+                    <span className="font-medium capitalize">{item.status}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {item.internal_notes && (userRole === 'admin' || userRole === 'volunteer') && (
+            <>
+              <Separator />
+              <div>
+                <h3 className="font-semibold mb-2">Internal Notes</h3>
+                <p className="text-gray-700 bg-gray-50 p-3 rounded-md">{item.internal_notes}</p>
+              </div>
+            </>
+          )}
+
+          <Separator />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              <span>Created by: {item.created_by}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              <span>Created: {formatDate(item.created_at)}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              <span>Updated by: {item.updated_by}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              <span>Updated: {formatDate(item.updated_at)}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
