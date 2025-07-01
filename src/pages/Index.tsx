@@ -275,8 +275,17 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
-      <div className="flex justify-between items-center p-4 bg-white/80 backdrop-blur-sm shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white relative">
+      {/* Background image - woman in underwear */}
+      <div className="fixed inset-0 opacity-10 pointer-events-none">
+        <img 
+          src="/lovable-uploads/74b13bd1-2a11-44cc-986f-298a9ebc67b6.png" 
+          alt="Background" 
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      <div className="flex justify-between items-center p-4 bg-white/80 backdrop-blur-sm shadow-sm relative z-10">
         <Header userRole={userRole} />
         <div className="flex gap-2">
           {userRole === 'admin' && (
@@ -292,7 +301,7 @@ const Index = () => {
         </div>
       </div>
       
-      <div className="p-4 space-y-6">
+      <div className="p-4 space-y-6 relative z-10">
         {/* Pending Approval Section - Admin Only */}
         {userRole === 'admin' && pendingApprovalItems.length > 0 && (
           <Card className="bg-white/80 backdrop-blur-sm">
