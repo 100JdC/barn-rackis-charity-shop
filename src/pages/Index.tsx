@@ -1,3 +1,4 @@
+
 import { useState, useMemo, useEffect } from "react";
 import { Plus, Search, Filter, QrCode, Eye, Edit, Trash2, Check, X as XIcon, LogOut, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,6 @@ import { Header } from "@/components/Header";
 import { LoginForm } from "@/components/LoginForm";
 import { UserManagement } from "@/components/UserManagement";
 import { storage } from "@/utils/storage";
-import { mockItems } from "@/data/mockItems";
 import type { Item, UserRole } from "@/types/item";
 
 const Index = () => {
@@ -31,26 +31,18 @@ const Index = () => {
   const [currentUsername, setCurrentUsername] = useState<string | null>(null);
   const [showUserManagement, setShowUserManagement] = useState(false);
 
-  // Load items from storage on component mount
+  // Load items from storage on component mount - only load existing items, don't initialize with mock data
   useEffect(() => {
     const storedItems = storage.getItems();
-    if (storedItems.length === 0) {
-      // Initialize with mock data if no stored items
-      storage.setItems(mockItems);
-      setItems(mockItems);
-    } else {
-      setItems(storedItems);
-    }
+    setItems(storedItems);
   }, []);
 
   // Save items to storage whenever items change
   useEffect(() => {
-    if (items.length > 0) {
-      storage.setItems(items);
-    }
+    storage.setItems(items);
   }, [items]);
 
-  // Fixed filtering logic - show all items except pending_approval for non-admin users
+  // Show all approved items for all user roles
   const filteredItems = useMemo(() => {
     if (!userRole) return [];
     
@@ -60,7 +52,6 @@ const Index = () => {
     if (userRole !== 'admin') {
       itemsToShow = items.filter(item => item.status !== 'pending_approval');
     }
-    // For admin, show all items including pending_approval
 
     return itemsToShow.filter((item) => {
       const matchesSearch = 
@@ -191,44 +182,6 @@ const Index = () => {
               setEditingItem(null);
             }}
           />
-          <div className="flex items-center gap-2">
-            {/* Logo */}
-            <div className="w-16 h-16">
-              <img 
-                src="/lovable-uploads/e864de0e-0b29-4248-a8d7-0a94ae10521b.png" 
-                alt="Barncancerfonden Logo" 
-                className="w-full h-full object-contain"
-              />
-            </div>
-            
-            {/* Scientist with speech bubble */}
-            <div className="flex items-center gap-2">
-              <div className="relative bg-white border-2 border-gray-300 rounded-lg px-3 py-2 shadow-lg">
-                <div className="text-sm font-medium text-gray-800">Welcome to Rackis for Barn!</div>
-                {/* Speech bubble arrow */}
-                <div className="absolute top-1/2 -right-2 transform -translate-y-1/2 w-0 h-0 border-l-8 border-l-white border-t-4 border-t-transparent border-b-4 border-b-transparent"></div>
-                <div className="absolute top-1/2 -right-1 transform -translate-y-1/2 w-0 h-0 border-l-6 border-l-gray-300 border-t-3 border-t-transparent border-b-3 border-b-transparent"></div>
-              </div>
-              <div className="w-12 h-12">
-                <img 
-                  src="/lovable-uploads/74b13bd1-2a11-44cc-986f-298a9ebc67b6.png" 
-                  alt="Scientist" 
-                  className="w-full h-full object-cover rounded-full"
-                />
-              </div>
-            </div>
-            
-            {userRole === 'admin' && (
-              <Button variant="outline" onClick={() => setShowUserManagement(true)}>
-                <Users className="h-4 w-4 mr-2" />
-                Users
-              </Button>
-            )}
-            <Button variant="outline" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout ({userRole})
-            </Button>
-          </div>
         </div>
         <div className="p-4">
           <ItemForm
@@ -259,44 +212,6 @@ const Index = () => {
               setSelectedItem(null);
             }}
           />
-          <div className="flex items-center gap-2">
-            {/* Logo */}
-            <div className="w-16 h-16">
-              <img 
-                src="/lovable-uploads/e864de0e-0b29-4248-a8d7-0a94ae10521b.png" 
-                alt="Barncancerfonden Logo" 
-                className="w-full h-full object-contain"
-              />
-            </div>
-            
-            {/* Scientist with speech bubble */}
-            <div className="flex items-center gap-2">
-              <div className="relative bg-white border-2 border-gray-300 rounded-lg px-3 py-2 shadow-lg">
-                <div className="text-sm font-medium text-gray-800">Welcome to Rackis for Barn!</div>
-                {/* Speech bubble arrow pointing to the scientist */}
-                <div className="absolute top-1/2 -right-2 transform -translate-y-1/2 w-0 h-0 border-l-8 border-l-white border-t-4 border-t-transparent border-b-4 border-b-transparent"></div>
-                <div className="absolute top-1/2 -right-1 transform -translate-y-1/2 w-0 h-0 border-l-6 border-l-gray-300 border-t-3 border-t-transparent border-b-3 border-b-transparent"></div>
-              </div>
-              <div className="w-12 h-12">
-                <img 
-                  src="/lovable-uploads/74b13bd1-2a11-44cc-986f-298a9ebc67b6.png" 
-                  alt="Scientist" 
-                  className="w-full h-full object-cover rounded-full"
-                />
-              </div>
-            </div>
-            
-            {userRole === 'admin' && (
-              <Button variant="outline" onClick={() => setShowUserManagement(true)}>
-                <Users className="h-4 w-4 mr-2" />
-                Users
-              </Button>
-            )}
-            <Button variant="outline" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout ({userRole})
-            </Button>
-          </div>
         </div>
         <div className="p-4">
           <ItemDetail
@@ -323,59 +238,12 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white relative">
-      {/* Background image - woman in underwear */}
-      <div className="fixed inset-0 opacity-70 pointer-events-none">
-        <img 
-          src="/lovable-uploads/7d133c9f-81a4-4f3d-8168-abc8068cb85a.png" 
-          alt="Background" 
-          className="w-full h-full object-cover object-top"
-        />
-      </div>
-
-      <div className="flex justify-between items-center p-4 bg-white/80 backdrop-blur-sm shadow-sm relative z-10">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
+      <div className="flex justify-between items-center p-4 bg-white/80 backdrop-blur-sm shadow-sm">
         <Header userRole={userRole} />
-        <div className="flex items-center gap-2">
-          {/* Logo */}
-          <div className="w-16 h-16">
-            <img 
-              src="/lovable-uploads/e864de0e-0b29-4248-a8d7-0a94ae10521b.png" 
-              alt="Barncancerfonden Logo" 
-              className="w-full h-full object-contain"
-            />
-          </div>
-          
-          {/* Scientist with speech bubble */}
-          <div className="flex items-center gap-2">
-            <div className="relative bg-white border-2 border-gray-300 rounded-lg px-3 py-2 shadow-lg">
-              <div className="text-sm font-medium text-gray-800">Welcome to Rackis for Barn!</div>
-              {/* Speech bubble arrow pointing to the scientist */}
-              <div className="absolute top-1/2 -right-2 transform -translate-y-1/2 w-0 h-0 border-l-8 border-l-white border-t-4 border-t-transparent border-b-4 border-b-transparent"></div>
-              <div className="absolute top-1/2 -right-1 transform -translate-y-1/2 w-0 h-0 border-l-6 border-l-gray-300 border-t-3 border-t-transparent border-b-3 border-b-transparent"></div>
-            </div>
-            <div className="w-12 h-12">
-              <img 
-                src="/lovable-uploads/74b13bd1-2a11-44cc-986f-298a9ebc67b6.png" 
-                alt="Scientist" 
-                className="w-full h-full object-cover rounded-full"
-              />
-            </div>
-          </div>
-          
-          {userRole === 'admin' && (
-            <Button variant="outline" onClick={() => setShowUserManagement(true)}>
-              <Users className="h-4 w-4 mr-2" />
-              Users
-            </Button>
-          )}
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Logout ({userRole})
-          </Button>
-        </div>
       </div>
       
-      <div className="p-4 space-y-6 relative z-10">
+      <div className="p-4 space-y-6">
         {/* Pending Approval Section - Admin Only */}
         {userRole === 'admin' && pendingApprovalItems.length > 0 && (
           <Card className="bg-white/80 backdrop-blur-sm">
