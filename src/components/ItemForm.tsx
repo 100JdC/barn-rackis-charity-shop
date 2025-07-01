@@ -80,10 +80,20 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
 
   const handleCategoryChange = (value: string) => {
     const category = value as keyof typeof CATEGORY_SUBCATEGORIES;
+    const firstSubcategory = CATEGORY_SUBCATEGORIES[category][0];
     setFormData(prev => ({
       ...prev,
       category,
-      subcategory: CATEGORY_SUBCATEGORIES[category][0]
+      subcategory: firstSubcategory,
+      name: firstSubcategory.charAt(0).toUpperCase() + firstSubcategory.slice(1)
+    }));
+  };
+
+  const handleSubcategoryChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      subcategory: value,
+      name: value.charAt(0).toUpperCase() + value.slice(1)
     }));
   };
 
@@ -147,7 +157,7 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
 
               <div>
                 <Label htmlFor="subcategory">Subcategory *</Label>
-                <Select value={formData.subcategory} onValueChange={(value) => setFormData(prev => ({ ...prev, subcategory: value }))}>
+                <Select value={formData.subcategory} onValueChange={handleSubcategoryChange}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -174,7 +184,19 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
             </div>
 
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="quantity">Quantity *</Label>
+              <Input
+                id="quantity"
+                type="number"
+                min="1"
+                value={formData.quantity}
+                onChange={(e) => setFormData(prev => ({ ...prev, quantity: parseInt(e.target.value) || 1 }))}
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="description">Description (optional)</Label>
               <Textarea
                 id="description"
                 value={formData.description}
@@ -184,32 +206,18 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="condition">Condition *</Label>
-                <Select value={formData.condition} onValueChange={(value: any) => setFormData(prev => ({ ...prev, condition: value }))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="new">New</SelectItem>
-                    <SelectItem value="lightly_used">Lightly Used</SelectItem>
-                    <SelectItem value="worn">Worn</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="quantity">Quantity *</Label>
-                <Input
-                  id="quantity"
-                  type="number"
-                  min="1"
-                  value={formData.quantity}
-                  onChange={(e) => setFormData(prev => ({ ...prev, quantity: parseInt(e.target.value) || 1 }))}
-                  required
-                />
-              </div>
+            <div>
+              <Label htmlFor="condition">Condition *</Label>
+              <Select value={formData.condition} onValueChange={(value: any) => setFormData(prev => ({ ...prev, condition: value }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="new">New</SelectItem>
+                  <SelectItem value="lightly_used">Lightly Used</SelectItem>
+                  <SelectItem value="worn">Worn</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -220,7 +228,7 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
                   type="number"
                   min="0"
                   step="0.01"
-                  value={formData.original_price === 0 ? '' : formData.original_price}
+                  value={formData.original_price || ''}
                   onChange={(e) => handleOriginalPriceChange(e.target.value)}
                   required
                   placeholder="0"
@@ -234,7 +242,7 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
                   type="number"
                   min="0"
                   step="0.01"
-                  value={formData.suggested_price === 0 ? '' : formData.suggested_price}
+                  value={formData.suggested_price || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, suggested_price: parseFloat(e.target.value) || 0 }))}
                   required
                   placeholder="0"
@@ -275,7 +283,7 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
             )}
 
             <div>
-              <Label htmlFor="location">Location</Label>
+              <Label htmlFor="location">Location (optional)</Label>
               <Input
                 id="location"
                 value={formData.location}

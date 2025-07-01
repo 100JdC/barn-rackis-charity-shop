@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { Plus, Search, Filter, QrCode, Eye, Edit, Trash2, Check, X as XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,7 +26,7 @@ const Index = () => {
   const [editingItem, setEditingItem] = useState<Item | null>(null);
 
   // Mock user role - in real app this would come from auth
-  const userRole = "admin"; // Change this to "donator" to test donator mode
+  const userRole = "donator"; // Change this to "admin" to test admin mode
 
   const filteredItems = useMemo(() => {
     let itemsToShow = items;
@@ -108,7 +107,7 @@ const Index = () => {
     setShowQRCode(true);
   };
 
-  const getStatusColor = (status: string) => {
+  function getStatusColor(status: string) {
     switch (status) {
       case 'available': return 'bg-green-100 text-green-800';
       case 'reserved': return 'bg-yellow-100 text-yellow-800';
@@ -117,9 +116,9 @@ const Index = () => {
       case 'pending_approval': return 'bg-orange-100 text-orange-800';
       default: return 'bg-gray-100 text-gray-800';
     }
-  };
+  }
 
-  const getCategoryDisplayName = (category: string) => {
+  function getCategoryDisplayName(category: string) {
     const names: Record<string, string> = {
       bedding: 'Bedding',
       bathroom: 'Bathroom',
@@ -131,7 +130,7 @@ const Index = () => {
       other: 'Other'
     };
     return names[category] || category;
-  };
+  }
 
   if (showItemForm) {
     return (
