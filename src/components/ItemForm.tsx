@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { Save, X } from "lucide-react";
+import { Save, X, Plus, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,8 +11,10 @@ import type { Item } from "@/types/item";
 interface ItemFormProps {
   item?: Item | null;
   userRole: 'admin' | 'donator';
-  onSubmit: (item: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>) => void;
+  onSubmit?: (item: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>, addAnother?: boolean) => void;
+  onEdit?: (item: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>) => void;
   onCancel: () => void;
+  isEditing?: boolean;
 }
 
 const CATEGORY_SUBCATEGORIES = {
@@ -33,7 +34,7 @@ const LOCATION_OPTIONS = [
   'other'
 ];
 
-export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) => {
+export const ItemForm = ({ item, userRole, onSubmit, onEdit, onCancel, isEditing = false }: ItemFormProps) => {
   const [formData, setFormData] = useState<{
     name: string;
     description: string;
@@ -46,6 +47,7 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
     final_price: number | undefined;
     status: 'available' | 'reserved' | 'sold' | 'donated' | 'pending_approval';
     location: string;
+    custom_location: string;
     photos: string[];
     internal_notes: string;
   }>({
@@ -60,6 +62,7 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
     final_price: undefined,
     status: userRole === 'donator' ? 'pending_approval' : 'available',
     location: '',
+    custom_location: '',
     photos: [],
     internal_notes: '',
   });
@@ -77,7 +80,8 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
         suggested_price: item.suggested_price,
         final_price: item.final_price,
         status: item.status,
-        location: item.location || '',
+        location: LOCATION_OPTIONS.includes(item.location || '') ? item.location || '' : 'other',
+        custom_location: LOCATION_OPTIONS.includes(item.location || '') ? '' : item.location || '',
         photos: item.photos,
         internal_notes: item.internal_notes || '',
       });
@@ -112,9 +116,59 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      // In a real app, you'd upload these to a server and get URLs back
+      // For now, we'll just create object URLs for preview
+      const newPhotos = Array.from(files).map(file => URL.createObjectURL(file));
+      setFormData(prev => ({
+        ...prev,
+        photos: [...prev.photos, ...newPhotos]
+      }));
+    }
+  };
+
+  const removePhoto = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      photos: prev.photos.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent, addAnother: boolean = false) => {
     e.preventDefault();
-    onSubmit(formData);
+    
+    const finalLocation = formData.location === 'other' ? formData.custom_location : formData.location;
+    
+    const itemData = {
+      ...formData,
+      location: finalLocation
+    };
+    
+    // Remove custom_location from the final data
+    const { custom_location, ...finalItemData } = itemData;
+    
+    if (isEditing && onEdit) {
+      onEdit(finalItemData);
+    } else if (onSubmit) {
+      onSubmit(finalItemData, addAnother);
+      
+      if (addAnother) {
+        // Reset form for next item but keep some fields
+        setFormData(prev => ({
+          ...prev,
+          name: '',
+          description: '',
+          quantity: 1,
+          original_price: 0,
+          suggested_price: 0,
+          final_price: undefined,
+          photos: [],
+          custom_location: '',
+        }));
+      }
+    }
   };
 
   const getCategoryDisplayName = (category: string) => {
@@ -142,7 +196,7 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={(e) => handleSubmit(e)} className="space-y-6">
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -288,7 +342,7 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
               </div>
             )}
 
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="location">Location</Label>
               <Select value={formData.location} onValueChange={(value) => setFormData(prev => ({ ...prev, location: value }))}>
                 <SelectTrigger>
@@ -302,6 +356,65 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
                   ))}
                 </SelectContent>
               </Select>
+              
+              {formData.location === 'other' && (
+                <div className="mt-2">
+                  <Label htmlFor="custom_location">Custom Location</Label>
+                  <Input
+                    id="custom_location"
+                    value={formData.custom_location}
+                    onChange={(e) => setFormData(prev => ({ ...prev, custom_location: e.target.value }))}
+                    placeholder="Enter custom location"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="photos">Photos</Label>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="photos"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById('photos')?.click()}
+                  >
+                    <Image className="h-4 w-4 mr-2" />
+                    Add Photos
+                  </Button>
+                </div>
+                
+                {formData.photos.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {formData.photos.map((photo, index) => (
+                      <div key={index} className="relative">
+                        <img 
+                          src={photo} 
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-20 object-cover rounded border"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute -top-1 -right-1 h-6 w-6 p-0"
+                          onClick={() => removePhoto(index)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {userRole === 'admin' && (
@@ -321,8 +434,20 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
           <div className="flex gap-3 pt-4">
             <Button type="submit" className="flex-1 bg-green-600 hover:bg-green-700">
               <Save className="h-4 w-4 mr-2" />
-              {item ? 'Update Item' : 'Add Item'}
+              {isEditing ? 'Update Item' : 'Add Item'}
             </Button>
+            
+            {!isEditing && (
+              <Button 
+                type="button" 
+                onClick={(e) => handleSubmit(e, true)}
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add & Add Another
+              </Button>
+            )}
+            
             <Button type="button" variant="outline" onClick={onCancel}>
               <X className="h-4 w-4 mr-2" />
               Cancel

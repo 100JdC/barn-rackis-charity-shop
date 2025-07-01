@@ -33,10 +33,11 @@ const Index = () => {
     
     let itemsToShow = items;
     
-    // For donators, only show approved items
+    // For donators, only show approved items (not pending_approval)
     if (userRole === 'donator') {
       itemsToShow = items.filter(item => item.status !== 'pending_approval');
     }
+    // For admin, show all items including pending_approval
 
     return itemsToShow.filter((item) => {
       const matchesSearch = 
@@ -61,7 +62,7 @@ const Index = () => {
     return <LoginForm onLogin={setUserRole} />;
   }
 
-  const handleAddItem = (newItem: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>) => {
+  const handleAddItem = (newItem: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>, addAnother: boolean = false) => {
     const item: Item = {
       ...newItem,
       id: Date.now().toString(),
@@ -71,7 +72,10 @@ const Index = () => {
       updated_at: new Date().toISOString(),
     };
     setItems([...items, item]);
-    setShowItemForm(false);
+    
+    if (!addAnother) {
+      setShowItemForm(false);
+    }
   };
 
   const handleEditItem = (updatedItem: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>) => {
@@ -164,11 +168,13 @@ const Index = () => {
           <ItemForm
             item={editingItem}
             userRole={userRole}
-            onSubmit={editingItem ? handleEditItem : handleAddItem}
+            onSubmit={handleAddItem}
+            onEdit={handleEditItem}
             onCancel={() => {
               setShowItemForm(false);
               setEditingItem(null);
             }}
+            isEditing={!!editingItem}
           />
         </div>
       </div>
