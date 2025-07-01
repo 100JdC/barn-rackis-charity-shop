@@ -16,17 +16,29 @@ interface ItemFormProps {
 }
 
 export const ItemForm = ({ item, onSubmit, onCancel }: ItemFormProps) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    description: string;
+    category: 'furniture' | 'kitchen' | 'electronics' | 'decor' | 'other';
+    condition: 'new' | 'lightly_used' | 'worn';
+    original_price: number;
+    suggested_price: number;
+    final_price: number | undefined;
+    status: 'available' | 'reserved' | 'sold' | 'donated';
+    location: string;
+    photos: string[];
+    internal_notes: string;
+  }>({
     name: '',
     description: '',
-    category: 'other' as const,
-    condition: 'lightly_used' as const,
+    category: 'other',
+    condition: 'lightly_used',
     original_price: 0,
     suggested_price: 0,
-    final_price: undefined as number | undefined,
-    status: 'available' as const,
+    final_price: undefined,
+    status: 'available',
     location: '',
-    photos: [] as string[],
+    photos: [],
     internal_notes: '',
   });
 
