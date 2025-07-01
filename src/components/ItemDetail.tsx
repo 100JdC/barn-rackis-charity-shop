@@ -135,6 +135,12 @@ export const ItemDetail = ({ item, userRole, onEdit, onDelete, onShowQRCode }: I
                     <span className="text-gray-600">Status:</span>
                     <span className="font-medium">{item.status.replace('_', ' ')}</span>
                   </div>
+                  {item.reserved_by && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Reserved by:</span>
+                      <span className="font-medium text-orange-600">{item.reserved_by}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 

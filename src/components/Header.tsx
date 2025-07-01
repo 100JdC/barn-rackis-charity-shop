@@ -1,14 +1,16 @@
 
-import { ArrowLeft, User, LogOut } from "lucide-react";
+import { ArrowLeft, User, LogOut, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 interface HeaderProps {
   userRole: string;
   onBack?: () => void;
+  onLogout?: () => void;
+  onHome?: () => void;
 }
 
-export const Header = ({ userRole, onBack }: HeaderProps) => {
+export const Header = ({ userRole, onBack, onLogout, onHome }: HeaderProps) => {
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'admin': return 'bg-red-100 text-red-800';
@@ -34,6 +36,12 @@ export const Header = ({ userRole, onBack }: HeaderProps) => {
         </div>
         
         <div className="flex items-center gap-3">
+          {onHome && (
+            <Button variant="ghost" size="sm" onClick={onHome}>
+              <Home className="h-4 w-4 mr-1" />
+              Home
+            </Button>
+          )}
           <Badge className={getRoleColor(userRole)}>
             {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
           </Badge>
@@ -41,6 +49,11 @@ export const Header = ({ userRole, onBack }: HeaderProps) => {
             <User className="h-4 w-4" />
             <span>Demo User</span>
           </div>
+          {onLogout && (
+            <Button variant="ghost" size="sm" onClick={onLogout}>
+              <LogOut className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
     </header>

@@ -11,6 +11,7 @@ export interface Item {
   suggested_price: number;
   final_price?: number;
   status: 'available' | 'reserved' | 'sold' | 'donated' | 'pending_approval';
+  reserved_by?: string;
   location?: string;
   photos: string[];
   internal_notes?: string;

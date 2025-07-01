@@ -1,0 +1,48 @@
+import * as XLSX from 'xlsx';
+import type { Item } from '@/types/item';
+
+export const exportItemsToExcel = (items: Item[]) => {
+  // Transform items data for Excel export
+  const excelData = items.map(item => ({
+    'Item ID': item.id,
+    'Name': item.name,
+    'Description': item.description || '',
+    'Category': item.category,
+    'Subcategory': item.subcategory,
+    'Condition': item.condition,
+    'Quantity': item.quantity,
+    'Original Price (SEK)': item.original_price,
+    'Suggested Price (SEK)': item.suggested_price,
+    'Final Price (SEK)': item.final_price || '',
+    'Status': item.status,
+    'Reserved By': item.reserved_by || '',
+    'Location': item.location || '',
+    'Internal Notes': item.internal_notes || '',
+    'Donor Name': item.donor_name || '',
+    'Created By': item.created_by,
+    'Updated By': item.updated_by,
+    'Created At': new Date(item.created_at).toLocaleString(),
+    'Updated At': new Date(item.updated_at).toLocaleString(),
+    'Photos Count': item.photos.length
+  }));
+
+  // Create workbook and worksheet
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+  // Auto-size columns
+  const colWidths = Object.keys(excelData[0] || {}).map(key => ({
+    wch: Math.max(key.length, 15)
+  }));
+  worksheet['!cols'] = colWidths;
+
+  // Add worksheet to workbook
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Inventory Items');
+
+  // Generate filename with current date
+  const date = new Date().toISOString().split('T')[0];
+  const filename = `rackis-inventory-backup-${date}.xlsx`;
+
+  // Write and download file
+  XLSX.writeFile(workbook, filename);
+};

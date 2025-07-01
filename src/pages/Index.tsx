@@ -1,8 +1,9 @@
 
 import { useState, useMemo, useEffect } from "react";
-import { Plus, Search, Filter, QrCode, Eye, Edit, Trash2, Check, X as XIcon, LogOut, Users } from "lucide-react";
+import { Plus, Search, Filter, QrCode, Eye, Edit, Trash2, Check, X as XIcon, LogOut, Users, Download, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,6 +15,7 @@ import { Header } from "@/components/Header";
 import { LoginForm } from "@/components/LoginForm";
 import { UserManagement } from "@/components/UserManagement";
 import { storage } from "@/utils/storage";
+import { exportItemsToExcel } from "@/utils/exportUtils";
 import type { Item, UserRole } from "@/types/item";
 
 const Index = () => {
@@ -30,6 +32,8 @@ const Index = () => {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [currentUsername, setCurrentUsername] = useState<string | null>(null);
   const [showUserManagement, setShowUserManagement] = useState(false);
+  const [reservingItem, setReservingItem] = useState<Item | null>(null);
+  const [reservedByName, setReservedByName] = useState("");
 
   // Load items from storage on component mount - only load existing items, don't initialize with mock data
   useEffect(() => {
@@ -146,6 +150,38 @@ const Index = () => {
     setCurrentUsername(null);
   };
 
+  const handleGoHome = () => {
+    setUserRole(null);
+    setCurrentUsername(null);
+  };
+
+  const handleExportToExcel = () => {
+    exportItemsToExcel(items);
+  };
+
+  const handleReserveItem = (item: Item) => {
+    setReservingItem(item);
+    setReservedByName(item.reserved_by || "");
+  };
+
+  const handleConfirmReservation = () => {
+    if (!reservingItem) return;
+    
+    setItems(items.map(item => 
+      item.id === reservingItem.id 
+        ? { 
+            ...item, 
+            status: 'reserved' as const, 
+            reserved_by: reservedByName,
+            updated_by: "current-user", 
+            updated_at: new Date().toISOString() 
+          }
+        : item
+    ));
+    setReservingItem(null);
+    setReservedByName("");
+  };
+
   function getStatusColor(status: string) {
     switch (status) {
       case 'available': return 'bg-green-100 text-green-800';
@@ -181,6 +217,8 @@ const Index = () => {
               setShowItemForm(false);
               setEditingItem(null);
             }}
+            onLogout={handleLogout}
+            onHome={handleGoHome}
           />
         </div>
         <div className="p-4">
@@ -211,6 +249,8 @@ const Index = () => {
               setShowItemDetail(false);
               setSelectedItem(null);
             }}
+            onLogout={handleLogout}
+            onHome={handleGoHome}
           />
         </div>
         <div className="p-4">
@@ -240,7 +280,11 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
       <div className="flex justify-between items-center p-4 bg-white/80 backdrop-blur-sm shadow-sm">
-        <Header userRole={userRole} />
+        <Header 
+          userRole={userRole} 
+          onLogout={handleLogout}
+          onHome={handleGoHome}
+        />
       </div>
       
       <div className="p-4 space-y-6">
@@ -380,16 +424,29 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        {/* Add Item Button - Hide for buyers */}
-        {userRole !== 'buyer' && (
-          <Button 
-            onClick={() => setShowItemForm(true)}
-            className="w-full md:w-auto bg-blue-600 hover:bg-blue-700"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            {userRole === 'admin' ? 'Add New Item' : 'Donate Item'}
-          </Button>
-        )}
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-4">
+          {userRole !== 'buyer' && (
+            <Button 
+              onClick={() => setShowItemForm(true)}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              {userRole === 'admin' ? 'Add New Item' : 'Donate Item'}
+            </Button>
+          )}
+          
+          {userRole === 'admin' && (
+            <Button 
+              onClick={handleExportToExcel}
+              variant="outline"
+              className="border-green-300 hover:bg-green-50"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export to Excel
+            </Button>
+          )}
+        </div>
 
         {/* Items Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -445,6 +502,10 @@ const Index = () => {
                           <Edit className="h-3 w-3 mr-1" />
                           Edit
                         </Button>
+                        <Button size="sm" onClick={() => handleReserveItem(item)} variant="outline" className="text-orange-600">
+                          <UserCheck className="h-3 w-3 mr-1" />
+                          Reserve
+                        </Button>
                         <Button size="sm" onClick={() => handleDeleteItem(item.id)} variant="outline" className="text-red-600">
                           <Trash2 className="h-3 w-3 mr-1" />
                           Delete
@@ -481,6 +542,47 @@ const Index = () => {
             setSelectedItem(null);
           }}
         />
+      )}
+
+      {/* Reservation Modal */}
+      {reservingItem && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="w-full max-w-md mx-4 bg-white">
+            <CardHeader>
+              <CardTitle>Reserve Item: {reservingItem.name}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="reserved-by">Reserved by (person's name):</Label>
+                <Input
+                  id="reserved-by"
+                  value={reservedByName}
+                  onChange={(e) => setReservedByName(e.target.value)}
+                  placeholder="Enter person's name"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleConfirmReservation}
+                  disabled={!reservedByName.trim()}
+                  className="flex-1"
+                >
+                  Confirm Reservation
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setReservingItem(null);
+                    setReservedByName("");
+                  }}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );
