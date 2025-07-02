@@ -3,8 +3,11 @@ import * as XLSX from 'xlsx';
 import type { Item } from '@/types/item';
 
 export const exportItemsToExcel = (items: Item[]) => {
-  // Calculate sold items count
+  // Calculate sold items count and total sold quantities
   const soldItemsCount = items.filter(item => item.status === 'sold').length;
+  const totalSoldQuantity = items
+    .filter(item => item.status === 'sold')
+    .reduce((sum, item) => sum + item.quantity, 0);
   
   // Transform items data for Excel export
   const excelData = items.map(item => ({
@@ -15,6 +18,7 @@ export const exportItemsToExcel = (items: Item[]) => {
     'Subcategory': item.subcategory,
     'Condition': item.condition,
     'Quantity': item.quantity,
+    'Sold Quantity': item.status === 'sold' ? item.quantity : 0,
     'Original Price (SEK)': item.original_price,
     'Suggested Price (SEK)': item.suggested_price,
     'Final Price (SEK)': item.final_price || '',
@@ -37,8 +41,9 @@ export const exportItemsToExcel = (items: Item[]) => {
     'Description': `Sold Items: ${soldItemsCount}`,
     'Category': `Available: ${items.filter(i => i.status === 'available').length}`,
     'Subcategory': `Reserved: ${items.filter(i => i.status === 'reserved').length}`,
-    'Condition': '',
+    'Condition': `Total Sold Quantity: ${totalSoldQuantity}`,
     'Quantity': '',
+    'Sold Quantity': totalSoldQuantity,
     'Original Price (SEK)': '',
     'Suggested Price (SEK)': '',
     'Final Price (SEK)': '',

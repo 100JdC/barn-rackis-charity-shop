@@ -97,6 +97,15 @@ const Index = () => {
     return items.filter(item => item.status === 'pending_approval');
   }, [items, userRole]);
 
+  // Calculate sold quantities
+  const soldQuantitiesStats = useMemo(() => {
+    const soldItems = items.filter(item => item.status === 'sold');
+    return {
+      totalSoldItems: soldItems.length,
+      totalSoldQuantity: soldItems.reduce((sum, item) => sum + item.quantity, 0)
+    };
+  }, [items]);
+
   // Show login form if user is not logged in
   if (!userRole) {
     return <LoginForm onLogin={(role, username) => {
@@ -453,7 +462,7 @@ const Index = () => {
           )}
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <Card className="bg-white/80 backdrop-blur-sm">
               <CardContent className="p-4">
                 <div className="text-2xl font-bold text-green-600">
@@ -473,9 +482,17 @@ const Index = () => {
             <Card className="bg-white/80 backdrop-blur-sm">
               <CardContent className="p-4">
                 <div className="text-2xl font-bold text-blue-600">
-                  {items.filter(item => item.status === 'sold').length}
+                  {soldQuantitiesStats.totalSoldItems}
                 </div>
-                <div className="text-sm text-gray-600">Sold</div>
+                <div className="text-sm text-gray-600">Sold Items</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-white/80 backdrop-blur-sm">
+              <CardContent className="p-4">
+                <div className="text-2xl font-bold text-blue-800">
+                  {soldQuantitiesStats.totalSoldQuantity}
+                </div>
+                <div className="text-sm text-gray-600">Sold Quantity</div>
               </CardContent>
             </Card>
             <Card className="bg-white/80 backdrop-blur-sm">
