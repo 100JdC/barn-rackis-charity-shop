@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { storage } from "@/utils/storage";
 import type { Item } from "@/types/item";
 
 interface ItemFormProps {
@@ -126,15 +127,23 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
     }));
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      // In a real app, you'd upload these to a server and get URLs back
-      // For now, we'll just create object URLs for preview
-      const newPhotos = Array.from(files).map(file => URL.createObjectURL(file));
+      const newPhotoIds: string[] = [];
+      
+      for (const file of Array.from(files)) {
+        try {
+          const photoId = await storage.savePhoto(file);
+          newPhotoIds.push(photoId);
+        } catch (error) {
+          console.error('Failed to save photo:', error);
+        }
+      }
+      
       setFormData(prev => ({
         ...prev,
-        photos: [...prev.photos, ...newPhotos]
+        photos: [...prev.photos, ...newPhotoIds]
       }));
     }
   };
@@ -180,6 +189,30 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
         }));
       }
     }
+  };
+
+  const renderPhotoPreview = (photoId: string, index: number) => {
+    const photoData = storage.getPhoto(photoId);
+    if (!photoData) return null;
+
+    return (
+      <div key={index} className="relative">
+        <img 
+          src={photoData} 
+          alt={`Preview ${index + 1}`}
+          className="w-full h-20 object-cover rounded border"
+        />
+        <Button
+          type="button"
+          variant="destructive"
+          size="sm"
+          className="absolute -top-1 -right-1 h-6 w-6 p-0"
+          onClick={() => removePhoto(index)}
+        >
+          <X className="h-3 w-3" />
+        </Button>
+      </div>
+    );
   };
 
   const getCategoryDisplayName = (category: string) => {
@@ -418,24 +451,7 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
                 
                 {formData.photos.length > 0 && (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {formData.photos.map((photo, index) => (
-                      <div key={index} className="relative">
-                        <img 
-                          src={photo} 
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-20 object-cover rounded border"
-                        />
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          className="absolute -top-1 -right-1 h-6 w-6 p-0"
-                          onClick={() => removePhoto(index)}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))}
+                    {formData.photos.map((photoId, index) => renderPhotoPreview(photoId, index))}
                   </div>
                 )}
               </div>

@@ -68,14 +68,25 @@ export const storage = {
   },
 
   // Photo storage utilities
-  savePhoto: (photoId: string, photoData: string): void => {
-    try {
-      const photos = storage.getPhotos();
-      photos[photoId] = photoData;
-      localStorage.setItem(STORAGE_KEYS.PHOTOS, JSON.stringify(photos));
-    } catch (error) {
-      console.error('Failed to save photo:', error);
-    }
+  savePhoto: (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const photoData = e.target?.result as string;
+        const photoId = `photo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        try {
+          const photos = storage.getPhotos();
+          photos[photoId] = photoData;
+          localStorage.setItem(STORAGE_KEYS.PHOTOS, JSON.stringify(photos));
+          resolve(photoId);
+        } catch (error) {
+          console.error('Failed to save photo:', error);
+          reject(error);
+        }
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   },
 
   getPhotos: (): Record<string, string> => {

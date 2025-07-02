@@ -1,6 +1,5 @@
-
 import { useState, useMemo, useEffect } from "react";
-import { Plus, Search, Filter, QrCode, Eye, Edit, Trash2, Check, X as XIcon, LogOut, Users, Download, UserCheck } from "lucide-react";
+import { Plus, Search, Filter, QrCode, Eye, Edit, Trash2, Check, X as XIcon, LogOut, Users, Download, UserCheck, Split } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +13,7 @@ import { QRCodeModal } from "@/components/QRCodeModal";
 import { Header } from "@/components/Header";
 import { LoginForm } from "@/components/LoginForm";
 import { UserManagement } from "@/components/UserManagement";
+import { ItemSplitModal } from "@/components/ItemSplitModal";
 import { storage } from "@/utils/storage";
 import { exportItemsToExcel } from "@/utils/exportUtils";
 import type { Item, UserRole } from "@/types/item";
@@ -34,6 +34,7 @@ const Index = () => {
   const [showUserManagement, setShowUserManagement] = useState(false);
   const [reservingItem, setReservingItem] = useState<Item | null>(null);
   const [reservedByName, setReservedByName] = useState("");
+  const [splittingItem, setSplittingItem] = useState<Item | null>(null);
 
   // Load items from storage on component mount - only load existing items, don't initialize with mock data
   useEffect(() => {
@@ -182,6 +183,39 @@ const Index = () => {
     setReservedByName("");
   };
 
+  const handleSplitItem = (item: Item, soldQuantity: number, finalPrice: number, status: 'sold' | 'reserved', reservedBy?: string) => {
+    const remainingQuantity = item.quantity - soldQuantity;
+    
+    // Create the sold/reserved portion
+    const soldItem: Item = {
+      ...item,
+      id: Date.now().toString() + '_sold',
+      quantity: soldQuantity,
+      final_price: finalPrice,
+      status: status,
+      reserved_by: status === 'reserved' ? reservedBy : undefined,
+      updated_by: "current-user",
+      updated_at: new Date().toISOString()
+    };
+    
+    // Update the original item with remaining quantity
+    const remainingItem: Item = {
+      ...item,
+      quantity: remainingQuantity,
+      updated_by: "current-user",
+      updated_at: new Date().toISOString()
+    };
+    
+    // Replace the original item with both new items
+    setItems(items.map(i => 
+      i.id === item.id 
+        ? remainingItem 
+        : i
+    ).concat([soldItem]));
+    
+    setSplittingItem(null);
+  };
+
   function getStatusColor(status: string) {
     switch (status) {
       case 'available': return 'bg-green-100 text-green-800';
@@ -278,312 +312,344 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
-      <div className="flex justify-between items-center p-4 bg-white/80 backdrop-blur-sm shadow-sm">
-        <Header 
-          userRole={userRole} 
-          onLogout={handleLogout}
-          onHome={handleGoHome}
+    <div className="min-h-screen" style={{ backgroundColor: '#1733a7' }}>
+      <div className="absolute inset-0 flex items-center justify-center z-0 opacity-30 pointer-events-none">
+        <img
+          src="/lovable-uploads/f66a4279-172c-4960-8e91-d687f82c9610.png"
+          alt="Rackis for Barn Logo"
+          className="w-[600px] h-auto object-contain"
         />
       </div>
       
-      <div className="p-4 space-y-6">
-        {/* Pending Approval Section - Admin Only */}
-        {userRole === 'admin' && pendingApprovalItems.length > 0 && (
-          <Card className="bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-orange-600">
-                Pending Approval ({pendingApprovalItems.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {pendingApprovalItems.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-3 bg-orange-50/80 rounded-lg backdrop-blur-sm">
-                    <div className="flex-1">
-                      <div className="font-medium">{item.name}</div>
-                      <div className="text-sm text-gray-600">
-                        {getCategoryDisplayName(item.category)} - {item.subcategory} | Qty: {item.quantity} | {item.original_price} SEK
-                        {item.donor_name && <span> | Donor: {item.donor_name}</span>}
+      <div className="relative z-10">
+        <div className="flex justify-between items-center p-4 bg-white/80 backdrop-blur-sm shadow-sm">
+          <Header 
+            userRole={userRole} 
+            onLogout={handleLogout}
+            onHome={handleGoHome}
+          />
+        </div>
+        
+        <div className="p-4 space-y-6">
+          {/* Pending Approval Section - Admin Only */}
+          {userRole === 'admin' && pendingApprovalItems.length > 0 && (
+            <Card className="bg-white/80 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-orange-600">
+                  Pending Approval ({pendingApprovalItems.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {pendingApprovalItems.map((item) => (
+                    <div key={item.id} className="flex items-center justify-between p-3 bg-orange-50/80 rounded-lg backdrop-blur-sm">
+                      <div className="flex-1">
+                        <div className="font-medium">{item.name}</div>
+                        <div className="text-sm text-gray-600">
+                          {getCategoryDisplayName(item.category)} - {item.subcategory} | Qty: {item.quantity} | {item.original_price} SEK
+                          {item.donor_name && <span> | Donor: {item.donor_name}</span>}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={() => handleViewItem(item)} variant="outline">
+                          <Eye className="h-3 w-3 mr-1" />
+                          View
+                        </Button>
+                        <Button size="sm" onClick={() => handleApproveItem(item.id)} className="bg-green-600 hover:bg-green-700">
+                          <Check className="h-3 w-3 mr-1" />
+                          Approve
+                        </Button>
+                        <Button size="sm" onClick={() => handleRejectItem(item.id)} variant="outline" className="text-red-600 hover:text-red-700">
+                          <XIcon className="h-3 w-3 mr-1" />
+                          Reject
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={() => handleViewItem(item)} variant="outline">
-                        <Eye className="h-3 w-3 mr-1" />
-                        View
-                      </Button>
-                      <Button size="sm" onClick={() => handleApproveItem(item.id)} className="bg-green-600 hover:bg-green-700">
-                        <Check className="h-3 w-3 mr-1" />
-                        Approve
-                      </Button>
-                      <Button size="sm" onClick={() => handleRejectItem(item.id)} variant="outline" className="text-red-600 hover:text-red-700">
-                        <XIcon className="h-3 w-3 mr-1" />
-                        Reject
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="bg-white/80 backdrop-blur-sm">
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-green-600">
-                {items.filter(item => item.status === 'available').length}
-              </div>
-              <div className="text-sm text-gray-600">Available</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/80 backdrop-blur-sm">
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-yellow-600">
-                {items.filter(item => item.status === 'reserved').length}
-              </div>
-              <div className="text-sm text-gray-600">Reserved</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/80 backdrop-blur-sm">
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-blue-600">
-                {items.filter(item => item.status === 'sold').length}
-              </div>
-              <div className="text-sm text-gray-600">Sold</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/80 backdrop-blur-sm">
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-purple-600">
-                {items.filter(item => item.status !== 'pending_approval').length}
-              </div>
-              <div className="text-sm text-gray-600">Total Items</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Search and Filters */}
-        <Card className="bg-white/80 backdrop-blur-sm">
-          <CardContent className="p-4 space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search items..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="bedding">Bedding</SelectItem>
-                  <SelectItem value="bathroom">Bathroom</SelectItem>
-                  <SelectItem value="decoration">Decoration</SelectItem>
-                  <SelectItem value="other_room_inventory">Other Room Inventory</SelectItem>
-                  <SelectItem value="kitchen">Kitchen</SelectItem>
-                  <SelectItem value="bike_sports">Bike & Sports</SelectItem>
-                  <SelectItem value="electronics">Electronics</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="available">Available</SelectItem>
-                  <SelectItem value="reserved">Reserved</SelectItem>
-                  <SelectItem value="sold">Sold</SelectItem>
-                  <SelectItem value="donated">Donated</SelectItem>
-                  {userRole === 'admin' && <SelectItem value="pending_approval">Pending Approval</SelectItem>}
-                </SelectContent>
-              </Select>
-
-              <Select value={conditionFilter} onValueChange={setConditionFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Conditions" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Conditions</SelectItem>
-                  <SelectItem value="new">New</SelectItem>
-                  <SelectItem value="lightly_used">Lightly Used</SelectItem>
-                  <SelectItem value="worn">Worn</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-4">
-          {userRole !== 'buyer' && (
-            <Button 
-              onClick={() => setShowItemForm(true)}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              {userRole === 'admin' ? 'Add New Item' : 'Donate Item'}
-            </Button>
-          )}
-          
-          {userRole === 'admin' && (
-            <Button 
-              onClick={handleExportToExcel}
-              variant="outline"
-              className="border-green-300 hover:bg-green-50"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Export to Excel
-            </Button>
-          )}
-        </div>
-
-        {/* Items Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredItems.map((item) => (
-            <Card key={item.id} className="overflow-hidden bg-white/80 backdrop-blur-sm hover:shadow-lg transition-shadow">
-              <CardContent className="p-4">
-                {/* Show first photo if available */}
-                {item.photos && item.photos.length > 0 && (
-                  <div className="mb-3">
-                    <img 
-                      src={item.photos[0]} 
-                      alt={item.name}
-                      className="w-full h-40 object-cover rounded-md"
-                    />
-                  </div>
-                )}
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-semibold text-lg">{item.name}</h3>
-                    <Badge className={getStatusColor(item.status)}>
-                      {item.status.replace('_', ' ')}
-                    </Badge>
-                  </div>
-                  
-                  <div className="text-sm text-gray-600">
-                    {getCategoryDisplayName(item.category)} - {item.subcategory}
-                  </div>
-                  
-                  <div className="text-sm">
-                    <span className="font-medium">Qty:</span> {item.quantity} | 
-                    <span className="font-medium"> Price:</span> {item.suggested_price} SEK
-                  </div>
-                  
-                  {item.donor_name && (
-                    <div className="text-sm text-gray-600">
-                      <span className="font-medium">Donor:</span> {item.donor_name}
-                    </div>
-                  )}
-                  
-                  <div className="flex gap-2 pt-2">
-                    <Button size="sm" onClick={() => handleViewItem(item)} variant="outline">
-                      <Eye className="h-3 w-3 mr-1" />
-                      View
-                    </Button>
-                    
-                    {userRole === 'admin' && (
-                      <>
-                        <Button size="sm" onClick={() => {
-                          setEditingItem(item);
-                          setShowItemForm(true);
-                        }} variant="outline">
-                          <Edit className="h-3 w-3 mr-1" />
-                          Edit
-                        </Button>
-                        <Button size="sm" onClick={() => handleReserveItem(item)} variant="outline" className="text-orange-600">
-                          <UserCheck className="h-3 w-3 mr-1" />
-                          Reserve
-                        </Button>
-                        <Button size="sm" onClick={() => handleDeleteItem(item.id)} variant="outline" className="text-red-600">
-                          <Trash2 className="h-3 w-3 mr-1" />
-                          Delete
-                        </Button>
-                      </>
-                    )}
-                    
-                    <Button size="sm" onClick={() => handleShowQRCode(item)} variant="outline">
-                      <QrCode className="h-3 w-3 mr-1" />
-                      QR
-                    </Button>
-                  </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
+          )}
 
-        {filteredItems.length === 0 && (
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card className="bg-white/80 backdrop-blur-sm">
+              <CardContent className="p-4">
+                <div className="text-2xl font-bold text-green-600">
+                  {items.filter(item => item.status === 'available').length}
+                </div>
+                <div className="text-sm text-gray-600">Available</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-white/80 backdrop-blur-sm">
+              <CardContent className="p-4">
+                <div className="text-2xl font-bold text-yellow-600">
+                  {items.filter(item => item.status === 'reserved').length}
+                </div>
+                <div className="text-sm text-gray-600">Reserved</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-white/80 backdrop-blur-sm">
+              <CardContent className="p-4">
+                <div className="text-2xl font-bold text-blue-600">
+                  {items.filter(item => item.status === 'sold').length}
+                </div>
+                <div className="text-sm text-gray-600">Sold</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-white/80 backdrop-blur-sm">
+              <CardContent className="p-4">
+                <div className="text-2xl font-bold text-purple-600">
+                  {items.filter(item => item.status !== 'pending_approval').length}
+                </div>
+                <div className="text-sm text-gray-600">Total Items</div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Search and Filters */}
           <Card className="bg-white/80 backdrop-blur-sm">
-            <CardContent className="p-8 text-center">
-              <div className="text-gray-500">No items found matching your criteria.</div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      {/* QR Code Modal */}
-      {showQRCode && selectedItem && (
-        <QRCodeModal
-          item={selectedItem}
-          onClose={() => {
-            setShowQRCode(false);
-            setSelectedItem(null);
-          }}
-        />
-      )}
-
-      {/* Reservation Modal */}
-      {reservingItem && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className="w-full max-w-md mx-4 bg-white">
-            <CardHeader>
-              <CardTitle>Reserve Item: {reservingItem.name}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="reserved-by">Reserved by (person's name):</Label>
+            <CardContent className="p-4 space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
-                  id="reserved-by"
-                  value={reservedByName}
-                  onChange={(e) => setReservedByName(e.target.value)}
-                  placeholder="Enter person's name"
+                  placeholder="Search items..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
                 />
               </div>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={handleConfirmReservation}
-                  disabled={!reservedByName.trim()}
-                  className="flex-1"
-                >
-                  Confirm Reservation
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setReservingItem(null);
-                    setReservedByName("");
-                  }}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    <SelectItem value="bedding">Bedding</SelectItem>
+                    <SelectItem value="bathroom">Bathroom</SelectItem>
+                    <SelectItem value="decoration">Decoration</SelectItem>
+                    <SelectItem value="other_room_inventory">Other Room Inventory</SelectItem>
+                    <SelectItem value="kitchen">Kitchen</SelectItem>
+                    <SelectItem value="bike_sports">Bike & Sports</SelectItem>
+                    <SelectItem value="electronics">Electronics</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="available">Available</SelectItem>
+                    <SelectItem value="reserved">Reserved</SelectItem>
+                    <SelectItem value="sold">Sold</SelectItem>
+                    <SelectItem value="donated">Donated</SelectItem>
+                    {userRole === 'admin' && <SelectItem value="pending_approval">Pending Approval</SelectItem>}
+                  </SelectContent>
+                </Select>
+
+                <Select value={conditionFilter} onValueChange={setConditionFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Conditions" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Conditions</SelectItem>
+                    <SelectItem value="new">New</SelectItem>
+                    <SelectItem value="lightly_used">Lightly Used</SelectItem>
+                    <SelectItem value="worn">Worn</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-4">
+            {userRole !== 'buyer' && (
+              <Button 
+                onClick={() => setShowItemForm(true)}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {userRole === 'admin' ? 'Add New Item' : 'Donate Item'}
+              </Button>
+            )}
+            
+            {userRole === 'admin' && (
+              <Button 
+                onClick={handleExportToExcel}
+                variant="outline"
+                className="border-green-300 hover:bg-green-50"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export to Excel
+              </Button>
+            )}
+          </div>
+
+          {/* Items Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredItems.map((item) => {
+              const isFaded = item.status === 'sold' || item.status === 'reserved';
+              const photoData = item.photos.length > 0 ? storage.getPhoto(item.photos[0]) : null;
+              
+              return (
+                <Card key={item.id} className={`overflow-hidden bg-white/80 backdrop-blur-sm hover:shadow-lg transition-shadow ${isFaded ? 'opacity-60' : ''}`}>
+                  <CardContent className="p-4">
+                    {/* Show first photo if available */}
+                    {photoData && (
+                      <div className="mb-3">
+                        <img 
+                          src={photoData} 
+                          alt={item.name}
+                          className="w-full h-40 object-cover rounded-md"
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-start">
+                        <h3 className="font-semibold text-lg">{item.name}</h3>
+                        <Badge className={getStatusColor(item.status)}>
+                          {item.status.replace('_', ' ')}
+                        </Badge>
+                      </div>
+                      
+                      <div className="text-sm text-gray-600">
+                        {getCategoryDisplayName(item.category)} - {item.subcategory}
+                      </div>
+                      
+                      <div className="text-sm">
+                        <span className="font-medium">Qty:</span> {item.quantity} | 
+                        <span className="font-medium"> Price:</span> {item.suggested_price} SEK
+                      </div>
+                      
+                      {item.donor_name && (
+                        <div className="text-sm text-gray-600">
+                          <span className="font-medium">Donor:</span> {item.donor_name}
+                        </div>
+                      )}
+                      
+                      <div className="flex gap-2 pt-2 flex-wrap">
+                        <Button size="sm" onClick={() => handleViewItem(item)} variant="outline">
+                          <Eye className="h-3 w-3 mr-1" />
+                          View
+                        </Button>
+                        
+                        {userRole === 'admin' && (
+                          <>
+                            <Button size="sm" onClick={() => {
+                              setEditingItem(item);
+                              setShowItemForm(true);
+                            }} variant="outline">
+                              <Edit className="h-3 w-3 mr-1" />
+                              Edit
+                            </Button>
+                            
+                            {item.quantity > 1 && item.status === 'available' && (
+                              <Button size="sm" onClick={() => setSplittingItem(item)} variant="outline" className="text-purple-600">
+                                <Split className="h-3 w-3 mr-1" />
+                                Split
+                              </Button>
+                            )}
+                            
+                            <Button size="sm" onClick={() => handleReserveItem(item)} variant="outline" className="text-orange-600">
+                              <UserCheck className="h-3 w-3 mr-1" />
+                              Reserve
+                            </Button>
+                            <Button size="sm" onClick={() => handleDeleteItem(item.id)} variant="outline" className="text-red-600">
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Delete
+                            </Button>
+                          </>
+                        )}
+                        
+                        <Button size="sm" onClick={() => handleShowQRCode(item)} variant="outline">
+                          <QrCode className="h-3 w-3 mr-1" />
+                          QR
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {filteredItems.length === 0 && (
+            <Card className="bg-white/80 backdrop-blur-sm">
+              <CardContent className="p-8 text-center">
+                <div className="text-gray-500">No items found matching your criteria.</div>
+              </CardContent>
+            </Card>
+          )}
         </div>
-      )}
+
+        {/* QR Code Modal */}
+        {showQRCode && selectedItem && (
+          <QRCodeModal
+            item={selectedItem}
+            onClose={() => {
+              setShowQRCode(false);
+              setSelectedItem(null);
+            }}
+          />
+        )}
+
+        {/* Reservation Modal */}
+        {reservingItem && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <Card className="w-full max-w-md mx-4 bg-white">
+              <CardHeader>
+                <CardTitle>Reserve Item: {reservingItem.name}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="reserved-by">Reserved by (person's name):</Label>
+                  <Input
+                    id="reserved-by"
+                    value={reservedByName}
+                    onChange={(e) => setReservedByName(e.target.value)}
+                    placeholder="Enter person's name"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleConfirmReservation}
+                    disabled={!reservedByName.trim()}
+                    className="flex-1"
+                  >
+                    Confirm Reservation
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setReservingItem(null);
+                      setReservedByName("");
+                    }}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Item Split Modal */}
+        {splittingItem && (
+          <ItemSplitModal
+            item={splittingItem}
+            onSplit={handleSplitItem}
+            onClose={() => setSplittingItem(null)}
+          />
+        )}
+      </div>
     </div>
   );
 };
