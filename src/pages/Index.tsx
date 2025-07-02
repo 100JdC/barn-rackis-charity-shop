@@ -128,7 +128,14 @@ const Index = () => {
 
   // Show user management if admin requested it
   if (showUserManagement && userRole === 'admin') {
-    return <UserManagement onBack={() => setShowUserManagement(false)} />;
+    return (
+      <UserManagement 
+        onBack={() => setShowUserManagement(false)}
+        onLogout={handleLogout}
+        onHome={handleGoHome}
+        userRole={userRole}
+      />
+    );
   }
 
   const handleAddItem = async (newItem: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>, addAnother: boolean = false) => {

@@ -4,13 +4,17 @@ import { Users, Calendar, Trash2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Header } from "@/components/Header";
 import { storage, type RegisteredUser } from "@/utils/storage";
 
 interface UserManagementProps {
   onBack: () => void;
+  onLogout?: () => void;
+  onHome?: () => void;
+  userRole: string;
 }
 
-export const UserManagement = ({ onBack }: UserManagementProps) => {
+export const UserManagement = ({ onBack, onLogout, onHome, userRole }: UserManagementProps) => {
   const [users, setUsers] = useState<RegisteredUser[]>([]);
 
   useEffect(() => {
@@ -40,17 +44,12 @@ export const UserManagement = ({ onBack }: UserManagementProps) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="p-4 bg-white shadow-sm">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={onBack}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">User Management</h1>
-            <p className="text-sm text-gray-600">Manage registered donors</p>
-          </div>
-        </div>
-      </div>
+      <Header 
+        userRole={userRole}
+        onBack={onBack}
+        onLogout={onLogout}
+        onHome={onHome}
+      />
 
       <div className="p-4 space-y-6">
         <Card>
