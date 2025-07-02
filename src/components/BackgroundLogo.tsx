@@ -1,4 +1,4 @@
-// src/components/BackgroundLogo.tsx
+
 export const BackgroundLogo = () => (
   <div className="absolute inset-0 flex items-center justify-center z-0 opacity-90 pointer-events-none">
     <img
