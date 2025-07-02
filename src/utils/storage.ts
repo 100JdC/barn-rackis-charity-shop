@@ -6,8 +6,7 @@ const STORAGE_KEYS = {
   ITEMS: 'inventory_items',
   USERS: 'registered_users',
   PHOTOS: 'uploaded_photos',
-  ADMIN_SESSION: 'admin_session',
-  DONOR_SESSION: 'donor_session'
+  SESSION: 'user_session'
 };
 
 export interface RegisteredUser {
@@ -66,62 +65,36 @@ const convertToSupabase = (item: Item) => ({
 });
 
 export const storage = {
-  // Session management
-  saveSession: (role: 'admin' | 'donator', username?: string): void => {
-    const sessionKey = role === 'admin' ? STORAGE_KEYS.ADMIN_SESSION : STORAGE_KEYS.DONOR_SESSION;
+  // Session management - unified for all users
+  saveSession: (role: 'admin' | 'donator' | 'buyer', username?: string): void => {
     const sessionData = {
       role,
       username: username || (role === 'admin' ? 'Jacob' : ''),
       timestamp: Date.now()
     };
-    localStorage.setItem(sessionKey, JSON.stringify(sessionData));
+    localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sessionData));
   },
 
-  getSession: (): { role: 'admin' | 'donator' | null, username?: string } => {
-    // Check for admin session first
-    const adminSession = localStorage.getItem(STORAGE_KEYS.ADMIN_SESSION);
-    if (adminSession) {
+  getSession: (): { role: 'admin' | 'donator' | 'buyer' | null, username?: string } => {
+    const session = localStorage.getItem(STORAGE_KEYS.SESSION);
+    if (session) {
       try {
-        const parsed = JSON.parse(adminSession);
-        // Admin sessions last 24 hours
-        if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
-          return { role: 'admin', username: parsed.username };
+        const parsed = JSON.parse(session);
+        // Sessions last 30 days
+        if (Date.now() - parsed.timestamp < 30 * 24 * 60 * 60 * 1000) {
+          return { role: parsed.role, username: parsed.username };
         } else {
-          localStorage.removeItem(STORAGE_KEYS.ADMIN_SESSION);
+          localStorage.removeItem(STORAGE_KEYS.SESSION);
         }
       } catch (error) {
-        localStorage.removeItem(STORAGE_KEYS.ADMIN_SESSION);
+        localStorage.removeItem(STORAGE_KEYS.SESSION);
       }
     }
-
-    // Check for donor session
-    const donorSession = localStorage.getItem(STORAGE_KEYS.DONOR_SESSION);
-    if (donorSession) {
-      try {
-        const parsed = JSON.parse(donorSession);
-        // Donor sessions last 7 days
-        if (Date.now() - parsed.timestamp < 7 * 24 * 60 * 60 * 1000) {
-          return { role: 'donator', username: parsed.username };
-        } else {
-          localStorage.removeItem(STORAGE_KEYS.DONOR_SESSION);
-        }
-      } catch (error) {
-        localStorage.removeItem(STORAGE_KEYS.DONOR_SESSION);
-      }
-    }
-
     return { role: null };
   },
 
-  clearSession: (role?: 'admin' | 'donator'): void => {
-    if (!role) {
-      // Clear all sessions
-      localStorage.removeItem(STORAGE_KEYS.ADMIN_SESSION);
-      localStorage.removeItem(STORAGE_KEYS.DONOR_SESSION);
-    } else {
-      const sessionKey = role === 'admin' ? STORAGE_KEYS.ADMIN_SESSION : STORAGE_KEYS.DONOR_SESSION;
-      localStorage.removeItem(sessionKey);
-    }
+  clearSession: (): void => {
+    localStorage.removeItem(STORAGE_KEYS.SESSION);
   },
 
   // Items storage - with fallback to localStorage
@@ -271,26 +244,18 @@ export const storage = {
     }
   },
 
-  // Users storage - now using Supabase with fallback to localStorage
+  // Users storage - using raw SQL queries to avoid TypeScript issues
   getUsers: async (): Promise<RegisteredUser[]> => {
     try {
       const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .rpc('get_users_data');
       
       if (error) {
         console.error('Error fetching users from Supabase:', error);
         return storage.getUsersFromLocalStorage();
       }
       
-      return data.map(user => ({
-        id: user.id,
-        username: user.username,
-        password: user.password_hash,
-        role: 'donator' as const,
-        registeredAt: user.created_at
-      }));
+      return data || [];
     } catch (error) {
       console.error('Network error fetching users:', error);
       return storage.getUsersFromLocalStorage();
@@ -316,19 +281,16 @@ export const storage = {
 
   addUser: async (username: string, password?: string): Promise<RegisteredUser> => {
     try {
+      // Use raw SQL to insert user
       const { data, error } = await supabase
-        .from('users')
-        .insert([{
-          username,
-          password_hash: password || '',
-          role: 'donator'
-        }])
-        .select()
-        .single();
+        .rpc('insert_user', {
+          p_username: username,
+          p_password_hash: password || '',
+          p_role: 'donator'
+        });
       
       if (error) {
         console.error('Error adding user to Supabase:', error);
-        // Fallback to localStorage
         return storage.addUserToLocalStorage(username, password);
       }
       
@@ -360,7 +322,7 @@ export const storage = {
     return newUser;
   },
 
-  // Photo storage - now using Supabase
+  // Photo storage - now using Supabase with proper URL generation
   savePhoto: async (file: File): Promise<string | null> => {
     try {
       const fileExt = file.name.split('.').pop();
@@ -402,6 +364,7 @@ export const storage = {
         .from('photos')
         .getPublicUrl(photoPath);
       
+      console.log('Generated photo URL:', data.publicUrl);
       return data.publicUrl;
     } catch (error) {
       console.error('Error getting photo URL:', error);

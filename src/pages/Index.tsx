@@ -106,6 +106,18 @@ const Index = () => {
     };
   }, [items]);
 
+  // Check for existing session and redirect to donation if they click "Here you can donate"
+  const handleDonateClick = () => {
+    const session = storage.getSession();
+    if (session.role === 'donator' || session.role === 'admin') {
+      // Already logged in as donor or admin, go to donation form
+      setShowItemForm(true);
+    } else {
+      // Need to login first
+      setUserRole(null);
+    }
+  };
+
   // Show login form if user is not logged in
   if (!userRole) {
     return <LoginForm onLogin={(role, username) => {
@@ -605,6 +617,10 @@ const Index = () => {
                           src={photoUrl} 
                           alt={item.name}
                           className="w-full h-40 object-cover rounded-md"
+                          onError={(e) => {
+                            console.error('Failed to load image:', photoUrl);
+                            e.currentTarget.style.display = 'none';
+                          }}
                         />
                       </div>
                     )}
