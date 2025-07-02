@@ -38,7 +38,7 @@ const Index = () => {
   const [reservedByName, setReservedByName] = useState("");
   const [splittingItem, setSplittingItem] = useState<Item | null>(null);
 
-  // Load items from Supabase on component mount
+  // Load items with better error handling
   useEffect(() => {
     const loadItems = async () => {
       setLoading(true);
@@ -50,7 +50,16 @@ const Index = () => {
         setItems(supabaseItems);
       } catch (err) {
         console.error('Failed to load items:', err);
-        setError('Failed to load items. Please check your connection.');
+        setError('Failed to load items. Using offline mode.');
+        // Try to load from localStorage as fallback
+        try {
+          const fallbackItems = storage.getItemsFromLocalStorage();
+          setItems(fallbackItems);
+          console.log('Loaded items from localStorage fallback:', fallbackItems.length);
+        } catch (fallbackErr) {
+          console.error('Even localStorage fallback failed:', fallbackErr);
+          setItems([]); // Empty state as last resort
+        }
       } finally {
         setLoading(false);
       }
@@ -284,18 +293,30 @@ const Index = () => {
     );
   }
 
-  // Show error state
+  // Show error state with option to continue
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#1733a7' }}>
-        <div className="text-white text-center">
-          <div className="text-xl mb-4">Error: {error}</div>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="bg-white text-blue-600 px-4 py-2 rounded hover:bg-gray-100"
-          >
-            Retry
-          </button>
+        <div className="text-white text-center max-w-md">
+          <div className="text-xl mb-4">⚠️ Connection Issue</div>
+          <div className="text-sm mb-4">{error}</div>
+          <div className="space-y-2">
+            <button 
+              onClick={() => window.location.reload()} 
+              className="bg-white text-blue-600 px-4 py-2 rounded hover:bg-gray-100 mr-2"
+            >
+              Retry Connection
+            </button>
+            <button 
+              onClick={() => setError(null)} 
+              className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
+            >
+              Continue Offline
+            </button>
+          </div>
+          <div className="text-xs mt-4 text-gray-300">
+            Offline mode uses local storage. Changes won't sync until connection is restored.
+          </div>
         </div>
       </div>
     );
