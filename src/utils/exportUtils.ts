@@ -1,7 +1,11 @@
+
 import * as XLSX from 'xlsx';
 import type { Item } from '@/types/item';
 
 export const exportItemsToExcel = (items: Item[]) => {
+  // Calculate sold items count
+  const soldItemsCount = items.filter(item => item.status === 'sold').length;
+  
   // Transform items data for Excel export
   const excelData = items.map(item => ({
     'Item ID': item.id,
@@ -26,9 +30,36 @@ export const exportItemsToExcel = (items: Item[]) => {
     'Photos Count': item.photos.length
   }));
 
+  // Add summary row at the beginning
+  const summaryData = [{
+    'Item ID': 'SUMMARY',
+    'Name': `Total Items: ${items.length}`,
+    'Description': `Sold Items: ${soldItemsCount}`,
+    'Category': `Available: ${items.filter(i => i.status === 'available').length}`,
+    'Subcategory': `Reserved: ${items.filter(i => i.status === 'reserved').length}`,
+    'Condition': '',
+    'Quantity': '',
+    'Original Price (SEK)': '',
+    'Suggested Price (SEK)': '',
+    'Final Price (SEK)': '',
+    'Status': '',
+    'Reserved By': '',
+    'Location': '',
+    'Internal Notes': '',
+    'Donor Name': '',
+    'Created By': '',
+    'Updated By': '',
+    'Created At': '',
+    'Updated At': '',
+    'Photos Count': ''
+  }, {}]; // Empty row for separation
+
+  // Combine summary and items data
+  const allData = [...summaryData, ...excelData];
+
   // Create workbook and worksheet
   const workbook = XLSX.utils.book_new();
-  const worksheet = XLSX.utils.json_to_sheet(excelData);
+  const worksheet = XLSX.utils.json_to_sheet(allData);
 
   // Auto-size columns
   const colWidths = Object.keys(excelData[0] || {}).map(key => ({

@@ -19,19 +19,21 @@ export const storage = {
   // Items storage - now using Supabase
   getItems: async (): Promise<Item[]> => {
     try {
+      console.log('Fetching items from Supabase...');
       const { data, error } = await supabase
         .from('Item inventory')
         .select('*')
         .order('created_at', { ascending: false });
       
       if (error) {
-        console.error('Error fetching items:', error);
+        console.error('Supabase error fetching items:', error);
         return [];
       }
       
+      console.log('Successfully fetched items:', data?.length || 0);
       return data || [];
     } catch (error) {
-      console.error('Error fetching items:', error);
+      console.error('Network error fetching items:', error);
       return [];
     }
   },

@@ -21,6 +21,7 @@ import type { Item, UserRole } from "@/types/item";
 const Index = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -41,9 +42,18 @@ const Index = () => {
   useEffect(() => {
     const loadItems = async () => {
       setLoading(true);
-      const supabaseItems = await storage.getItems();
-      setItems(supabaseItems);
-      setLoading(false);
+      setError(null);
+      try {
+        console.log('Loading items...');
+        const supabaseItems = await storage.getItems();
+        console.log('Items loaded:', supabaseItems.length);
+        setItems(supabaseItems);
+      } catch (err) {
+        console.error('Failed to load items:', err);
+        setError('Failed to load items. Please check your connection.');
+      } finally {
+        setLoading(false);
+      }
     };
     
     loadItems();
@@ -270,6 +280,23 @@ const Index = () => {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#1733a7' }}>
         <div className="text-white text-xl">Loading inventory...</div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#1733a7' }}>
+        <div className="text-white text-center">
+          <div className="text-xl mb-4">Error: {error}</div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-white text-blue-600 px-4 py-2 rounded hover:bg-gray-100"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
