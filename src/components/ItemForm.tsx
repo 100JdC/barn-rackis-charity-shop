@@ -176,7 +176,7 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
       onSubmit(finalItemData, addAnother);
       
       if (addAnother) {
-        // Reset form for next item but keep some fields
+        // Reset form for next item but keep some fields - DON'T clear photos immediately
         setFormData(prev => ({
           ...prev,
           name: '',
@@ -185,10 +185,18 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
           original_price: 0,
           suggested_price: 0,
           final_price: undefined,
-          photos: [],
+          // Keep photos for a moment, then clear after a short delay to allow saving
           custom_location: '',
           donor_name: currentUsername || '',
         }));
+        
+        // Clear photos after a short delay to ensure they're saved first
+        setTimeout(() => {
+          setFormData(prev => ({
+            ...prev,
+            photos: []
+          }));
+        }, 1000);
       }
     }
   };
