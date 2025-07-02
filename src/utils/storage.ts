@@ -1,5 +1,5 @@
 
-import { supabase } from './supabase';
+import { supabase } from '@/integrations/supabase/client';
 import type { Item } from "@/types/item";
 
 const STORAGE_KEYS = {
@@ -16,23 +16,63 @@ export interface RegisteredUser {
   registeredAt: string;
 }
 
+// Helper functions to convert between Item type and Supabase table format
+const convertFromSupabase = (dbItem: any): Item => ({
+  id: dbItem['Item ID'].toString(),
+  name: dbItem.Name || '',
+  description: dbItem.Description || '',
+  category: dbItem.Category || 'other',
+  subcategory: dbItem.Subcategory || '',
+  condition: dbItem.Condition || 'new',
+  quantity: dbItem.Quantity || 0,
+  original_price: dbItem['Original Price (SEK)'] || 0,
+  suggested_price: parseFloat(dbItem['Suggested Price (SEK)'] || '0'),
+  final_price: parseFloat(dbItem['Final Price (SEK)'] || '0') || undefined,
+  status: dbItem.Status || 'available',
+  reserved_by: dbItem['Reserved By'] || '',
+  location: dbItem.Location || '',
+  internal_notes: dbItem['Internal Notes'] || '',
+  donor_name: dbItem['Donor Name'] || '',
+  created_by: dbItem['Created By'] || '',
+  updated_by: dbItem['Updated By'] || '',
+  created_at: dbItem['Created At'] || new Date().toISOString(),
+  updated_at: dbItem['Updated At'] || new Date().toISOString(),
+  photos: [] // Photos will need separate handling
+});
+
+const convertToSupabase = (item: Item) => ({
+  'Item ID': parseInt(item.id),
+  'Name': item.name,
+  'Description': item.description || '',
+  'Category': item.category,
+  'Subcategory': item.subcategory,
+  'Condition': item.condition,
+  'Quantity': item.quantity,
+  'Original Price (SEK)': item.original_price,
+  'Suggested Price (SEK)': item.suggested_price.toString(),
+  'Final Price (SEK)': item.final_price?.toString() || null,
+  'Status': item.status,
+  'Reserved By': item.reserved_by || '',
+  'Location': item.location || '',
+  'Internal Notes': item.internal_notes || '',
+  'Donor Name': item.donor_name || '',
+  'Created By': item.created_by,
+  'Updated By': item.updated_by,
+  'Created At': item.created_at,
+  'Updated At': item.updated_at,
+  'Photos Count': item.photos.length
+});
+
 export const storage = {
   // Items storage - with fallback to localStorage
   getItems: async (): Promise<Item[]> => {
     try {
       console.log('Fetching items from Supabase...');
       
-      // Check if Supabase is properly configured
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      if (!supabaseUrl || supabaseUrl.includes('dummy')) {
-        console.warn('Supabase not configured, falling back to localStorage');
-        return storage.getItemsFromLocalStorage();
-      }
-      
       const { data, error } = await supabase
         .from('Item inventory')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('Created At', { ascending: false });
       
       if (error) {
         console.error('Supabase error fetching items:', error);
@@ -41,7 +81,7 @@ export const storage = {
       }
       
       console.log('Successfully fetched items from Supabase:', data?.length || 0);
-      return data || [];
+      return data ? data.map(convertFromSupabase) : [];
     } catch (error) {
       console.error('Network error fetching items:', error);
       console.log('Falling back to localStorage...');
@@ -76,18 +116,11 @@ export const storage = {
 
   addItem: async (item: Item): Promise<Item | null> => {
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      if (!supabaseUrl || supabaseUrl.includes('dummy')) {
-        // Fallback to localStorage
-        const items = storage.getItemsFromLocalStorage();
-        const newItems = [item, ...items];
-        storage.setItemsToLocalStorage(newItems);
-        return item;
-      }
-
+      const supabaseData = convertToSupabase(item);
+      
       const { data, error } = await supabase
         .from('Item inventory')
-        .insert([item])
+        .insert([supabaseData])
         .select()
         .single();
       
@@ -100,7 +133,7 @@ export const storage = {
         return item;
       }
       
-      return data;
+      return convertFromSupabase(data);
     } catch (error) {
       console.error('Error adding item:', error);
       // Fallback to localStorage
@@ -113,21 +146,31 @@ export const storage = {
 
   updateItem: async (id: string, updates: Partial<Item>): Promise<Item | null> => {
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      if (!supabaseUrl || supabaseUrl.includes('dummy')) {
-        // Fallback to localStorage
-        const items = storage.getItemsFromLocalStorage();
-        const updatedItems = items.map(item => 
-          item.id === id ? { ...item, ...updates } : item
-        );
-        storage.setItemsToLocalStorage(updatedItems);
-        return updatedItems.find(item => item.id === id) || null;
-      }
+      // Convert updates to Supabase format
+      const supabaseUpdates: any = {};
+      if (updates.name !== undefined) supabaseUpdates['Name'] = updates.name;
+      if (updates.description !== undefined) supabaseUpdates['Description'] = updates.description;
+      if (updates.category !== undefined) supabaseUpdates['Category'] = updates.category;
+      if (updates.subcategory !== undefined) supabaseUpdates['Subcategory'] = updates.subcategory;
+      if (updates.condition !== undefined) supabaseUpdates['Condition'] = updates.condition;
+      if (updates.quantity !== undefined) supabaseUpdates['Quantity'] = updates.quantity;
+      if (updates.original_price !== undefined) supabaseUpdates['Original Price (SEK)'] = updates.original_price;
+      if (updates.suggested_price !== undefined) supabaseUpdates['Suggested Price (SEK)'] = updates.suggested_price;
+      if (updates.final_price !== undefined) supabaseUpdates['Final Price (SEK)'] = updates.final_price;
+      if (updates.status !== undefined) supabaseUpdates['Status'] = updates.status;
+      if (updates.reserved_by !== undefined) supabaseUpdates['Reserved By'] = updates.reserved_by;
+      if (updates.location !== undefined) supabaseUpdates['Location'] = updates.location;
+      if (updates.internal_notes !== undefined) supabaseUpdates['Internal Notes'] = updates.internal_notes;
+      if (updates.donor_name !== undefined) supabaseUpdates['Donor Name'] = updates.donor_name;
+      if (updates.updated_by !== undefined) supabaseUpdates['Updated By'] = updates.updated_by;
+      if (updates.photos !== undefined) supabaseUpdates['Photos Count'] = updates.photos.length;
+      
+      supabaseUpdates['Updated At'] = new Date().toISOString();
 
       const { data, error } = await supabase
         .from('Item inventory')
-        .update(updates)
-        .eq('id', id)
+        .update(supabaseUpdates)
+        .eq('Item ID', parseInt(id))
         .select()
         .single();
       
@@ -142,7 +185,7 @@ export const storage = {
         return updatedItems.find(item => item.id === id) || null;
       }
       
-      return data;
+      return convertFromSupabase(data);
     } catch (error) {
       console.error('Error updating item:', error);
       return null;
@@ -151,19 +194,10 @@ export const storage = {
 
   deleteItem: async (id: string): Promise<boolean> => {
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      if (!supabaseUrl || supabaseUrl.includes('dummy')) {
-        // Fallback to localStorage
-        const items = storage.getItemsFromLocalStorage();
-        const filteredItems = items.filter(item => item.id !== id);
-        storage.setItemsToLocalStorage(filteredItems);
-        return true;
-      }
-
       const { error } = await supabase
         .from('Item inventory')
         .delete()
-        .eq('id', id);
+        .eq('Item ID', parseInt(id));
       
       if (error) {
         console.error('Error deleting item:', error);
@@ -210,24 +244,9 @@ export const storage = {
     return newUser;
   },
 
-  // Photo storage - fallback to localStorage for now
+  // Photo storage - now using Supabase
   savePhoto: async (file: File): Promise<string | null> => {
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      if (!supabaseUrl || supabaseUrl.includes('dummy')) {
-        // Fallback: convert to base64 and store reference
-        return new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const base64 = reader.result as string;
-            const photoId = Date.now().toString();
-            localStorage.setItem(`photo_${photoId}`, base64);
-            resolve(photoId);
-          };
-          reader.readAsDataURL(file);
-        });
-      }
-
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
       
@@ -260,13 +279,6 @@ export const storage = {
     if (!photoPath) return null;
     
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      if (!supabaseUrl || supabaseUrl.includes('dummy')) {
-        // Fallback: get from localStorage
-        const base64 = localStorage.getItem(`photo_${photoPath}`);
-        return base64 || null;
-      }
-
       const { data } = supabase.storage
         .from('photos')
         .getPublicUrl(photoPath);
@@ -280,13 +292,6 @@ export const storage = {
 
   deletePhoto: async (photoPath: string): Promise<boolean> => {
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      if (!supabaseUrl || supabaseUrl.includes('dummy')) {
-        // Fallback: remove from localStorage
-        localStorage.removeItem(`photo_${photoPath}`);
-        return true;
-      }
-
       const { error } = await supabase.storage
         .from('photos')
         .remove([photoPath]);
