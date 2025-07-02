@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,21 +18,37 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  // Check for existing session on mount
+  useEffect(() => {
+    const session = storage.getSession();
+    if (session.role) {
+      onLogin(session.role, session.username);
+    }
+  }, [onLogin]);
+
   const handleAdminSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (username === "Jacob" && password === "Rackis") {
+      storage.saveSession('admin', username);
       onLogin('admin');
     } else {
       setError("Invalid admin credentials");
     }
   };
 
-  const handleDonorRegister = (donorUsername: string, donorPassword: string) => {
-    storage.addUser(donorUsername, donorPassword);
-    onLogin('donator', donorUsername);
+  const handleDonorRegister = async (donorUsername: string, donorPassword: string) => {
+    try {
+      await storage.addUser(donorUsername, donorPassword);
+      storage.saveSession('donator', donorUsername);
+      onLogin('donator', donorUsername);
+    } catch (error) {
+      console.error('Error registering user:', error);
+      setError('Registration failed. Please try again.');
+    }
   };
 
   const handleDonorLogin = (donorUsername: string) => {
+    storage.saveSession('donator', donorUsername);
     onLogin('donator', donorUsername);
   };
 

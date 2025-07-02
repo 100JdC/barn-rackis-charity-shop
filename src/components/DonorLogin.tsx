@@ -16,8 +16,9 @@ export const DonorLogin = ({ onLogin, onBack }: DonorLoginProps) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!username.trim() || !password.trim()) {
@@ -25,21 +26,31 @@ export const DonorLogin = ({ onLogin, onBack }: DonorLoginProps) => {
       return;
     }
 
-    // Check if user exists and password matches
-    const users = storage.getUsers();
-    const user = users.find(u => u.username.toLowerCase() === username.trim().toLowerCase());
-    
-    if (!user) {
-      setError("User not found. Please register first.");
-      return;
-    }
+    setLoading(true);
+    setError("");
 
-    if (!user.password || user.password !== password) {
-      setError("Invalid password");
-      return;
+    try {
+      // Check if user exists and password matches
+      const users = await storage.getUsers();
+      const user = users.find(u => u.username.toLowerCase() === username.trim().toLowerCase());
+      
+      if (!user) {
+        setError("User not found. Please register first.");
+        return;
+      }
+
+      if (!user.password || user.password !== password) {
+        setError("Invalid password");
+        return;
+      }
+      
+      onLogin(username.trim());
+    } catch (error) {
+      console.error('Login error:', error);
+      setError("Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    
-    onLogin(username.trim());
   };
 
   return (
@@ -58,6 +69,7 @@ export const DonorLogin = ({ onLogin, onBack }: DonorLoginProps) => {
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 placeholder="Enter your username"
+                disabled={loading}
               />
             </div>
             
@@ -70,6 +82,7 @@ export const DonorLogin = ({ onLogin, onBack }: DonorLoginProps) => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="Enter your password"
+                disabled={loading}
               />
             </div>
 
@@ -77,8 +90,13 @@ export const DonorLogin = ({ onLogin, onBack }: DonorLoginProps) => {
               <div className="text-red-600 text-sm">{error}</div>
             )}
 
-            <Button type="submit" className="w-full" style={{ backgroundColor: '#1733a7' }}>
-              Login as Donor
+            <Button 
+              type="submit" 
+              className="w-full" 
+              style={{ backgroundColor: '#1733a7' }}
+              disabled={loading}
+            >
+              {loading ? 'Logging in...' : 'Login as Donor'}
             </Button>
           </form>
           
@@ -87,6 +105,7 @@ export const DonorLogin = ({ onLogin, onBack }: DonorLoginProps) => {
             onClick={onBack}
             className="w-full"
             style={{ borderColor: '#1733a7', color: '#1733a7' }}
+            disabled={loading}
           >
             Back to Donor Options
           </Button>

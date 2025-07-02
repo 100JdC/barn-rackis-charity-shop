@@ -5,7 +5,9 @@ import type { Item } from "@/types/item";
 const STORAGE_KEYS = {
   ITEMS: 'inventory_items',
   USERS: 'registered_users',
-  PHOTOS: 'uploaded_photos'
+  PHOTOS: 'uploaded_photos',
+  ADMIN_SESSION: 'admin_session',
+  DONOR_SESSION: 'donor_session'
 };
 
 export interface RegisteredUser {
@@ -64,6 +66,64 @@ const convertToSupabase = (item: Item) => ({
 });
 
 export const storage = {
+  // Session management
+  saveSession: (role: 'admin' | 'donator', username?: string): void => {
+    const sessionKey = role === 'admin' ? STORAGE_KEYS.ADMIN_SESSION : STORAGE_KEYS.DONOR_SESSION;
+    const sessionData = {
+      role,
+      username: username || (role === 'admin' ? 'Jacob' : ''),
+      timestamp: Date.now()
+    };
+    localStorage.setItem(sessionKey, JSON.stringify(sessionData));
+  },
+
+  getSession: (): { role: 'admin' | 'donator' | null, username?: string } => {
+    // Check for admin session first
+    const adminSession = localStorage.getItem(STORAGE_KEYS.ADMIN_SESSION);
+    if (adminSession) {
+      try {
+        const parsed = JSON.parse(adminSession);
+        // Admin sessions last 24 hours
+        if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
+          return { role: 'admin', username: parsed.username };
+        } else {
+          localStorage.removeItem(STORAGE_KEYS.ADMIN_SESSION);
+        }
+      } catch (error) {
+        localStorage.removeItem(STORAGE_KEYS.ADMIN_SESSION);
+      }
+    }
+
+    // Check for donor session
+    const donorSession = localStorage.getItem(STORAGE_KEYS.DONOR_SESSION);
+    if (donorSession) {
+      try {
+        const parsed = JSON.parse(donorSession);
+        // Donor sessions last 7 days
+        if (Date.now() - parsed.timestamp < 7 * 24 * 60 * 60 * 1000) {
+          return { role: 'donator', username: parsed.username };
+        } else {
+          localStorage.removeItem(STORAGE_KEYS.DONOR_SESSION);
+        }
+      } catch (error) {
+        localStorage.removeItem(STORAGE_KEYS.DONOR_SESSION);
+      }
+    }
+
+    return { role: null };
+  },
+
+  clearSession: (role?: 'admin' | 'donator'): void => {
+    if (!role) {
+      // Clear all sessions
+      localStorage.removeItem(STORAGE_KEYS.ADMIN_SESSION);
+      localStorage.removeItem(STORAGE_KEYS.DONOR_SESSION);
+    } else {
+      const sessionKey = role === 'admin' ? STORAGE_KEYS.ADMIN_SESSION : STORAGE_KEYS.DONOR_SESSION;
+      localStorage.removeItem(sessionKey);
+    }
+  },
+
   // Items storage - with fallback to localStorage
   getItems: async (): Promise<Item[]> => {
     try {
@@ -211,8 +271,33 @@ export const storage = {
     }
   },
 
-  // Users storage - keeping localStorage for now (can be migrated later)
-  getUsers: (): RegisteredUser[] => {
+  // Users storage - now using Supabase with fallback to localStorage
+  getUsers: async (): Promise<RegisteredUser[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching users from Supabase:', error);
+        return storage.getUsersFromLocalStorage();
+      }
+      
+      return data.map(user => ({
+        id: user.id,
+        username: user.username,
+        password: user.password_hash,
+        role: 'donator' as const,
+        registeredAt: user.created_at
+      }));
+    } catch (error) {
+      console.error('Network error fetching users:', error);
+      return storage.getUsersFromLocalStorage();
+    }
+  },
+
+  getUsersFromLocalStorage: (): RegisteredUser[] => {
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.USERS);
       return stored ? JSON.parse(stored) : [];
@@ -229,8 +314,39 @@ export const storage = {
     }
   },
 
-  addUser: (username: string, password?: string): RegisteredUser => {
-    const users = storage.getUsers();
+  addUser: async (username: string, password?: string): Promise<RegisteredUser> => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .insert([{
+          username,
+          password_hash: password || '',
+          role: 'donator'
+        }])
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error adding user to Supabase:', error);
+        // Fallback to localStorage
+        return storage.addUserToLocalStorage(username, password);
+      }
+      
+      return {
+        id: data.id,
+        username: data.username,
+        password: data.password_hash,
+        role: 'donator',
+        registeredAt: data.created_at
+      };
+    } catch (error) {
+      console.error('Network error adding user:', error);
+      return storage.addUserToLocalStorage(username, password);
+    }
+  },
+
+  addUserToLocalStorage: (username: string, password?: string): RegisteredUser => {
+    const users = storage.getUsersFromLocalStorage();
     const newUser: RegisteredUser = {
       id: Date.now().toString(),
       username,
@@ -250,6 +366,8 @@ export const storage = {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
       
+      console.log('Uploading photo to Supabase:', fileName);
+      
       const { data, error } = await supabase.storage
         .from('photos')
         .upload(fileName, file, {
@@ -262,6 +380,7 @@ export const storage = {
         return null;
       }
       
+      console.log('Photo uploaded successfully:', data.path);
       return data.path;
     } catch (error) {
       console.error('Error uploading photo:', error);

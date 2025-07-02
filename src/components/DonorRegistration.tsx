@@ -16,8 +16,9 @@ export const DonorRegistration = ({ onRegister, onBack }: DonorRegistrationProps
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!username.trim()) {
@@ -30,17 +31,24 @@ export const DonorRegistration = ({ onRegister, onBack }: DonorRegistrationProps
       return;
     }
 
-    // Check if username already exists
-    const existingUsers = storage.getUsers();
-    if (existingUsers.some(user => user.username.toLowerCase() === username.trim().toLowerCase())) {
-      setError("Username already exists");
-      return;
+    setLoading(true);
+    setError("");
+
+    try {
+      // Check if username already exists
+      const existingUsers = await storage.getUsers();
+      if (existingUsers.some(user => user.username.toLowerCase() === username.trim().toLowerCase())) {
+        setError("Username already exists");
+        return;
+      }
+      
+      onRegister(username.trim(), password);
+    } catch (error) {
+      console.error('Registration error:', error);
+      setError("Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    
-    // Save user with password to storage
-    storage.addUser(username.trim(), password);
-    
-    onRegister(username.trim(), password);
   };
 
   return (
@@ -59,6 +67,7 @@ export const DonorRegistration = ({ onRegister, onBack }: DonorRegistrationProps
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 placeholder="Choose a username"
+                disabled={loading}
               />
             </div>
             
@@ -71,6 +80,7 @@ export const DonorRegistration = ({ onRegister, onBack }: DonorRegistrationProps
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="Choose a password"
+                disabled={loading}
               />
               <p className="text-sm text-gray-600 mt-1">
                 For safety reasons, please use a random, non-secret password
@@ -81,8 +91,13 @@ export const DonorRegistration = ({ onRegister, onBack }: DonorRegistrationProps
               <div className="text-red-600 text-sm">{error}</div>
             )}
 
-            <Button type="submit" className="w-full" style={{ backgroundColor: '#1733a7' }}>
-              Register as Donor
+            <Button 
+              type="submit" 
+              className="w-full" 
+              style={{ backgroundColor: '#1733a7' }}
+              disabled={loading}
+            >
+              {loading ? 'Registering...' : 'Register as Donor'}
             </Button>
           </form>
           
@@ -91,6 +106,7 @@ export const DonorRegistration = ({ onRegister, onBack }: DonorRegistrationProps
             onClick={onBack}
             className="w-full"
             style={{ borderColor: '#1733a7', color: '#1733a7' }}
+            disabled={loading}
           >
             Back to Login Options
           </Button>
