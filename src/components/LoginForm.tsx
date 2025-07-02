@@ -197,7 +197,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
       <div className="relative flex items-center justify-center min-h-screen p-4">
         <Card className="w-full max-w-2xl bg-white/5 backdrop-blur-sm shadow-xl border-white/10">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl text-white mb-4">👋 Welcome to Rackis for Barn!</CardTitle>
+            <CardTitle className="text-3xl text-white mb-4"> Welcome to Rackis for Barn!</CardTitle>
             <div className="text-lg text-white/90 space-y-3 leading-relaxed">
               <p>A platform for students in Uppsala to exchange second-hand items during move-ins and move-outs.</p>
               <p>We collect useful items from outgoing students and sell them at fair prices to new tenants.</p>
