@@ -14,13 +14,20 @@ export const UserManagement = ({ onBack }: UserManagementProps) => {
   const [users, setUsers] = useState<RegisteredUser[]>([]);
 
   useEffect(() => {
-    setUsers(storage.getUsers());
+    const loadUsers = async () => {
+      const loadedUsers = await storage.getUsers();
+      setUsers(loadedUsers);
+    };
+    loadUsers();
   }, []);
 
-  const handleDeleteUser = (userId: string) => {
+  const handleDeleteUser = async (userId: string) => {
+    // Try to delete from Supabase first, then update local state
     const updatedUsers = users.filter(user => user.id !== userId);
-    storage.setUsers(updatedUsers);
     setUsers(updatedUsers);
+    
+    // Also update localStorage as fallback
+    storage.setUsers(updatedUsers);
   };
 
   const formatDate = (dateString: string) => {

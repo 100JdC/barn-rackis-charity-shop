@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import type { Item } from "@/types/item";
 
@@ -244,18 +243,29 @@ export const storage = {
     }
   },
 
-  // Users storage - using raw SQL queries to avoid TypeScript issues
+  // Users storage - simplified without RPC calls
   getUsers: async (): Promise<RegisteredUser[]> => {
     try {
+      console.log('Fetching users from Supabase...');
+      
       const { data, error } = await supabase
-        .rpc('get_users_data');
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error('Error fetching users from Supabase:', error);
         return storage.getUsersFromLocalStorage();
       }
       
-      return data || [];
+      console.log('Successfully fetched users from Supabase:', data?.length || 0);
+      return data ? data.map(user => ({
+        id: user.id,
+        username: user.username,
+        password: user.password_hash,
+        role: 'donator' as const,
+        registeredAt: user.created_at
+      })) : [];
     } catch (error) {
       console.error('Network error fetching users:', error);
       return storage.getUsersFromLocalStorage();
@@ -281,13 +291,15 @@ export const storage = {
 
   addUser: async (username: string, password?: string): Promise<RegisteredUser> => {
     try {
-      // Use raw SQL to insert user
       const { data, error } = await supabase
-        .rpc('insert_user', {
-          p_username: username,
-          p_password_hash: password || '',
-          p_role: 'donator'
-        });
+        .from('users')
+        .insert([{
+          username: username,
+          password_hash: password || '',
+          role: 'donator'
+        }])
+        .select()
+        .single();
       
       if (error) {
         console.error('Error adding user to Supabase:', error);
@@ -364,8 +376,8 @@ export const storage = {
         .from('photos')
         .getPublicUrl(photoPath);
       
-      console.log('Generated photo URL:', data.publicUrl);
-      return data.publicUrl;
+      console.log('Generated photo URL:', data?.publicUrl);
+      return data?.publicUrl || null;
     } catch (error) {
       console.error('Error getting photo URL:', error);
       return null;
