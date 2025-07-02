@@ -17,6 +17,7 @@ import { ItemSplitModal } from "@/components/ItemSplitModal";
 import { storage } from "@/utils/storage";
 import { exportItemsToExcel } from "@/utils/exportUtils";
 import type { Item, UserRole } from "@/types/item";
+import { ThankYouAnimation } from "@/components/ThankYouAnimation";
 
 const Index = () => {
   const [items, setItems] = useState<Item[]>([]);
@@ -37,6 +38,7 @@ const Index = () => {
   const [reservingItem, setReservingItem] = useState<Item | null>(null);
   const [reservedByName, setReservedByName] = useState("");
   const [splittingItem, setSplittingItem] = useState<Item | null>(null);
+  const [showThankYou, setShowThankYou] = useState(false);
 
   // Load items with better error handling
   useEffect(() => {
@@ -168,6 +170,11 @@ const Index = () => {
     
     if (!addAnother) {
       setShowItemForm(false);
+      
+      // Show thank you animation for donations (non-admin users)
+      if (userRole === 'donator') {
+        setShowThankYou(true);
+      }
     }
   };
 
@@ -783,6 +790,12 @@ const Index = () => {
             onClose={() => setSplittingItem(null)}
           />
         )}
+
+        {/* Thank You Animation */}
+        <ThankYouAnimation 
+          isVisible={showThankYou}
+          onComplete={() => setShowThankYou(false)}
+        />
       </div>
     </div>
   );
