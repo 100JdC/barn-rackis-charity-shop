@@ -70,9 +70,9 @@ const Index = () => {
     loadItems();
   }, []);
 
-  // Show all approved items for all user roles
-  const filteredItems = useMemo(() => {
-    if (!userRole) return [];
+  // Calculate sold quantities and group items by original item
+  const { filteredItems: processedItems, soldQuantitiesStats } = useMemo(() => {
+    if (!userRole) return { filteredItems: [], soldQuantitiesStats: { totalSoldItems: 0, totalSoldQuantity: 0 } };
     
     let itemsToShow = items;
     
@@ -81,7 +81,42 @@ const Index = () => {
       itemsToShow = items.filter(item => item.status !== 'pending_approval');
     }
 
-    return itemsToShow.filter((item) => {
+    // Group items by name and category to track sold quantities
+    const itemGroups = new Map<string, { items: Item[], totalOriginal: number, totalSold: number }>();
+    
+    itemsToShow.forEach(item => {
+      const key = `${item.name}_${item.category}_${item.subcategory}`;
+      if (!itemGroups.has(key)) {
+        itemGroups.set(key, { items: [], totalOriginal: 0, totalSold: 0 });
+      }
+      const group = itemGroups.get(key)!;
+      group.items.push(item);
+      
+      // Calculate totals
+      const originalQty = item.original_quantity || item.quantity;
+      if (item.status === 'sold') {
+        group.totalSold += item.quantity;
+        group.totalOriginal += originalQty;
+      } else {
+        group.totalOriginal += originalQty;
+      }
+    });
+
+    // Add quantity display info to items
+    const itemsWithQuantityInfo = itemsToShow.map(item => {
+      const key = `${item.name}_${item.category}_${item.subcategory}`;
+      const group = itemGroups.get(key);
+      
+      if (group && group.totalOriginal > item.quantity && group.totalSold > 0) {
+        return {
+          ...item,
+          quantityDisplay: `${group.totalSold}/${group.totalOriginal} sold`
+        };
+      }
+      return item;
+    });
+
+    const filteredItems = itemsWithQuantityInfo.filter((item) => {
       const matchesSearch = 
         item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -92,6 +127,15 @@ const Index = () => {
 
       return matchesSearch && matchesCategory && matchesStatus && matchesCondition;
     });
+
+    // Calculate sold quantities stats
+    const soldItems = items.filter(item => item.status === 'sold');
+    const soldStats = {
+      totalSoldItems: soldItems.length,
+      totalSoldQuantity: soldItems.reduce((sum, item) => sum + item.quantity, 0)
+    };
+
+    return { filteredItems, soldQuantitiesStats: soldStats };
   }, [items, searchTerm, categoryFilter, statusFilter, conditionFilter, userRole]);
 
   const pendingApprovalItems = useMemo(() => {
@@ -100,7 +144,7 @@ const Index = () => {
   }, [items, userRole]);
 
   // Calculate sold quantities
-  const soldQuantitiesStats = useMemo(() => {
+  const soldQuantitiesStatsOld = useMemo(() => {
     const soldItems = items.filter(item => item.status === 'sold');
     return {
       totalSoldItems: soldItems.length,
@@ -268,6 +312,7 @@ const Index = () => {
       ...splittingItem,
       id: Date.now().toString() + '_sold',
       quantity: soldQuantity,
+      original_quantity: splittingItem.original_quantity || splittingItem.quantity, // Preserve original quantity
       final_price: finalPrice,
       status: status,
       reserved_by: status === 'reserved' ? reservedBy : undefined,
@@ -278,6 +323,7 @@ const Index = () => {
     // Update the original item with remaining quantity
     const remainingUpdates = {
       quantity: remainingQuantity,
+      original_quantity: splittingItem.original_quantity || splittingItem.quantity, // Set original quantity if not set
       updated_by: "current-user",
       updated_at: new Date().toISOString()
     };
@@ -630,7 +676,7 @@ const Index = () => {
 
           {/* Items Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredItems.map((item) => {
+            {processedItems.map((item) => {
               const isFaded = item.status === 'sold' || item.status === 'reserved';
               const photoUrl = item.photos.length > 0 ? storage.getPhoto(item.photos[0]) : null;
               
@@ -665,7 +711,11 @@ const Index = () => {
                       </div>
                       
                       <div className="text-sm">
-                        <span className="font-medium">Qty:</span> {item.quantity} | 
+                        <span className="font-medium">Qty:</span> {item.quantity}
+                        {(item as any).quantityDisplay && (
+                          <span className="text-blue-600 ml-2">({(item as any).quantityDisplay})</span>
+                        )}
+                        {' | '}
                         <span className="font-medium"> Price:</span> {item.suggested_price} SEK
                       </div>
                       

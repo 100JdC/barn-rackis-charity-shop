@@ -7,6 +7,7 @@ export interface Item {
   subcategory: string;
   condition: 'new' | 'lightly_used' | 'worn';
   quantity: number;
+  original_quantity?: number; // Track original quantity for sold/total display
   original_price: number;
   suggested_price: number;
   final_price?: number;

@@ -1,8 +1,9 @@
 
-import { Eye, Edit, Trash2, QrCode, MapPin } from "lucide-react";
+import { Eye, Edit, Trash2, QrCode, MapPin, Image } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { storage } from "@/utils/storage";
 import type { Item, UserRole } from "@/types/item";
 
 interface ItemCardProps {
@@ -49,9 +50,31 @@ export const ItemCard = ({ item, userRole, onView, onEdit, onDelete, onShowQRCod
     return names[category] || category;
   };
 
+  // Get the first photo URL if available
+  const firstPhotoUrl = item.photos && item.photos.length > 0 ? storage.getPhoto(item.photos[0]) : null;
+
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-4">
+        {/* Photo section */}
+        {firstPhotoUrl ? (
+          <div className="mb-3">
+            <img 
+              src={firstPhotoUrl} 
+              alt={item.name}
+              className="w-full h-40 object-cover rounded-md"
+              onError={(e) => {
+                console.error('Failed to load image:', firstPhotoUrl);
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+        ) : (
+          <div className="mb-3 h-40 bg-gray-100 rounded-md flex items-center justify-center">
+            <Image className="h-8 w-8 text-gray-400" />
+          </div>
+        )}
+
         <div className="space-y-3">
           <div className="flex justify-between items-start">
             <h3 className="font-semibold text-lg truncate">{item.name}</h3>

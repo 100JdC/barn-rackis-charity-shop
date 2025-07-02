@@ -1,9 +1,10 @@
 
-import { Edit, Trash2, QrCode, MapPin, User, Calendar } from "lucide-react";
+import { Edit, Trash2, QrCode, MapPin, User, Calendar, Image, Images } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { storage } from "@/utils/storage";
 import type { Item, UserRole } from "@/types/item";
 
 interface ItemDetailProps {
@@ -100,6 +101,41 @@ export const ItemDetail = ({ item, userRole, onEdit, onDelete, onShowQRCode }: I
         </CardHeader>
 
         <CardContent className="space-y-6">
+          {/* Photos section */}
+          {item.photos && item.photos.length > 0 && (
+            <>
+              <div>
+                <h3 className="font-semibold mb-3 flex items-center gap-2">
+                  <Images className="h-4 w-4" />
+                  Photos ({item.photos.length})
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {item.photos.map((photoPath, index) => {
+                    const photoUrl = storage.getPhoto(photoPath);
+                    return photoUrl ? (
+                      <div key={index} className="aspect-square">
+                        <img 
+                          src={photoUrl} 
+                          alt={`${item.name} - Photo ${index + 1}`}
+                          className="w-full h-full object-cover rounded-md border"
+                          onError={(e) => {
+                            console.error('Failed to load image:', photoUrl);
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div key={index} className="aspect-square bg-gray-100 rounded-md flex items-center justify-center border">
+                        <Image className="h-8 w-8 text-gray-400" />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
+
           {item.description && (
             <>
               <div>
