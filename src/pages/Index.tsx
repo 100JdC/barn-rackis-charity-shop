@@ -183,12 +183,14 @@ const Index = () => {
     setReservedByName("");
   };
 
-  const handleSplitItem = (item: Item, soldQuantity: number, finalPrice: number, status: 'sold' | 'reserved', reservedBy?: string) => {
-    const remainingQuantity = item.quantity - soldQuantity;
+  const handleSplitItem = (soldQuantity: number, finalPrice: number, status: 'sold' | 'reserved', reservedBy?: string) => {
+    if (!splittingItem) return;
+    
+    const remainingQuantity = splittingItem.quantity - soldQuantity;
     
     // Create the sold/reserved portion
     const soldItem: Item = {
-      ...item,
+      ...splittingItem,
       id: Date.now().toString() + '_sold',
       quantity: soldQuantity,
       final_price: finalPrice,
@@ -200,7 +202,7 @@ const Index = () => {
     
     // Update the original item with remaining quantity
     const remainingItem: Item = {
-      ...item,
+      ...splittingItem,
       quantity: remainingQuantity,
       updated_by: "current-user",
       updated_at: new Date().toISOString()
@@ -208,7 +210,7 @@ const Index = () => {
     
     // Replace the original item with both new items
     setItems(items.map(i => 
-      i.id === item.id 
+      i.id === splittingItem.id 
         ? remainingItem 
         : i
     ).concat([soldItem]));
