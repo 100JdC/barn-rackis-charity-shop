@@ -8,10 +8,14 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 console.log('Supabase URL:', supabaseUrl ? 'Set' : 'Missing');
 console.log('Supabase Key:', supabaseKey ? 'Set' : 'Missing');
 
+let supabase;
+
 if (!supabaseUrl || !supabaseKey) {
   console.error('Missing Supabase environment variables. Please check your .env file or Supabase integration.');
   // Create a dummy client to prevent crashes
-  export const supabase = createClient('https://dummy.supabase.co', 'dummy-key');
+  supabase = createClient('https://dummy.supabase.co', 'dummy-key');
 } else {
-  export const supabase = createClient(supabaseUrl, supabaseKey);
+  supabase = createClient(supabaseUrl, supabaseKey);
 }
+
+export { supabase };
