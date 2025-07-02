@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -5,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { DonorRegistration } from "./DonorRegistration";
 import { DonorLogin } from "./DonorLogin";
 import { storage } from "@/utils/storage";
-import { BackgroundLogo } from "@/components/BackgroundLogo";
+import { PageWrapper } from "@/components/PageWrapper";
 
 interface LoginFormProps {
   onLogin: (role: 'admin' | 'donator' | 'buyer', username?: string) => void;
@@ -35,17 +36,6 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     onLogin('donator', donorUsername);
   };
 
-  const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <div className="min-h-screen relative" style={{ backgroundColor: '#1733a7' }}>
-      <div className="absolute inset-0 flex items-center justify-center z-0 opacity-90">
-        <BackgroundLogo />
-      </div>
-      <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
-        <div className="w-full max-w-2xl text-white space-y-6">{children}</div>
-      </div>
-    </div>
-  );
-
   if (view === 'donor-register') {
     return (
       <DonorRegistration 
@@ -66,91 +56,95 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
 
   if (view === 'donor-options') {
     return (
-      <Wrapper>
-        <h2 className="text-center text-2xl">Donate Items</h2>
-        <p className="text-center text-white/90">
-          Choose how you'd like to proceed with donating your items.
-        </p>
-        <div className="space-y-3">
+      <PageWrapper>
+        <div className="w-full max-w-2xl text-white space-y-6">
+          <h2 className="text-center text-2xl">Donate Items</h2>
+          <p className="text-center text-white/90">
+            Choose how you'd like to proceed with donating your items.
+          </p>
+          <div className="space-y-3">
+            <Button
+              onClick={() => setView('donor-register')}
+              className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30"
+              variant="outline"
+            >
+              Register as New Donor
+            </Button>
+            <Button
+              onClick={() => setView('donor-login')}
+              className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30"
+              variant="outline"
+            >
+              I'm Already Registered - Login
+            </Button>
+          </div>
           <Button
-            onClick={() => setView('donor-register')}
-            className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30"
-            variant="outline"
+            onClick={() => setView('options')}
+            className="w-full mt-4 text-white/80 hover:text-white hover:bg-white/10"
+            variant="ghost"
           >
-            Register as New Donor
-          </Button>
-          <Button
-            onClick={() => setView('donor-login')}
-            className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30"
-            variant="outline"
-          >
-            I'm Already Registered - Login
+            Back to Home
           </Button>
         </div>
-        <Button
-          onClick={() => setView('options')}
-          className="w-full mt-4 text-white/80 hover:text-white hover:bg-white/10"
-          variant="ghost"
-        >
-          Back to Home
-        </Button>
-      </Wrapper>
+      </PageWrapper>
     );
   }
 
   if (view === 'admin') {
     return (
-      <Wrapper>
-        <h2 className="text-center text-2xl">Admin Login</h2>
-        <form onSubmit={handleAdminSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="username" className="text-white">Username</Label>
-            <Input
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              placeholder="Enter admin username"
-              className="bg-white/20 border-white/30 text-white placeholder:text-white/60"
-            />
-          </div>
-          <div>
-            <Label htmlFor="password" className="text-white">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="Enter admin password"
-              className="bg-white/20 border-white/30 text-white placeholder:text-white/60"
-            />
-          </div>
-          {error && (
-            <div className="text-red-300 text-sm">{error}</div>
-          )}
+      <PageWrapper>
+        <div className="w-full max-w-2xl text-white space-y-6">
+          <h2 className="text-center text-2xl">Admin Login</h2>
+          <form onSubmit={handleAdminSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="username" className="text-white">Username</Label>
+              <Input
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                placeholder="Enter admin username"
+                className="bg-white/20 border-white/30 text-white placeholder:text-white/60"
+              />
+            </div>
+            <div>
+              <Label htmlFor="password" className="text-white">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder="Enter admin password"
+                className="bg-white/20 border-white/30 text-white placeholder:text-white/60"
+              />
+            </div>
+            {error && (
+              <div className="text-red-300 text-sm">{error}</div>
+            )}
+            <Button
+              type="submit"
+              className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30"
+              variant="outline"
+            >
+              Login as Admin
+            </Button>
+          </form>
           <Button
-            type="submit"
-            className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30"
-            variant="outline"
+            onClick={() => setView('options')}
+            className="w-full text-white/80 hover:text-white hover:bg-white/10"
+            variant="ghost"
           >
-            Login as Admin
+            Back to Options
           </Button>
-        </form>
-        <Button
-          onClick={() => setView('options')}
-          className="w-full text-white/80 hover:text-white hover:bg-white/10"
-          variant="ghost"
-        >
-          Back to Options
-        </Button>
-      </Wrapper>
+        </div>
+      </PageWrapper>
     );
   }
 
   return (
-    <Wrapper>
-      <div className="bg-white/5 backdrop-blur-sm rounded-lg p-8 space-y-6">
+    <PageWrapper>
+      <div className="w-full max-w-4xl text-white space-y-6">
         <h1 className="text-3xl text-center mb-4 text-white">Welcome to Rackis for Barn!</h1>
         <div className="text-lg text-white/90 space-y-3 leading-relaxed text-center">
           <p>A platform for students in Uppsala to exchange second-hand items during move-ins and move-outs.</p>
@@ -163,7 +157,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           <Button
             variant="link"
             onClick={() => window.open('/about', '_blank')}
-            className="text-white/90 hover:text-white text-lg"
+            className="text-white/90 hover:text-white text-lg underline"
           >
             👉 Find out more about the concept, who we are, and how you can contribute.
           </Button>
@@ -194,6 +188,6 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           </Button>
         </div>
       </div>
-    </Wrapper>
+    </PageWrapper>
   );
 };
