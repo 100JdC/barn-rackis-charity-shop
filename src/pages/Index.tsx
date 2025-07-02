@@ -106,6 +106,19 @@ const Index = () => {
     };
   }, [items]);
 
+  // Define logout and home handlers BEFORE they are used
+  const handleLogout = () => {
+    storage.clearSession();
+    setUserRole(null);
+    setCurrentUsername(null);
+  };
+
+  const handleGoHome = () => {
+    storage.clearSession();
+    setUserRole(null);
+    setCurrentUsername(null);
+  };
+
   // Check for existing session and redirect to donation if they click "Here you can donate"
   const handleDonateClick = () => {
     const session = storage.getSession();
@@ -208,16 +221,6 @@ const Index = () => {
   const handleShowQRCode = (item: Item) => {
     setSelectedItem(item);
     setShowQRCode(true);
-  };
-
-  const handleLogout = () => {
-    setUserRole(null);
-    setCurrentUsername(null);
-  };
-
-  const handleGoHome = () => {
-    setUserRole(null);
-    setCurrentUsername(null);
   };
 
   const handleExportToExcel = () => {
@@ -597,14 +600,24 @@ const Index = () => {
             )}
             
             {userRole === 'admin' && (
-              <Button 
-                onClick={handleExportToExcel}
-                variant="outline"
-                className="border-green-300 hover:bg-green-50"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Export to Excel
-              </Button>
+              <>
+                <Button 
+                  onClick={handleExportToExcel}
+                  variant="outline"
+                  className="border-green-300 hover:bg-green-50"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export to Excel
+                </Button>
+                <Button 
+                  onClick={() => setShowUserManagement(true)}
+                  variant="outline"
+                  className="border-blue-300 hover:bg-blue-50"
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  User Management
+                </Button>
+              </>
             )}
           </div>
 
