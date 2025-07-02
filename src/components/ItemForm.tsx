@@ -130,12 +130,14 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      const newPhotoIds: string[] = [];
+      const newPhotoPaths: string[] = [];
       
       for (const file of Array.from(files)) {
         try {
-          const photoId = await storage.savePhoto(file);
-          newPhotoIds.push(photoId);
+          const photoPath = await storage.savePhoto(file);
+          if (photoPath) {
+            newPhotoPaths.push(photoPath);
+          }
         } catch (error) {
           console.error('Failed to save photo:', error);
         }
@@ -143,7 +145,7 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
       
       setFormData(prev => ({
         ...prev,
-        photos: [...prev.photos, ...newPhotoIds]
+        photos: [...prev.photos, ...newPhotoPaths.filter(path => path !== null)]
       }));
     }
   };
@@ -191,14 +193,14 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
     }
   };
 
-  const renderPhotoPreview = (photoId: string, index: number) => {
-    const photoData = storage.getPhoto(photoId);
-    if (!photoData) return null;
+  const renderPhotoPreview = (photoPath: string, index: number) => {
+    const photoUrl = storage.getPhoto(photoPath);
+    if (!photoUrl) return null;
 
     return (
       <div key={index} className="relative">
         <img 
-          src={photoData} 
+          src={photoUrl} 
           alt={`Preview ${index + 1}`}
           className="w-full h-20 object-cover rounded border"
         />
@@ -451,7 +453,7 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
                 
                 {formData.photos.length > 0 && (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {formData.photos.map((photoId, index) => renderPhotoPreview(photoId, index))}
+                    {formData.photos.map((photoPath, index) => renderPhotoPreview(photoPath, index))}
                   </div>
                 )}
               </div>

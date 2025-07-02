@@ -1,4 +1,4 @@
-
+import { supabase } from './supabase';
 import type { Item } from "@/types/item";
 
 const STORAGE_KEYS = {
@@ -16,25 +16,92 @@ export interface RegisteredUser {
 }
 
 export const storage = {
-  // Items storage
-  getItems: (): Item[] => {
+  // Items storage - now using Supabase
+  getItems: async (): Promise<Item[]> => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.ITEMS);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
+      const { data, error } = await supabase
+        .from('Item inventory')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching items:', error);
+        return [];
+      }
+      
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching items:', error);
       return [];
     }
   },
 
-  setItems: (items: Item[]): void => {
+  setItems: async (items: Item[]): Promise<void> => {
+    // This method is now deprecated since we handle individual items
+    console.warn('setItems is deprecated, use addItem, updateItem, deleteItem instead');
+  },
+
+  addItem: async (item: Item): Promise<Item | null> => {
     try {
-      localStorage.setItem(STORAGE_KEYS.ITEMS, JSON.stringify(items));
+      const { data, error } = await supabase
+        .from('Item inventory')
+        .insert([item])
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error adding item:', error);
+        return null;
+      }
+      
+      return data;
     } catch (error) {
-      console.error('Failed to save items:', error);
+      console.error('Error adding item:', error);
+      return null;
     }
   },
 
-  // Users storage
+  updateItem: async (id: string, updates: Partial<Item>): Promise<Item | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('Item inventory')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error updating item:', error);
+        return null;
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Error updating item:', error);
+      return null;
+    }
+  },
+
+  deleteItem: async (id: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase
+        .from('Item inventory')
+        .delete()
+        .eq('id', id);
+      
+      if (error) {
+        console.error('Error deleting item:', error);
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      return false;
+    }
+  },
+
+  // Users storage - keeping localStorage for now (can be migrated later)
   getUsers: (): RegisteredUser[] => {
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.USERS);
@@ -67,39 +134,67 @@ export const storage = {
     return newUser;
   },
 
-  // Photo storage utilities
-  savePhoto: (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const photoData = e.target?.result as string;
-        const photoId = `photo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        try {
-          const photos = storage.getPhotos();
-          photos[photoId] = photoData;
-          localStorage.setItem(STORAGE_KEYS.PHOTOS, JSON.stringify(photos));
-          resolve(photoId);
-        } catch (error) {
-          console.error('Failed to save photo:', error);
-          reject(error);
-        }
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  },
-
-  getPhotos: (): Record<string, string> => {
+  // Photo storage - now using Supabase Storage
+  savePhoto: async (file: File): Promise<string | null> => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.PHOTOS);
-      return stored ? JSON.parse(stored) : {};
-    } catch {
-      return {};
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+      
+      const { data, error } = await supabase.storage
+        .from('photos')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+      
+      if (error) {
+        console.error('Error uploading photo:', error);
+        return null;
+      }
+      
+      return data.path;
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      return null;
     }
   },
 
-  getPhoto: (photoId: string): string | null => {
-    const photos = storage.getPhotos();
-    return photos[photoId] || null;
+  getPhotos: (): Record<string, string> => {
+    // This method is deprecated for Supabase
+    console.warn('getPhotos is deprecated, use getPhoto instead');
+    return {};
+  },
+
+  getPhoto: (photoPath: string): string | null => {
+    if (!photoPath) return null;
+    
+    try {
+      const { data } = supabase.storage
+        .from('photos')
+        .getPublicUrl(photoPath);
+      
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error getting photo URL:', error);
+      return null;
+    }
+  },
+
+  deletePhoto: async (photoPath: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase.storage
+        .from('photos')
+        .remove([photoPath]);
+      
+      if (error) {
+        console.error('Error deleting photo:', error);
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting photo:', error);
+      return false;
+    }
   }
 };

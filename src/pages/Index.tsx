@@ -20,6 +20,7 @@ import type { Item, UserRole } from "@/types/item";
 
 const Index = () => {
   const [items, setItems] = useState<Item[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -36,16 +37,17 @@ const Index = () => {
   const [reservedByName, setReservedByName] = useState("");
   const [splittingItem, setSplittingItem] = useState<Item | null>(null);
 
-  // Load items from storage on component mount - only load existing items, don't initialize with mock data
+  // Load items from Supabase on component mount
   useEffect(() => {
-    const storedItems = storage.getItems();
-    setItems(storedItems);
+    const loadItems = async () => {
+      setLoading(true);
+      const supabaseItems = await storage.getItems();
+      setItems(supabaseItems);
+      setLoading(false);
+    };
+    
+    loadItems();
   }, []);
-
-  // Save items to storage whenever items change
-  useEffect(() => {
-    storage.setItems(items);
-  }, [items]);
 
   // Show all approved items for all user roles
   const filteredItems = useMemo(() => {
@@ -89,7 +91,7 @@ const Index = () => {
     return <UserManagement onBack={() => setShowUserManagement(false)} />;
   }
 
-  const handleAddItem = (newItem: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>, addAnother: boolean = false) => {
+  const handleAddItem = async (newItem: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>, addAnother: boolean = false) => {
     const item: Item = {
       ...newItem,
       id: Date.now().toString(),
@@ -98,42 +100,57 @@ const Index = () => {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
-    setItems([...items, item]);
+    
+    const savedItem = await storage.addItem(item);
+    if (savedItem) {
+      setItems(prev => [savedItem, ...prev]);
+    }
     
     if (!addAnother) {
       setShowItemForm(false);
     }
   };
 
-  const handleEditItem = (updatedItem: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>) => {
+  const handleEditItem = async (updatedItem: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>) => {
     if (!editingItem) return;
     
-    const updated: Item = {
-      ...editingItem,
+    const updates = {
       ...updatedItem,
       updated_by: "current-user",
       updated_at: new Date().toISOString(),
     };
     
-    setItems(items.map(item => item.id === editingItem.id ? updated : item));
+    const updated = await storage.updateItem(editingItem.id, updates);
+    if (updated) {
+      setItems(items.map(item => item.id === editingItem.id ? updated : item));
+    }
+    
     setEditingItem(null);
     setShowItemForm(false);
   };
 
-  const handleDeleteItem = (itemId: string) => {
-    setItems(items.filter(item => item.id !== itemId));
+  const handleDeleteItem = async (itemId: string) => {
+    const success = await storage.deleteItem(itemId);
+    if (success) {
+      setItems(items.filter(item => item.id !== itemId));
+    }
   };
 
-  const handleApproveItem = (itemId: string) => {
-    setItems(items.map(item => 
-      item.id === itemId 
-        ? { ...item, status: 'available' as const, updated_by: "current-user", updated_at: new Date().toISOString() }
-        : item
-    ));
+  const handleApproveItem = async (itemId: string) => {
+    const updates = { 
+      status: 'available' as const, 
+      updated_by: "current-user", 
+      updated_at: new Date().toISOString() 
+    };
+    
+    const updated = await storage.updateItem(itemId, updates);
+    if (updated) {
+      setItems(items.map(item => item.id === itemId ? updated : item));
+    }
   };
 
-  const handleRejectItem = (itemId: string) => {
-    setItems(items.filter(item => item.id !== itemId));
+  const handleRejectItem = async (itemId: string) => {
+    await handleDeleteItem(itemId);
   };
 
   const handleViewItem = (item: Item) => {
@@ -165,25 +182,26 @@ const Index = () => {
     setReservedByName(item.reserved_by || "");
   };
 
-  const handleConfirmReservation = () => {
+  const handleConfirmReservation = async () => {
     if (!reservingItem) return;
     
-    setItems(items.map(item => 
-      item.id === reservingItem.id 
-        ? { 
-            ...item, 
-            status: 'reserved' as const, 
-            reserved_by: reservedByName,
-            updated_by: "current-user", 
-            updated_at: new Date().toISOString() 
-          }
-        : item
-    ));
+    const updates = { 
+      status: 'reserved' as const, 
+      reserved_by: reservedByName,
+      updated_by: "current-user", 
+      updated_at: new Date().toISOString() 
+    };
+    
+    const updated = await storage.updateItem(reservingItem.id, updates);
+    if (updated) {
+      setItems(items.map(item => item.id === reservingItem.id ? updated : item));
+    }
+    
     setReservingItem(null);
     setReservedByName("");
   };
 
-  const handleSplitItem = (soldQuantity: number, finalPrice: number, status: 'sold' | 'reserved', reservedBy?: string) => {
+  const handleSplitItem = async (soldQuantity: number, finalPrice: number, status: 'sold' | 'reserved', reservedBy?: string) => {
     if (!splittingItem) return;
     
     const remainingQuantity = splittingItem.quantity - soldQuantity;
@@ -201,19 +219,23 @@ const Index = () => {
     };
     
     // Update the original item with remaining quantity
-    const remainingItem: Item = {
-      ...splittingItem,
+    const remainingUpdates = {
       quantity: remainingQuantity,
       updated_by: "current-user",
       updated_at: new Date().toISOString()
     };
     
-    // Replace the original item with both new items
-    setItems(items.map(i => 
-      i.id === splittingItem.id 
-        ? remainingItem 
-        : i
-    ).concat([soldItem]));
+    // Save both items to Supabase
+    const [savedSoldItem, updatedRemainingItem] = await Promise.all([
+      storage.addItem(soldItem),
+      storage.updateItem(splittingItem.id, remainingUpdates)
+    ]);
+    
+    if (savedSoldItem && updatedRemainingItem) {
+      setItems(items.map(i => 
+        i.id === splittingItem.id ? updatedRemainingItem : i
+      ).concat([savedSoldItem]));
+    }
     
     setSplittingItem(null);
   };
@@ -241,6 +263,15 @@ const Index = () => {
       other: 'Other'
     };
     return names[category] || category;
+  }
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#1733a7' }}>
+        <div className="text-white text-xl">Loading inventory...</div>
+      </div>
+    );
   }
 
   if (showItemForm) {
@@ -497,16 +528,16 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredItems.map((item) => {
               const isFaded = item.status === 'sold' || item.status === 'reserved';
-              const photoData = item.photos.length > 0 ? storage.getPhoto(item.photos[0]) : null;
+              const photoUrl = item.photos.length > 0 ? storage.getPhoto(item.photos[0]) : null;
               
               return (
                 <Card key={item.id} className={`overflow-hidden bg-white/80 backdrop-blur-sm hover:shadow-lg transition-shadow ${isFaded ? 'opacity-60' : ''}`}>
                   <CardContent className="p-4">
                     {/* Show first photo if available */}
-                    {photoData && (
+                    {photoUrl && (
                       <div className="mb-3">
                         <img 
-                          src={photoData} 
+                          src={photoUrl} 
                           alt={item.name}
                           className="w-full h-40 object-cover rounded-md"
                         />
