@@ -45,9 +45,9 @@ export const DonorRegistration = ({ onRegister, onBack }: DonorRegistrationProps
 
   return (
     <PageWrapper>
-      <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm shadow-xl">
+      <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm shadow-xl">
         <CardHeader>
-          <CardTitle className="text-center text-2xl text-blue-800">Donor Registration</CardTitle>
+          <CardTitle className="text-center text-2xl" style={{ color: '#1733a7' }}>Donor Registration</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -81,7 +81,7 @@ export const DonorRegistration = ({ onRegister, onBack }: DonorRegistrationProps
               <div className="text-red-600 text-sm">{error}</div>
             )}
 
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
+            <Button type="submit" className="w-full" style={{ backgroundColor: '#1733a7' }}>
               Register as Donor
             </Button>
           </form>
@@ -89,7 +89,8 @@ export const DonorRegistration = ({ onRegister, onBack }: DonorRegistrationProps
           <Button 
             variant="outline" 
             onClick={onBack}
-            className="w-full border-blue-300 hover:bg-blue-50"
+            className="w-full"
+            style={{ borderColor: '#1733a7', color: '#1733a7' }}
           >
             Back to Login Options
           </Button>

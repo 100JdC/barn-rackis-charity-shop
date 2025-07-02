@@ -20,15 +20,15 @@ const About = () => {
           Back to Home
         </Button>
 
-        <Card className="bg-white/80 backdrop-blur-sm">
+        <Card className="bg-white/90 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle className="text-3xl text-center text-blue-800">
+            <CardTitle className="text-3xl text-center" style={{ color: '#1733a7' }}>
               About Rackis for Barn
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6 text-lg">
             <section>
-              <h2 className="text-2xl font-semibold text-blue-700 mb-3">Our Mission</h2>
+              <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Our Mission</h2>
               <p className="text-gray-700">
                 Rackis for Barn is a platform designed specifically for students in Uppsala to exchange 
                 second-hand items during move-ins and move-outs. We believe in creating a sustainable 
@@ -37,7 +37,7 @@ const About = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-blue-700 mb-3">How It Works</h2>
+              <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>How It Works</h2>
               <div className="space-y-3 text-gray-700">
                 <p>
                   <strong>For Donors:</strong> When you're moving out, instead of throwing away items 
@@ -57,7 +57,7 @@ const About = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-blue-700 mb-3">Why Choose Us?</h2>
+              <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Why Choose Us?</h2>
               <ul className="list-disc list-inside space-y-2 text-gray-700">
                 <li><strong>Sustainable:</strong> Reduce waste by giving items a second life</li>
                 <li><strong>Affordable:</strong> Get quality items at fair, student-friendly prices</li>
@@ -68,7 +68,7 @@ const About = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-blue-700 mb-3">About Barncancerfonden</h2>
+              <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>About Barncancerfonden</h2>
               <p className="text-gray-700">
                 Barncancerfonden is Sweden's leading organization dedicated to supporting children 
                 with cancer and their families. Through research funding, family support programs, 
@@ -78,7 +78,7 @@ const About = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-blue-700 mb-3">Get Involved</h2>
+              <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Get Involved</h2>
               <div className="space-y-3 text-gray-700">
                 <p>
                   <strong>Donate Items:</strong> Moving out? Register as a donor and list your items. 
@@ -96,7 +96,7 @@ const About = () => {
             </section>
 
             <div className="bg-blue-50 p-4 rounded-lg text-center">
-              <p className="text-blue-800 font-semibold">
+              <p className="font-semibold" style={{ color: '#1733a7' }}>
                 🌍 Good for students. Good for the planet. Good for children in need. 💛
               </p>
             </div>
