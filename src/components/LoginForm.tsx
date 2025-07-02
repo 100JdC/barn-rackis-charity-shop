@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -95,11 +94,13 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
       <PageWrapper>
         <div className="w-full max-w-2xl text-white space-y-6">
           <h2 className="text-center text-2xl">Admin Login</h2>
-          <form onSubmit={handleAdminSubmit} className="space-y-4">
+          <form onSubmit={handleAdminSubmit} className="space-y-4" autoComplete="on">
             <div>
-              <Label htmlFor="username" className="text-white">Username</Label>
+              <Label htmlFor="admin-username" className="text-white">Username</Label>
               <Input
-                id="username"
+                id="admin-username"
+                name="username"
+                autoComplete="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -108,10 +109,12 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
               />
             </div>
             <div>
-              <Label htmlFor="password" className="text-white">Password</Label>
+              <Label htmlFor="admin-password" className="text-white">Password</Label>
               <Input
-                id="password"
+                id="admin-password"
+                name="password"
                 type="password"
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
