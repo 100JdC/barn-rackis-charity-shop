@@ -39,6 +39,8 @@ const Index = () => {
   const [reservedByName, setReservedByName] = useState("");
   const [splittingItem, setSplittingItem] = useState<Item | null>(null);
   const [showThankYou, setShowThankYou] = useState(false);
+  const [markingSoldItem, setMarkingSoldItem] = useState<Item | null>(null);
+  const [soldQuantityInput, setSoldQuantityInput] = useState("");
 
   // Load items with better error handling
   useEffect(() => {
@@ -341,6 +343,66 @@ const Index = () => {
     }
     
     setSplittingItem(null);
+  };
+
+  const handleMarkSold = (item: Item) => {
+    setMarkingSoldItem(item);
+    setSoldQuantityInput("");
+  };
+
+  const handleConfirmMarkSold = async () => {
+    if (!markingSoldItem || !soldQuantityInput) return;
+    
+    const soldQty = parseInt(soldQuantityInput);
+    if (isNaN(soldQty) || soldQty <= 0 || soldQty > markingSoldItem.quantity) return;
+    
+    if (soldQty === markingSoldItem.quantity) {
+      // Mark entire item as sold
+      const updates = {
+        status: 'sold' as const,
+        updated_by: "current-user",
+        updated_at: new Date().toISOString()
+      };
+      
+      const updated = await storage.updateItem(markingSoldItem.id, updates);
+      if (updated) {
+        setItems(items.map(item => item.id === markingSoldItem.id ? updated : item));
+      }
+    } else {
+      // Split the item
+      const remainingQuantity = markingSoldItem.quantity - soldQty;
+      
+      const soldItem: Item = {
+        ...markingSoldItem,
+        id: Date.now().toString() + '_sold',
+        quantity: soldQty,
+        original_quantity: markingSoldItem.original_quantity || markingSoldItem.quantity,
+        status: 'sold',
+        updated_by: "current-user",
+        updated_at: new Date().toISOString()
+      };
+      
+      const remainingUpdates = {
+        quantity: remainingQuantity,
+        original_quantity: markingSoldItem.original_quantity || markingSoldItem.quantity,
+        updated_by: "current-user",
+        updated_at: new Date().toISOString()
+      };
+      
+      const [savedSoldItem, updatedRemainingItem] = await Promise.all([
+        storage.addItem(soldItem),
+        storage.updateItem(markingSoldItem.id, remainingUpdates)
+      ]);
+      
+      if (savedSoldItem && updatedRemainingItem) {
+        setItems(items.map(i => 
+          i.id === markingSoldItem.id ? updatedRemainingItem : i
+        ).concat([savedSoldItem]));
+      }
+    }
+    
+    setMarkingSoldItem(null);
+    setSoldQuantityInput("");
   };
 
   function getStatusColor(status: string) {
@@ -676,102 +738,23 @@ const Index = () => {
 
           {/* Items Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {processedItems.map((item) => {
-              const isFaded = item.status === 'sold' || item.status === 'reserved';
-              const photoUrl = item.photos.length > 0 ? storage.getPhoto(item.photos[0]) : null;
-              
-              return (
-                <Card key={item.id} className={`overflow-hidden bg-white/80 backdrop-blur-sm hover:shadow-lg transition-shadow ${isFaded ? 'opacity-60' : ''}`}>
-                  <CardContent className="p-4">
-                    {/* Show first photo if available */}
-                    {photoUrl && (
-                      <div className="mb-3">
-                        <img 
-                          src={photoUrl} 
-                          alt={item.name}
-                          className="w-full h-40 object-cover rounded-md"
-                          onError={(e) => {
-                            console.error('Failed to load image:', photoUrl);
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                      </div>
-                    )}
-                    
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-start">
-                        <h3 className="font-semibold text-lg">{item.name}</h3>
-                        <Badge className={getStatusColor(item.status)}>
-                          {item.status.replace('_', ' ')}
-                        </Badge>
-                      </div>
-                      
-                      <div className="text-sm text-gray-600">
-                        {getCategoryDisplayName(item.category)} - {item.subcategory}
-                      </div>
-                      
-                      <div className="text-sm">
-                        <span className="font-medium">Qty:</span> {item.quantity}
-                        {(item as any).quantityDisplay && (
-                          <span className="text-blue-600 ml-2">({(item as any).quantityDisplay})</span>
-                        )}
-                        {' | '}
-                        <span className="font-medium"> Price:</span> {item.suggested_price} SEK
-                      </div>
-                      
-                      {item.donor_name && (
-                        <div className="text-sm text-gray-600">
-                          <span className="font-medium">Donor:</span> {item.donor_name}
-                        </div>
-                      )}
-                      
-                      <div className="flex gap-2 pt-2 flex-wrap">
-                        <Button size="sm" onClick={() => handleViewItem(item)} variant="outline">
-                          <Eye className="h-3 w-3 mr-1" />
-                          View
-                        </Button>
-                        
-                        {userRole === 'admin' && (
-                          <>
-                            <Button size="sm" onClick={() => {
-                              setEditingItem(item);
-                              setShowItemForm(true);
-                            }} variant="outline">
-                              <Edit className="h-3 w-3 mr-1" />
-                              Edit
-                            </Button>
-                            
-                            {item.quantity > 1 && item.status === 'available' && (
-                              <Button size="sm" onClick={() => setSplittingItem(item)} variant="outline" className="text-purple-600">
-                                <Split className="h-3 w-3 mr-1" />
-                                Split
-                              </Button>
-                            )}
-                            
-                            <Button size="sm" onClick={() => handleReserveItem(item)} variant="outline" className="text-orange-600">
-                              <UserCheck className="h-3 w-3 mr-1" />
-                              Reserve
-                            </Button>
-                            <Button size="sm" onClick={() => handleDeleteItem(item.id)} variant="outline" className="text-red-600">
-                              <Trash2 className="h-3 w-3 mr-1" />
-                              Delete
-                            </Button>
-                          </>
-                        )}
-                        
-                        <Button size="sm" onClick={() => handleShowQRCode(item)} variant="outline">
-                          <QrCode className="h-3 w-3 mr-1" />
-                          QR
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+            {processedItems.map((item) => (
+              <ItemCard
+                key={item.id}
+                item={item}
+                userRole={userRole}
+                onView={() => handleViewItem(item)}
+                onEdit={() => {
+                  setEditingItem(item);
+                  setShowItemForm(true);
+                }}
+                onDelete={() => handleDeleteItem(item.id)}
+                onShowQRCode={() => handleShowQRCode(item)}
+              />
+            ))}
           </div>
 
-          {filteredItems.length === 0 && (
+          {processedItems.length === 0 && (
             <Card className="bg-white/80 backdrop-blur-sm">
               <CardContent className="p-8 text-center">
                 <div className="text-gray-500">No items found matching your criteria.</div>
@@ -821,6 +804,50 @@ const Index = () => {
                     onClick={() => {
                       setReservingItem(null);
                       setReservedByName("");
+                    }}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Mark as Sold Modal */}
+        {markingSoldItem && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <Card className="w-full max-w-md mx-4 bg-white">
+              <CardHeader>
+                <CardTitle>Mark as Sold: {markingSoldItem.name}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="sold-quantity">Quantity sold (max: {markingSoldItem.quantity}):</Label>
+                  <Input
+                    id="sold-quantity"
+                    type="number"
+                    min="1"
+                    max={markingSoldItem.quantity}
+                    value={soldQuantityInput}
+                    onChange={(e) => setSoldQuantityInput(e.target.value)}
+                    placeholder="Enter quantity sold"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleConfirmMarkSold}
+                    disabled={!soldQuantityInput || parseInt(soldQuantityInput) <= 0 || parseInt(soldQuantityInput) > markingSoldItem.quantity}
+                    className="flex-1"
+                  >
+                    Confirm Sale
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setMarkingSoldItem(null);
+                      setSoldQuantityInput("");
                     }}
                     className="flex-1"
                   >

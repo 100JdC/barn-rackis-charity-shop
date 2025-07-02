@@ -1,5 +1,5 @@
 
-import { Eye, Edit, Trash2, QrCode, MapPin, Image } from "lucide-react";
+import { Eye, Edit, Trash2, QrCode, MapPin, Image, ShoppingCart } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -50,8 +50,15 @@ export const ItemCard = ({ item, userRole, onView, onEdit, onDelete, onShowQRCod
     return names[category] || category;
   };
 
-  // Get the first photo URL if available
+  // Get the first photo URL if available with more detailed logging
   const firstPhotoUrl = item.photos && item.photos.length > 0 ? storage.getPhoto(item.photos[0]) : null;
+  
+  console.log('ItemCard photo debug:', {
+    itemName: item.name,
+    photosArray: item.photos,
+    firstPhotoPath: item.photos?.[0],
+    firstPhotoUrl: firstPhotoUrl
+  });
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -67,11 +74,15 @@ export const ItemCard = ({ item, userRole, onView, onEdit, onDelete, onShowQRCod
                 console.error('Failed to load image:', firstPhotoUrl);
                 e.currentTarget.style.display = 'none';
               }}
+              onLoad={() => {
+                console.log('Image loaded successfully:', firstPhotoUrl);
+              }}
             />
           </div>
         ) : (
           <div className="mb-3 h-40 bg-gray-100 rounded-md flex items-center justify-center">
             <Image className="h-8 w-8 text-gray-400" />
+            <span className="text-xs text-gray-400 ml-2">No photo</span>
           </div>
         )}
 
@@ -103,7 +114,12 @@ export const ItemCard = ({ item, userRole, onView, onEdit, onDelete, onShowQRCod
 
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Quantity:</span>
-            <span className="font-medium">{item.quantity}</span>
+            <div className="font-medium">
+              {item.quantity}
+              {(item as any).quantityDisplay && (
+                <span className="text-blue-600 ml-1">({(item as any).quantityDisplay})</span>
+              )}
+            </div>
           </div>
           
           <div className="space-y-2">
@@ -132,7 +148,7 @@ export const ItemCard = ({ item, userRole, onView, onEdit, onDelete, onShowQRCod
         </div>
       </CardContent>
       
-      <CardFooter className="p-4 pt-0 flex gap-2">
+      <CardFooter className="p-4 pt-0 flex gap-2 flex-wrap">
         <Button variant="outline" size="sm" onClick={onView} className="flex-1">
           <Eye className="h-3 w-3 mr-1" />
           View
