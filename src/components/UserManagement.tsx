@@ -22,11 +22,9 @@ export const UserManagement = ({ onBack }: UserManagementProps) => {
   }, []);
 
   const handleDeleteUser = async (userId: string) => {
-    // Try to delete from Supabase first, then update local state
+    // Update local state and localStorage
     const updatedUsers = users.filter(user => user.id !== userId);
     setUsers(updatedUsers);
-    
-    // Also update localStorage as fallback
     storage.setUsers(updatedUsers);
   };
 

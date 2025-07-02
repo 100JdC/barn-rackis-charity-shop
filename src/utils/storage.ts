@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import type { Item } from "@/types/item";
 
@@ -64,7 +65,7 @@ const convertToSupabase = (item: Item) => ({
 });
 
 export const storage = {
-  // Session management - unified for all users
+  // Session management - unified for all users with 30-day expiry
   saveSession: (role: 'admin' | 'donator' | 'buyer', username?: string): void => {
     const sessionData = {
       role,
@@ -243,33 +244,10 @@ export const storage = {
     }
   },
 
-  // Users storage - simplified without RPC calls
+  // Users storage - localStorage only since no users table exists in Supabase
   getUsers: async (): Promise<RegisteredUser[]> => {
-    try {
-      console.log('Fetching users from Supabase...');
-      
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error('Error fetching users from Supabase:', error);
-        return storage.getUsersFromLocalStorage();
-      }
-      
-      console.log('Successfully fetched users from Supabase:', data?.length || 0);
-      return data ? data.map(user => ({
-        id: user.id,
-        username: user.username,
-        password: user.password_hash,
-        role: 'donator' as const,
-        registeredAt: user.created_at
-      })) : [];
-    } catch (error) {
-      console.error('Network error fetching users:', error);
-      return storage.getUsersFromLocalStorage();
-    }
+    console.log('Fetching users from localStorage (no Supabase users table)...');
+    return storage.getUsersFromLocalStorage();
   },
 
   getUsersFromLocalStorage: (): RegisteredUser[] => {
@@ -290,33 +268,8 @@ export const storage = {
   },
 
   addUser: async (username: string, password?: string): Promise<RegisteredUser> => {
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .insert([{
-          username: username,
-          password_hash: password || '',
-          role: 'donator'
-        }])
-        .select()
-        .single();
-      
-      if (error) {
-        console.error('Error adding user to Supabase:', error);
-        return storage.addUserToLocalStorage(username, password);
-      }
-      
-      return {
-        id: data.id,
-        username: data.username,
-        password: data.password_hash,
-        role: 'donator',
-        registeredAt: data.created_at
-      };
-    } catch (error) {
-      console.error('Network error adding user:', error);
-      return storage.addUserToLocalStorage(username, password);
-    }
+    console.log('Adding user to localStorage (no Supabase users table)...');
+    return storage.addUserToLocalStorage(username, password);
   },
 
   addUserToLocalStorage: (username: string, password?: string): RegisteredUser => {
