@@ -66,7 +66,7 @@ export const CategoryBrowser = ({ items, onCategorySelect }: CategoryBrowserProp
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {categories.map((category) => {
         const itemCount = getCategoryCount(category.value);
         
@@ -77,25 +77,35 @@ export const CategoryBrowser = ({ items, onCategorySelect }: CategoryBrowserProp
             onClick={() => onCategorySelect(category.value)}
           >
             <CardContent className="p-6">
-              <div className="aspect-square mb-4 bg-gray-100 rounded-lg overflow-hidden">
+              <div className="aspect-square mb-4 bg-gray-100 rounded-lg overflow-hidden relative">
                 {category.hasImage ? (
-                  <img
-                    src={category.image}
-                    alt={category.label}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      console.error(`Failed to load image for ${category.label}:`, category.image);
-                      e.currentTarget.style.display = 'none';
-                      const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
-                      if (placeholder) placeholder.style.display = 'flex';
-                    }}
-                  />
-                ) : null}
-                <div 
-                  className={`w-full h-full ${category.hasImage ? 'hidden' : 'flex'} items-center justify-center bg-gray-100`}
-                >
-                  <ImageIcon className="h-12 w-12 text-gray-400" />
-                </div>
+                  <>
+                    <img
+                      src={category.image}
+                      alt={category.label}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.error(`Failed to load image for ${category.label}:`, category.image);
+                        const target = e.currentTarget as HTMLImageElement;
+                        target.style.display = 'none';
+                        const placeholder = target.nextElementSibling as HTMLElement;
+                        if (placeholder) placeholder.style.display = 'flex';
+                      }}
+                      onLoad={() => {
+                        console.log(`Image loaded successfully for ${category.label}:`, category.image);
+                      }}
+                    />
+                    <div 
+                      className="absolute inset-0 hidden items-center justify-center bg-gray-100"
+                    >
+                      <ImageIcon className="h-12 w-12 text-gray-400" />
+                    </div>
+                  </>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                    <ImageIcon className="h-12 w-12 text-gray-400" />
+                  </div>
+                )}
               </div>
               
               <div className="text-center">

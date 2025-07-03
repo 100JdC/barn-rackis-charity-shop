@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { LoginForm } from "@/components/LoginForm";
@@ -61,7 +60,6 @@ export default function Index() {
       const loadedItems = await storage.getItems();
       console.log('Items loaded:', loadedItems.length);
       
-      // Process items to add quantity display for split items
       const processedItems = loadedItems.map(item => {
         if (item.sold_quantity && item.sold_quantity > 0) {
           return {
@@ -98,6 +96,7 @@ export default function Index() {
   const handleNavigate = (newView: string) => {
     if (newView === 'home') {
       setView('home');
+      handleLogout();
     } else if (newView === 'items') {
       setView('items');
       setShowCategories(true);
@@ -488,59 +487,57 @@ export default function Index() {
             </CardHeader>
             
             <CardContent className="space-y-4">
-              {!showCategories && (
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      placeholder="Search items..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                      <SelectTrigger className="w-40">
-                        <SelectValue placeholder="Category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Categories</SelectItem>
-                        {categories.map(cat => (
-                          <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-32">
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Status</SelectItem>
-                        <SelectItem value="available">Available</SelectItem>
-                        <SelectItem value="reserved">Reserved</SelectItem>
-                        <SelectItem value="sold">Sold</SelectItem>
-                        <SelectItem value="donated">Donated</SelectItem>
-                        <SelectItem value="pending_approval">Pending</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    
-                    <Select value={conditionFilter} onValueChange={setConditionFilter}>
-                      <SelectTrigger className="w-36">
-                        <SelectValue placeholder="Condition" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Conditions</SelectItem>
-                        <SelectItem value="new">New</SelectItem>
-                        <SelectItem value="lightly_used">Lightly Used</SelectItem>
-                        <SelectItem value="worn">Worn</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search items..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
                 </div>
-              )}
+                
+                <div className="flex flex-wrap gap-2">
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {categories.map(cat => (
+                        <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="available">Available</SelectItem>
+                      <SelectItem value="reserved">Reserved</SelectItem>
+                      <SelectItem value="sold">Sold</SelectItem>
+                      <SelectItem value="donated">Donated</SelectItem>
+                      <SelectItem value="pending_approval">Pending</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={conditionFilter} onValueChange={setConditionFilter}>
+                    <SelectTrigger className="w-36">
+                      <SelectValue placeholder="Condition" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Conditions</SelectItem>
+                      <SelectItem value="new">New</SelectItem>
+                      <SelectItem value="lightly_used">Lightly Used</SelectItem>
+                      <SelectItem value="worn">Worn</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
               
               {!showCategories && (
                 <div className="text-sm text-gray-600">
@@ -551,17 +548,10 @@ export default function Index() {
           </Card>
 
           {showCategories ? (
-            <div className="space-y-6">
-              <div className="text-center">
-                <h2 className="text-3xl font-bold text-white mb-2">Browse by Category</h2>
-                <p className="text-white/80 text-lg">Find items by category</p>
-              </div>
-              
-              <CategoryBrowser 
-                items={items} 
-                onCategorySelect={handleCategorySelect}
-              />
-            </div>
+            <CategoryBrowser 
+              items={items} 
+              onCategorySelect={handleCategorySelect}
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredItems.map((item) => (
