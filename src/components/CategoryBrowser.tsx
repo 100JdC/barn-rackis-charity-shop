@@ -1,7 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Package, ImageIcon } from "lucide-react";
+import { Package, Image } from "lucide-react";
 import type { Item } from "@/types/item";
 
 interface CategoryBrowserProps {
@@ -9,114 +9,100 @@ interface CategoryBrowserProps {
   onCategorySelect: (category: string) => void;
 }
 
-const categories = [
-  { 
-    value: "bedding", 
-    label: "Bedding", 
-    image: "/lovable-uploads/bedding.jpg",
-    hasImage: true 
-  },
-  { 
-    value: "bathroom", 
-    label: "Bathroom", 
-    image: "/lovable-uploads/bathroom.jpg",
-    hasImage: true 
-  },
-  { 
-    value: "decoration", 
-    label: "Decoration", 
-    image: "/lovable-uploads/scandinaviandecoration.jpg",
-    hasImage: true 
-  },
-  { 
-    value: "other_room_inventory", 
-    label: "Room Inventory", 
-    image: "/lovable-uploads/room.jpg",
-    hasImage: true 
-  },
-  { 
-    value: "kitchen", 
-    label: "Kitchen", 
-    image: "/lovable-uploads/kitchen.jpg",
-    hasImage: true 
-  },
-  { 
-    value: "bike_sports", 
-    label: "Bike & Sports", 
-    image: "",
-    hasImage: false 
-  },
-  { 
-    value: "electronics", 
-    label: "Electronics", 
-    image: "",
-    hasImage: false 
-  },
-  { 
-    value: "other", 
-    label: "Other", 
-    image: "",
-    hasImage: false 
-  }
-];
-
 export const CategoryBrowser = ({ items, onCategorySelect }: CategoryBrowserProps) => {
-  const getCategoryCount = (categoryValue: string) => {
-    return items.filter(item => item.category === categoryValue && item.status === 'available').length;
+  const categories = [
+    { 
+      value: "bedding", 
+      label: "Bedding", 
+      image: "/lovable-uploads/bedding.jpg",
+      hasImage: false // Set to true when you upload the image
+    },
+    { 
+      value: "bathroom", 
+      label: "Bathroom", 
+      image: "/lovable-uploads/bathroom.jpg",
+      hasImage: false // Set to true when you upload the image
+    },
+    { 
+      value: "decoration", 
+      label: "Decoration", 
+      image: "/lovable-uploads/decoration.jpg",
+      hasImage: false // Set to true when you upload the image
+    },
+    { 
+      value: "other_room_inventory", 
+      label: "Other Room Inventory", 
+      image: "/lovable-uploads/other-room.jpg",
+      hasImage: false // Set to true when you upload the image
+    },
+    { 
+      value: "kitchen", 
+      label: "Kitchen", 
+      image: "/lovable-uploads/kitchen.jpg",
+      hasImage: false // Set to true when you upload the image
+    },
+    { 
+      value: "bike_sports", 
+      label: "Bike & Sports", 
+      image: "/lovable-uploads/bike-sports.jpg",
+      hasImage: false // Set to true when you upload the image
+    },
+    { 
+      value: "electronics", 
+      label: "Electronics", 
+      image: "/lovable-uploads/electronics.jpg",
+      hasImage: false // Set to true when you upload the image
+    },
+    { 
+      value: "other", 
+      label: "Other", 
+      image: "/lovable-uploads/other.jpg",
+      hasImage: false // Set to true when you upload the image
+    }
+  ];
+
+  const getCategoryCount = (category: string) => {
+    return items.filter(item => item.category === category).length;
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
       {categories.map((category) => {
-        const itemCount = getCategoryCount(category.value);
+        const count = getCategoryCount(category.value);
         
         return (
           <Card 
             key={category.value} 
-            className="bg-white/95 backdrop-blur-sm hover:bg-white cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg"
+            className="cursor-pointer hover:shadow-lg transition-shadow bg-white/90 backdrop-blur-sm"
             onClick={() => onCategorySelect(category.value)}
           >
-            <CardContent className="p-6">
-              <div className="aspect-square mb-4 bg-gray-100 rounded-lg overflow-hidden relative">
-                {category.hasImage ? (
-                  <>
-                    <img
-                      src={category.image}
-                      alt={category.label}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        console.error(`Failed to load image for ${category.label}:`, category.image);
-                        const target = e.currentTarget as HTMLImageElement;
-                        target.style.display = 'none';
-                        const placeholder = target.nextElementSibling as HTMLElement;
-                        if (placeholder) placeholder.style.display = 'flex';
-                      }}
-                      onLoad={() => {
-                        console.log(`Image loaded successfully for ${category.label}:`, category.image);
-                      }}
-                    />
-                    <div 
-                      className="absolute inset-0 hidden items-center justify-center bg-gray-100"
-                    >
-                      <ImageIcon className="h-12 w-12 text-gray-400" />
-                    </div>
-                  </>
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                    <ImageIcon className="h-12 w-12 text-gray-400" />
-                  </div>
-                )}
-              </div>
-              
-              <div className="text-center">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {category.label}
-                </h3>
-                
-                <div className="flex items-center justify-center gap-2">
-                  <Package className="h-4 w-4 text-gray-500" />
-                  <Badge variant="secondary" className="text-sm">
-                    {itemCount} items
+            <CardContent className="p-4">
+              {/* Image section - mobile friendly height */}
+              {category.hasImage ? (
+                <div className="mb-3">
+                  <img 
+                    src={category.image} 
+                    alt={category.label}
+                    className="w-full h-32 md:h-40 object-cover rounded-md"
+                    onError={(e) => {
+                      console.error('Failed to load category image:', category.image);
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="mb-3 h-32 md:h-40 bg-gray-100 rounded-md flex items-center justify-center">
+                  <Image className="h-8 w-8 text-gray-400" />
+                  <span className="text-xs text-gray-400 ml-2">No image</span>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <h3 className="font-semibold text-lg text-center">{category.label}</h3>
+                <div className="flex justify-center">
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    <Package className="h-3 w-3" />
+                    {count} items
                   </Badge>
                 </div>
               </div>
