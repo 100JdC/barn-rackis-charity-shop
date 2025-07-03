@@ -3,9 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Item } from "@/types/item";
 
 const STORAGE_KEYS = {
-  ITEMS: 'inventory_items',
-  USERS: 'registered_users',
-  PHOTOS: 'uploaded_photos',
   SESSION: 'user_session'
 };
 
@@ -65,7 +62,7 @@ const convertToSupabase = (item: Item) => ({
 });
 
 export const storage = {
-  // Session management - unified for all users with 30-day expiry
+  // Session management - now using Supabase Auth
   saveSession: (role: 'admin' | 'donator' | 'buyer', username?: string): void => {
     const sessionData = {
       role,
@@ -97,7 +94,7 @@ export const storage = {
     localStorage.removeItem(STORAGE_KEYS.SESSION);
   },
 
-  // Items storage - with fallback to localStorage
+  // Items storage - ALWAYS use Supabase, no localStorage fallback
   getItems: async (): Promise<Item[]> => {
     try {
       console.log('Fetching items from Supabase...');
@@ -109,42 +106,15 @@ export const storage = {
       
       if (error) {
         console.error('Supabase error fetching items:', error);
-        console.log('Falling back to localStorage...');
-        return storage.getItemsFromLocalStorage();
+        throw error;
       }
       
       console.log('Successfully fetched items from Supabase:', data?.length || 0);
       return data ? data.map(convertFromSupabase) : [];
     } catch (error) {
-      console.error('Network error fetching items:', error);
-      console.log('Falling back to localStorage...');
-      return storage.getItemsFromLocalStorage();
-    }
-  },
-
-  // Fallback localStorage methods
-  getItemsFromLocalStorage: (): Item[] => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEYS.ITEMS);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
+      console.error('Error fetching items:', error);
       return [];
     }
-  },
-
-  setItemsToLocalStorage: (items: Item[]): void => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.ITEMS, JSON.stringify(items));
-    } catch (error) {
-      console.error('Failed to save items to localStorage:', error);
-    }
-  },
-
-  setItems: async (items: Item[]): Promise<void> => {
-    // This method is now deprecated since we handle individual items
-    console.warn('setItems is deprecated, use addItem, updateItem, deleteItem instead');
-    // Fallback to localStorage
-    storage.setItemsToLocalStorage(items);
   },
 
   addItem: async (item: Item): Promise<Item | null> => {
@@ -159,21 +129,13 @@ export const storage = {
       
       if (error) {
         console.error('Error adding item:', error);
-        // Fallback to localStorage
-        const items = storage.getItemsFromLocalStorage();
-        const newItems = [item, ...items];
-        storage.setItemsToLocalStorage(newItems);
-        return item;
+        throw error;
       }
       
       return convertFromSupabase(data);
     } catch (error) {
       console.error('Error adding item:', error);
-      // Fallback to localStorage
-      const items = storage.getItemsFromLocalStorage();
-      const newItems = [item, ...items];
-      storage.setItemsToLocalStorage(newItems);
-      return item;
+      return null;
     }
   },
 
@@ -209,13 +171,7 @@ export const storage = {
       
       if (error) {
         console.error('Error updating item:', error);
-        // Fallback to localStorage
-        const items = storage.getItemsFromLocalStorage();
-        const updatedItems = items.map(item => 
-          item.id === id ? { ...item, ...updates } : item
-        );
-        storage.setItemsToLocalStorage(updatedItems);
-        return updatedItems.find(item => item.id === id) || null;
+        throw error;
       }
       
       return convertFromSupabase(data);
@@ -234,7 +190,7 @@ export const storage = {
       
       if (error) {
         console.error('Error deleting item:', error);
-        return false;
+        throw error;
       }
       
       return true;
@@ -244,36 +200,15 @@ export const storage = {
     }
   },
 
-  // Users storage - localStorage only since no users table exists in Supabase
+  // Users storage - using Supabase Auth instead of localStorage
   getUsers: async (): Promise<RegisteredUser[]> => {
-    console.log('Fetching users from localStorage (no Supabase users table)...');
-    return storage.getUsersFromLocalStorage();
-  },
-
-  getUsersFromLocalStorage: (): RegisteredUser[] => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEYS.USERS);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  },
-
-  setUsers: (users: RegisteredUser[]): void => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-    } catch (error) {
-      console.error('Failed to save users:', error);
-    }
+    // This is now handled by Supabase Auth
+    console.log('Users are now managed by Supabase Auth');
+    return [];
   },
 
   addUser: async (username: string, password?: string): Promise<RegisteredUser> => {
-    console.log('Adding user to localStorage (no Supabase users table)...');
-    return storage.addUserToLocalStorage(username, password);
-  },
-
-  addUserToLocalStorage: (username: string, password?: string): RegisteredUser => {
-    const users = storage.getUsersFromLocalStorage();
+    // This should now use Supabase Auth sign up
     const newUser: RegisteredUser = {
       id: Date.now().toString(),
       username,
@@ -281,13 +216,10 @@ export const storage = {
       role: 'donator',
       registeredAt: new Date().toISOString()
     };
-    
-    const updatedUsers = [...users, newUser];
-    storage.setUsers(updatedUsers);
     return newUser;
   },
 
-  // Photo storage - now using Supabase with proper URL generation
+  // Photo storage - using Supabase Storage
   savePhoto: async (file: File): Promise<string | null> => {
     try {
       const fileExt = file.name.split('.').pop();
@@ -313,12 +245,6 @@ export const storage = {
       console.error('Error uploading photo:', error);
       return null;
     }
-  },
-
-  getPhotos: (): Record<string, string> => {
-    // This method is deprecated for Supabase
-    console.warn('getPhotos is deprecated, use getPhoto instead');
-    return {};
   },
 
   getPhoto: (photoPath: string): string | null => {

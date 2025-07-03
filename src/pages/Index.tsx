@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { LoginForm } from "@/components/LoginForm";
-import { DonorRegistration } from "@/components/DonorRegistration";
-import { DonorLogin } from "@/components/DonorLogin";
+import { DonatePage } from "@/pages/DonatePage";
 import { Header } from "@/components/Header";
 import { ItemCard } from "@/components/ItemCard";
 import { ItemDetail } from "@/components/ItemDetail";
@@ -10,7 +9,6 @@ import { ItemForm } from "@/components/ItemForm";
 import { QRCodeModal } from "@/components/QRCodeModal";
 import { UserManagement } from "@/components/UserManagement";
 import { ItemSplitModal } from "@/components/ItemSplitModal";
-import { ThankYouAnimation } from "@/components/ThankYouAnimation";
 import { storage } from "@/utils/storage";
 import { exportItemsToExcel } from "@/utils/exportUtils";
 import { Button } from "@/components/ui/button";
@@ -18,16 +16,15 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Download, Plus, Search, Filter, Users, Package, TrendingUp, ShoppingCart } from "lucide-react";
+import { Download, Plus, Search, Users, Package, TrendingUp, ShoppingCart } from "lucide-react";
 import type { Item, UserRole } from "@/types/item";
 import { CategoryBrowser } from "@/components/CategoryBrowser";
 
 export default function Index() {
   const [currentUser, setCurrentUser] = useState<{ role: UserRole, username?: string }>({ role: null });
-  const [view, setView] = useState<'home' | 'register' | 'donor-login' | 'admin' | 'items' | 'add-item' | 'item-detail' | 'edit-item' | 'user-management'>('home');
+  const [view, setView] = useState<'home' | 'items' | 'add-item' | 'item-detail' | 'edit-item' | 'user-management' | 'donate'>('home');
   const [items, setItems] = useState<Item[]>([]);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,7 +33,6 @@ export default function Index() {
   const [conditionFilter, setConditionFilter] = useState("all");
   const [showQRModal, setShowQRModal] = useState(false);
   const [showSplitModal, setShowSplitModal] = useState(false);
-  const [showThankYou, setShowThankYou] = useState(false);
   const [soldQuantityInput, setSoldQuantityInput] = useState<{ [key: string]: number }>({});
   const [showCategories, setShowCategories] = useState(true);
   const { toast } = useToast();
@@ -50,10 +46,10 @@ export default function Index() {
   }, []);
 
   useEffect(() => {
-    if (currentUser.role) {
+    if (currentUser.role && view === 'items') {
       loadItems();
     }
-  }, [currentUser.role]);
+  }, [currentUser.role, view]);
 
   const loadItems = async () => {
     try {
@@ -75,7 +71,7 @@ export default function Index() {
       console.error('Error loading items:', error);
       toast({
         title: "Error",
-        description: "Failed to load items",
+        description: "Failed to load items. Please check your connection.",
         variant: "destructive"
       });
     }
@@ -101,8 +97,20 @@ export default function Index() {
       setView('items');
       setShowCategories(true);
       setCategoryFilter('all');
+    } else if (newView === 'donate') {
+      setView('donate');
     } else {
       setView(newView as any);
+    }
+  };
+
+  const handleDonate = () => {
+    if (currentUser.role) {
+      // User is logged in, go directly to donate page
+      setView('donate');
+    } else {
+      // User is not logged in, go to login page
+      setView('home');
     }
   };
 
@@ -260,15 +268,6 @@ export default function Index() {
     }
   };
 
-  const handleDonationSubmit = () => {
-    setShowThankYou(true);
-  };
-
-  const handleThankYouComplete = () => {
-    setShowThankYou(false);
-    setView('home');
-  };
-
   const handleCategorySelect = (category: string) => {
     setCategoryFilter(category);
     setShowCategories(false);
@@ -309,17 +308,16 @@ export default function Index() {
     return <LoginForm onLogin={handleLogin} />;
   }
 
-  if (view === 'register') {
-    return <DonorRegistration 
-      onBack={() => setView('home')} 
-      onRegister={() => {
-        handleDonationSubmit();
-      }} 
-    />;
-  }
-
-  if (view === 'donor-login') {
-    return <DonorLogin onLogin={(username) => handleLogin('donator', username)} onBack={() => setView('home')} />;
+  if (view === 'donate') {
+    return (
+      <DonatePage
+        userRole={currentUser.role!}
+        username={currentUser.username}
+        onLogout={handleLogout}
+        onNavigate={handleNavigate}
+        onBack={() => setView('items')}
+      />
+    );
   }
 
   if (view === 'add-item' || view === 'edit-item') {
@@ -330,6 +328,7 @@ export default function Index() {
           username={currentUser.username}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
+          onDonate={handleDonate}
         />
         <div className="container mx-auto px-4 py-8">
           <ItemForm
@@ -354,6 +353,7 @@ export default function Index() {
           username={currentUser.username}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
+          onDonate={handleDonate}
         />
         <div className="container mx-auto px-4 py-8">
           {selectedItem && (
@@ -383,6 +383,7 @@ export default function Index() {
           username={currentUser.username}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
+          onDonate={handleDonate}
         />
         <div className="container mx-auto px-4 py-8">
           <UserManagement userRole={currentUser.role!} onBack={() => setView('items')} />
@@ -411,10 +412,12 @@ export default function Index() {
           username={currentUser.username}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
+          onDonate={handleDonate}
         />
         
         <div className="container mx-auto px-4 py-8">
-          {currentUser.role === 'admin' && (
+          {
+            currentUser.role === 'admin' && (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
               <Card className="bg-white/90 backdrop-blur-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -458,6 +461,7 @@ export default function Index() {
             </div>
           )}
 
+          
           <Card className="bg-white/90 backdrop-blur-sm mb-6">
             <CardHeader>
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -668,11 +672,6 @@ export default function Index() {
           onClose={() => setShowSplitModal(false)}
         />
       )}
-
-      <ThankYouAnimation
-        isVisible={showThankYou}
-        onComplete={handleThankYouComplete}
-      />
 
       <Toaster />
     </div>

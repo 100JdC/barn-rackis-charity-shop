@@ -1,5 +1,5 @@
 
-import { ArrowLeft, User, LogOut, Home } from "lucide-react";
+import { ArrowLeft, User, LogOut, Home, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -10,15 +10,22 @@ interface HeaderProps {
   onLogout?: () => void;
   onNavigate?: (view: string) => void;
   onHome?: () => void;
+  onDonate?: () => void;
 }
 
-export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHome }: HeaderProps) => {
+export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHome, onDonate }: HeaderProps) => {
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'admin': return 'bg-red-100 text-red-800 border-red-200';
       case 'donator': return 'bg-green-100 text-green-800 border-green-200';
       case 'buyer': return 'bg-blue-100 text-blue-800 border-blue-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const handleDonate = () => {
+    if (onDonate) {
+      onDonate();
     }
   };
 
@@ -57,6 +64,16 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
           >
             <Home className="h-4 w-4 mr-2" />
             Home
+          </Button>
+
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={handleDonate}
+            className="hover:bg-green-50 hover:text-green-600"
+          >
+            <Heart className="h-4 w-4 mr-2" />
+            Donate
           </Button>
           
           <Button 
