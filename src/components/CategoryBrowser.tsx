@@ -14,49 +14,49 @@ export const CategoryBrowser = ({ items, onCategorySelect }: CategoryBrowserProp
     { 
       value: "bedding", 
       label: "Bedding", 
-      image: "/lovable-uploads/appliances.jpg", // Using your uploaded image as placeholder
+      image: "/lovable-uploads/97c57dcc-37a1-4603-9224-829f8035c6f2.png", // Blue bedding
       hasImage: true
     },
     { 
       value: "bathroom", 
       label: "Bathroom", 
-      image: "/lovable-uploads/appliances.jpg", // Using your uploaded image as placeholder
+      image: "/lovable-uploads/c57b86d5-b328-4772-b64d-395290573d13.png", // Modern bathroom
       hasImage: true
     },
     { 
       value: "decoration", 
       label: "Decoration", 
-      image: "/lovable-uploads/appliances.jpg", // Using your uploaded image as placeholder
+      image: "/lovable-uploads/aa69fbc7-a9a8-4842-9493-ceff69afc35a.png", // Blue chair decoration
       hasImage: true
     },
     { 
       value: "other_room_inventory", 
       label: "Other Room Inventory", 
-      image: "/lovable-uploads/appliances.jpg", // Using your uploaded image as placeholder
+      image: "/lovable-uploads/0240b04f-460c-4529-8d90-3dc4feadfc33.png", // Living room
       hasImage: true
     },
     { 
       value: "kitchen", 
       label: "Kitchen", 
-      image: "/lovable-uploads/appliances.jpg", // Using your uploaded image as placeholder
+      image: "/lovable-uploads/0725a9a7-f12f-4ba7-a708-8d497125e068.png", // Modern kitchen
       hasImage: true
     },
     { 
       value: "bike_sports", 
       label: "Bike & Sports", 
-      image: "/lovable-uploads/appliances.jpg", // Using your uploaded image as placeholder
+      image: "/lovable-uploads/7a066ada-3fc3-4d45-8fbb-7b3a15064c1a.png", // Kayaking
       hasImage: true
     },
     { 
       value: "electronics", 
       label: "Electronics", 
-      image: "/lovable-uploads/appliances.jpg", // Using your uploaded image as placeholder
+      image: "/lovable-uploads/73c1d768-1cb7-4e15-806a-f9177157351d.png", // Laptop and electronics
       hasImage: true
     },
     { 
       value: "other", 
       label: "Other", 
-      image: "/lovable-uploads/appliances.jpg", // Using your uploaded image as placeholder
+      image: "/lovable-uploads/d12293c7-20a6-4048-9e25-9404ac21e90e.png", // Nature lake
       hasImage: true
     }
   ];
