@@ -14,50 +14,50 @@ export const CategoryBrowser = ({ items, onCategorySelect }: CategoryBrowserProp
     { 
       value: "bedding", 
       label: "Bedding", 
-      image: "/lovable-uploads/bedding.jpg",
-      hasImage: false // Set to true when you upload the image
+      image: "/lovable-uploads/appliances.jpg", // Using your uploaded image as placeholder
+      hasImage: true
     },
     { 
       value: "bathroom", 
       label: "Bathroom", 
-      image: "/lovable-uploads/bathroom.jpg",
-      hasImage: false // Set to true when you upload the image
+      image: "/lovable-uploads/appliances.jpg", // Using your uploaded image as placeholder
+      hasImage: true
     },
     { 
       value: "decoration", 
       label: "Decoration", 
-      image: "/lovable-uploads/decoration.jpg",
-      hasImage: false // Set to true when you upload the image
+      image: "/lovable-uploads/appliances.jpg", // Using your uploaded image as placeholder
+      hasImage: true
     },
     { 
       value: "other_room_inventory", 
       label: "Other Room Inventory", 
-      image: "/lovable-uploads/other-room.jpg",
-      hasImage: false // Set to true when you upload the image
+      image: "/lovable-uploads/appliances.jpg", // Using your uploaded image as placeholder
+      hasImage: true
     },
     { 
       value: "kitchen", 
       label: "Kitchen", 
-      image: "/lovable-uploads/kitchen.jpg",
-      hasImage: false // Set to true when you upload the image
+      image: "/lovable-uploads/appliances.jpg", // Using your uploaded image as placeholder
+      hasImage: true
     },
     { 
       value: "bike_sports", 
       label: "Bike & Sports", 
-      image: "/lovable-uploads/bike-sports.jpg",
-      hasImage: false // Set to true when you upload the image
+      image: "/lovable-uploads/appliances.jpg", // Using your uploaded image as placeholder
+      hasImage: true
     },
     { 
       value: "electronics", 
       label: "Electronics", 
-      image: "/lovable-uploads/electronics.jpg",
-      hasImage: false // Set to true when you upload the image
+      image: "/lovable-uploads/appliances.jpg", // Using your uploaded image as placeholder
+      hasImage: true
     },
     { 
       value: "other", 
       label: "Other", 
-      image: "/lovable-uploads/other.jpg",
-      hasImage: false // Set to true when you upload the image
+      image: "/lovable-uploads/appliances.jpg", // Using your uploaded image as placeholder
+      hasImage: true
     }
   ];
 
@@ -77,30 +77,33 @@ export const CategoryBrowser = ({ items, onCategorySelect }: CategoryBrowserProp
             onClick={() => onCategorySelect(category.value)}
           >
             <CardContent className="p-4">
-              {/* Image section - mobile friendly height */}
+              {/* Image section - responsive height */}
               {category.hasImage ? (
                 <div className="mb-3">
                   <img 
                     src={category.image} 
                     alt={category.label}
-                    className="w-full h-32 md:h-40 object-cover rounded-md"
+                    className="w-full h-24 sm:h-32 md:h-40 object-cover rounded-md"
                     onError={(e) => {
                       console.error('Failed to load category image:', category.image);
                       e.currentTarget.style.display = 'none';
                     }}
+                    onLoad={() => {
+                      console.log('Category image loaded successfully:', category.image);
+                    }}
                   />
                 </div>
               ) : (
-                <div className="mb-3 h-32 md:h-40 bg-gray-100 rounded-md flex items-center justify-center">
+                <div className="mb-3 h-24 sm:h-32 md:h-40 bg-gray-100 rounded-md flex items-center justify-center">
                   <Image className="h-8 w-8 text-gray-400" />
                   <span className="text-xs text-gray-400 ml-2">No image</span>
                 </div>
               )}
 
               <div className="space-y-2">
-                <h3 className="font-semibold text-lg text-center">{category.label}</h3>
+                <h3 className="font-semibold text-sm sm:text-base md:text-lg text-center">{category.label}</h3>
                 <div className="flex justify-center">
-                  <Badge variant="outline" className="flex items-center gap-1">
+                  <Badge variant="outline" className="flex items-center gap-1 text-xs">
                     <Package className="h-3 w-3" />
                     {count} items
                   </Badge>
