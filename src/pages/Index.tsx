@@ -21,9 +21,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Download, Plus, Search, Users, Package, TrendingUp, ShoppingCart } from "lucide-react";
 import type { Item, UserRole } from "@/types/item";
 import { CategoryBrowser } from "@/components/CategoryBrowser";
+import { supabase } from "@/integrations/supabase/client";
+import type { User, Session } from '@supabase/supabase-js';
 
 export default function Index() {
-  const [currentUser, setCurrentUser] = useState<{ role: UserRole, username?: string }>({ role: null });
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [view, setView] = useState<'home' | 'items' | 'add-item' | 'item-detail' | 'edit-item' | 'user-management' | 'donate'>('home');
   const [items, setItems] = useState<Item[]>([]);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
@@ -37,29 +40,45 @@ export default function Index() {
   const [showCategories, setShowCategories] = useState(true);
   const { toast } = useToast();
 
+  // Set up auth state listener
   useEffect(() => {
-    const session = storage.getSession();
-    if (session.role) {
-      setCurrentUser(session);
-      setView('items');
-    }
-  }, []);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user && view === 'home') {
+          setView('items');
+        }
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Existing session:', session?.user?.email);
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [view]);
 
   useEffect(() => {
-    if (currentUser.role && view === 'items') {
+    if (user && view === 'items') {
       loadItems();
     }
-  }, [currentUser.role, view]);
+  }, [user, view]);
 
   const loadItems = async () => {
     try {
       const loadedItems = await storage.getItems();
       console.log('Items loaded:', loadedItems.length);
       
-      // Filter items based on user role
+      // Filter items based on user role - admin can see all, others can't see pending
+      const userRole = getUserRole();
       let filteredItems = loadedItems;
-      if (currentUser.role !== 'admin') {
-        // Non-admin users can only see approved items
+      if (userRole !== 'admin') {
         filteredItems = loadedItems.filter(item => item.status !== 'pending_approval');
       }
       
@@ -84,22 +103,41 @@ export default function Index() {
     }
   };
 
-  const handleLogin = (role: UserRole, username?: string) => {
-    setCurrentUser({ role, username });
-    storage.saveSession(role, username);
-    setView('items');
+  const getUserRole = (): UserRole => {
+    if (!user) return null;
+    
+    // Check if user is admin (Jacob with specific email or admin role)
+    if (user.email === 'jacob@example.com' || user.user_metadata?.role === 'admin') {
+      return 'admin';
+    }
+    
+    // For now, all registered users are considered donators
+    return 'donator';
   };
 
-  const handleLogout = () => {
-    setCurrentUser({ role: null });
-    storage.clearSession();
-    setView('home');
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setSession(null);
+      setView('home');
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out."
+      });
+    } catch (error) {
+      console.error('Error logging out:', error);
+      toast({
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleNavigate = (newView: string) => {
     if (newView === 'home') {
       setView('home');
-      handleLogout();
     } else if (newView === 'items') {
       setView('items');
       setShowCategories(true);
@@ -112,25 +150,28 @@ export default function Index() {
   };
 
   const handleDonate = () => {
-    if (currentUser.role) {
-      // User is logged in, go directly to donate page
-      setView('donate');
-    } else {
-      // User is not logged in, go to login page first
-      setView('home');
+    if (!user) {
+      // User is not logged in, show login message and stay on home
       toast({
-        title: "Please Log In",
-        description: "You need to register or log in to donate items.",
+        title: "Login Required",
+        description: "Please log in or register to donate items.",
       });
+      setView('home');
+    } else {
+      // User is logged in, go to donate page
+      setView('donate');
     }
   };
 
   const handleItemSave = async (itemData: Partial<Item>) => {
     try {
+      const userRole = getUserRole();
+      const username = user?.email?.split('@')[0] || user?.user_metadata?.username || 'user';
+      
       if (selectedItem) {
         const updatedItem = await storage.updateItem(selectedItem.id, {
           ...itemData,
-          updated_by: currentUser.username || 'admin',
+          updated_by: username,
           updated_at: new Date().toISOString()
         });
         if (updatedItem) {
@@ -143,8 +184,10 @@ export default function Index() {
         const newItem: Item = {
           id: Date.now().toString(),
           ...itemData as Item,
-          created_by: currentUser.username || 'admin',
-          updated_by: currentUser.username || 'admin',
+          status: userRole === 'admin' ? (itemData.status || 'available') : 'pending_approval',
+          created_by: username,
+          updated_by: username,
+          donor_name: username,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           photos: itemData.photos || []
@@ -153,7 +196,7 @@ export default function Index() {
         await storage.addItem(newItem);
         toast({
           title: "Success",
-          description: "Item added successfully"
+          description: userRole === 'admin' ? "Item added successfully" : "Item submitted for approval"
         });
       }
       
@@ -197,7 +240,8 @@ export default function Index() {
     if (!selectedItem) return;
     
     try {
-      // Create a new item with the sold/reserved quantity
+      const username = user?.email?.split('@')[0] || user?.user_metadata?.username || 'user';
+      
       const newItem: Item = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         ...selectedItem,
@@ -205,19 +249,18 @@ export default function Index() {
         status: status,
         final_price: finalPrice,
         reserved_by: reservedBy,
-        created_by: currentUser.username || 'admin',
-        updated_by: currentUser.username || 'admin',
+        created_by: username,
+        updated_by: username,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
       
       await storage.addItem(newItem);
       
-      // Update the original item with reduced quantity
       const remainingQuantity = selectedItem.quantity - soldQuantity;
       await storage.updateItem(selectedItem.id, {
         quantity: remainingQuantity,
-        updated_by: currentUser.username || 'admin',
+        updated_by: username,
         updated_at: new Date().toISOString()
       });
       
@@ -241,6 +284,7 @@ export default function Index() {
 
   const handleMarkAsSold = async (item: Item, soldQuantity: number) => {
     try {
+      const username = user?.email?.split('@')[0] || user?.user_metadata?.username || 'user';
       const currentSold = item.sold_quantity || 0;
       const newSoldQuantity = currentSold + soldQuantity;
       
@@ -258,7 +302,7 @@ export default function Index() {
       await storage.updateItem(item.id, {
         sold_quantity: newSoldQuantity,
         status: newStatus,
-        updated_by: currentUser.username || 'admin',
+        updated_by: username,
         updated_at: new Date().toISOString()
       });
       
@@ -297,6 +341,7 @@ export default function Index() {
     return matchesSearch && matchesCategory && matchesStatus && matchesCondition;
   });
 
+  const userRole = getUserRole();
   const stats = {
     totalItems: items.length,
     availableItems: items.filter(item => item.status === 'available').length,
@@ -316,15 +361,18 @@ export default function Index() {
     { value: "other", label: "Other" }
   ];
 
+  // Always show the welcome page first if not authenticated
   if (view === 'home') {
-    return <LoginForm onLogin={handleLogin} />;
+    return <LoginForm onLogin={(role, username) => {
+      setView('items');
+    }} />;
   }
 
   if (view === 'donate') {
     return (
       <DonatePage
-        userRole={currentUser.role!}
-        username={currentUser.username}
+        userRole={userRole}
+        username={user?.email?.split('@')[0] || user?.user_metadata?.username}
         onLogout={handleLogout}
         onNavigate={handleNavigate}
         onBack={() => setView('items')}
@@ -336,8 +384,8 @@ export default function Index() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          userRole={currentUser.role!}
-          username={currentUser.username}
+          userRole={userRole}
+          username={user?.email?.split('@')[0] || user?.user_metadata?.username}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
           onDonate={handleDonate}
@@ -345,7 +393,7 @@ export default function Index() {
         <div className="container mx-auto px-4 py-8">
           <ItemForm
             item={selectedItem}
-            userRole={currentUser.role!}
+            userRole={userRole}
             onSubmit={handleItemSave}
             onCancel={() => {
               setView('items');
@@ -361,8 +409,8 @@ export default function Index() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          userRole={currentUser.role!}
-          username={currentUser.username}
+          userRole={userRole}
+          username={user?.email?.split('@')[0] || user?.user_metadata?.username}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
           onDonate={handleDonate}
@@ -371,7 +419,7 @@ export default function Index() {
           {selectedItem && (
             <ItemDetail
               item={selectedItem}
-              userRole={currentUser.role!}
+              userRole={userRole}
               onEdit={() => setView('edit-item')}
               onDelete={() => handleItemDelete(selectedItem)}
               onShowQRCode={() => setShowQRModal(true)}
@@ -391,14 +439,14 @@ export default function Index() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          userRole={currentUser.role!}
-          username={currentUser.username}
+          userRole={userRole}
+          username={user?.email?.split('@')[0] || user?.user_metadata?.username}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
           onDonate={handleDonate}
         />
         <div className="container mx-auto px-4 py-8">
-          <UserManagement userRole={currentUser.role!} onBack={() => setView('items')} />
+          <UserManagement userRole={userRole} onBack={() => setView('items')} />
         </div>
       </div>
     );
@@ -420,15 +468,15 @@ export default function Index() {
       
       <div className="relative z-10">
         <Header 
-          userRole={currentUser.role!}
-          username={currentUser.username}
+          userRole={userRole}
+          username={user?.email?.split('@')[0] || user?.user_metadata?.username}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
           onDonate={handleDonate}
         />
         
         <div className="container mx-auto px-4 py-8">
-          {currentUser.role === 'admin' && (
+          {userRole === 'admin' && (
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
               <Card className="bg-white/90 backdrop-blur-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -504,7 +552,7 @@ export default function Index() {
                   </CardTitle>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {currentUser.role === 'admin' && (
+                  {userRole === 'admin' && (
                     <>
                       <Button onClick={() => setView('add-item')} className="bg-green-600 hover:bg-green-700">
                         <Plus className="h-4 w-4 mr-2" />
@@ -559,7 +607,7 @@ export default function Index() {
                       <SelectItem value="reserved">Reserved</SelectItem>
                       <SelectItem value="sold">Sold</SelectItem>
                       <SelectItem value="donated">Donated</SelectItem>
-                      {currentUser.role === 'admin' && (
+                      {userRole === 'admin' && (
                         <SelectItem value="pending_approval">Pending</SelectItem>
                       )}
                     </SelectContent>
@@ -598,7 +646,7 @@ export default function Index() {
                 <div key={item.id} className="relative">
                   <ItemCard
                     item={item}
-                    userRole={currentUser.role!}
+                    userRole={userRole}
                     onView={() => {
                       setSelectedItem(item);
                       setView('item-detail');
@@ -614,7 +662,7 @@ export default function Index() {
                     }}
                   />
                   
-                  {currentUser.role === 'admin' && item.quantity > 1 && (
+                  {userRole === 'admin' && item.quantity > 1 && (
                     <div className="mt-2 p-3 bg-white rounded-lg border space-y-2">
                       <div className="flex items-center gap-2">
                         <Button
@@ -668,7 +716,7 @@ export default function Index() {
                     ? "Try adjusting your search criteria" 
                     : "Get started by adding your first item"}
                 </p>
-                {currentUser.role === 'admin' && (
+                {userRole === 'admin' && (
                   <Button onClick={() => setView('add-item')} className="bg-green-600 hover:bg-green-700">
                     <Plus className="h-4 w-4 mr-2" />
                     Add First Item

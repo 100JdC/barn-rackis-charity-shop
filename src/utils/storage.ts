@@ -62,39 +62,23 @@ const convertToSupabase = (item: Item) => ({
 });
 
 export const storage = {
-  // Session management - now using Supabase Auth
+  // Session management - using Supabase Auth
   saveSession: (role: 'admin' | 'donator' | 'buyer', username?: string): void => {
-    const sessionData = {
-      role,
-      username: username || (role === 'admin' ? 'Jacob' : ''),
-      timestamp: Date.now()
-    };
-    localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sessionData));
+    // Supabase handles session management automatically
+    console.log('Session management handled by Supabase Auth');
   },
 
   getSession: (): { role: 'admin' | 'donator' | 'buyer' | null, username?: string } => {
-    const session = localStorage.getItem(STORAGE_KEYS.SESSION);
-    if (session) {
-      try {
-        const parsed = JSON.parse(session);
-        // Sessions last 30 days
-        if (Date.now() - parsed.timestamp < 30 * 24 * 60 * 60 * 1000) {
-          return { role: parsed.role, username: parsed.username };
-        } else {
-          localStorage.removeItem(STORAGE_KEYS.SESSION);
-        }
-      } catch (error) {
-        localStorage.removeItem(STORAGE_KEYS.SESSION);
-      }
-    }
+    // Supabase handles session management automatically
     return { role: null };
   },
 
   clearSession: (): void => {
-    localStorage.removeItem(STORAGE_KEYS.SESSION);
+    // Supabase handles session management automatically
+    console.log('Session cleared via Supabase Auth');
   },
 
-  // Items storage - ALWAYS use Supabase, no localStorage fallback
+  // Items storage - ALWAYS use Supabase
   getItems: async (): Promise<Item[]> => {
     try {
       console.log('Fetching items from Supabase...');
@@ -119,7 +103,13 @@ export const storage = {
 
   addItem: async (item: Item): Promise<Item | null> => {
     try {
-      const supabaseData = convertToSupabase(item);
+      // Ensure donated items are always pending approval unless created by admin
+      const itemToAdd = {
+        ...item,
+        status: item.status === 'available' && item.created_by !== 'admin' ? 'pending_approval' : item.status
+      };
+      
+      const supabaseData = convertToSupabase(itemToAdd);
       
       const { data, error } = await supabase
         .from('Item inventory')
@@ -202,7 +192,6 @@ export const storage = {
 
   // Users storage - using Supabase Auth instead of localStorage
   getUsers: async (): Promise<RegisteredUser[]> => {
-    // This is now handled by Supabase Auth
     console.log('Users are now managed by Supabase Auth');
     return [];
   },

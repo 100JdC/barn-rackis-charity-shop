@@ -3,161 +3,256 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DonorRegistration } from "./DonorRegistration";
-import { DonorLogin } from "./DonorLogin";
-import { storage } from "@/utils/storage";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageWrapper } from "@/components/PageWrapper";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface LoginFormProps {
   onLogin: (role: 'admin' | 'donator' | 'buyer', username?: string) => void;
 }
 
 export const LoginForm = ({ onLogin }: LoginFormProps) => {
-  const [view, setView] = useState<'options' | 'admin' | 'donor-register' | 'donor-options' | 'donor-login'>('options');
-  const [username, setUsername] = useState("");
+  const [view, setView] = useState<'options' | 'login' | 'register'>('options');
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
-  // Check for existing session on mount
-  useEffect(() => {
-    const session = storage.getSession();
-    if (session.role) {
-      onLogin(session.role, session.username);
-    }
-  }, [onLogin]);
-
-  const handleAdminSubmit = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === "Jacob" && password === "Rackis") {
-      storage.saveSession('admin', username);
-      onLogin('admin');
-    } else {
-      setError("Invalid admin credentials");
+    if (!email.trim() || !password.trim()) {
+      setError("Both email and password are required");
+      return;
     }
-  };
 
-  const handleDonorRegister = async (donorUsername: string, donorPassword: string) => {
+    setLoading(true);
+    setError("");
+
     try {
-      await storage.addUser(donorUsername, donorPassword);
-      storage.saveSession('donator', donorUsername);
-      onLogin('donator', donorUsername);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password
+      });
+
+      if (error) {
+        console.error('Login error:', error);
+        setError(error.message);
+        return;
+      }
+
+      if (data.user) {
+        console.log('Login successful:', data.user.email);
+        toast({
+          title: "Welcome back!",
+          description: "You have been successfully logged in."
+        });
+        // The onAuthStateChange will handle the login automatically
+      }
     } catch (error) {
-      console.error('Error registering user:', error);
-      setError('Registration failed. Please try again.');
+      console.error('Login error:', error);
+      setError("Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDonorLogin = (donorUsername: string) => {
-    storage.saveSession('donator', donorUsername);
-    onLogin('donator', donorUsername);
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password.trim()) {
+      setError("Both email and password are required");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          emailRedirectTo: redirectUrl
+        }
+      });
+
+      if (error) {
+        console.error('Registration error:', error);
+        setError(error.message);
+        return;
+      }
+
+      if (data.user) {
+        console.log('Registration successful:', data.user.email);
+        toast({
+          title: "Registration successful!",
+          description: "Please check your email to verify your account."
+        });
+        // The onAuthStateChange will handle the login automatically
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      setError("Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (view === 'donor-register') {
-    return (
-      <DonorRegistration 
-        onRegister={handleDonorRegister}
-        onBack={() => setView('donor-options')}
-      />
-    );
-  }
-
-  if (view === 'donor-login') {
-    return (
-      <DonorLogin 
-        onLogin={handleDonorLogin}
-        onBack={() => setView('donor-options')}
-      />
-    );
-  }
-
-  if (view === 'donor-options') {
+  if (view === 'login') {
     return (
       <PageWrapper>
-        <div className="w-full max-w-2xl text-white space-y-6">
-          <h2 className="text-center text-2xl">Donate Items</h2>
-          <p className="text-center text-white/90">
-            Choose how you'd like to proceed with donating your items.
-          </p>
-          <div className="space-y-3">
-            <Button
-              onClick={() => setView('donor-register')}
-              className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30"
-              variant="outline"
+        <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm shadow-xl">
+          <CardHeader>
+            <CardTitle className="text-center text-2xl" style={{ color: '#1733a7' }}>Login</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="Enter your email"
+                  disabled={loading}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="Enter your password"
+                  disabled={loading}
+                />
+              </div>
+
+              {error && (
+                <div className="text-red-600 text-sm">{error}</div>
+              )}
+
+              <Button 
+                type="submit" 
+                className="w-full" 
+                style={{ backgroundColor: '#1733a7' }}
+                disabled={loading}
+              >
+                {loading ? 'Logging in...' : 'Login'}
+              </Button>
+            </form>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => setView('options')}
+              className="w-full"
+              style={{ borderColor: '#1733a7', color: '#1733a7' }}
+              disabled={loading}
             >
-              Register as New Donor
+              Back to Options
             </Button>
-            <Button
-              onClick={() => setView('donor-login')}
-              className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30"
-              variant="outline"
-            >
-              I'm Already Registered - Login
-            </Button>
-          </div>
-          <Button
-            onClick={() => setView('options')}
-            className="w-full mt-4 text-white/80 hover:text-white hover:bg-white/10"
-            variant="ghost"
-          >
-            Back to Home
-          </Button>
-        </div>
+          </CardContent>
+        </Card>
       </PageWrapper>
     );
   }
 
-  if (view === 'admin') {
+  if (view === 'register') {
     return (
       <PageWrapper>
-        <div className="w-full max-w-2xl text-white space-y-6">
-          <h2 className="text-center text-2xl">Admin Login</h2>
-          <form onSubmit={handleAdminSubmit} className="space-y-4" autoComplete="on">
-            <div>
-              <Label htmlFor="admin-username" className="text-white">Username</Label>
-              <Input
-                id="admin-username"
-                name="username"
-                autoComplete="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                placeholder="Enter admin username"
-                className="bg-white/20 border-white/30 text-white placeholder:text-white/60"
-              />
-            </div>
-            <div>
-              <Label htmlFor="admin-password" className="text-white">Password</Label>
-              <Input
-                id="admin-password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="Enter admin password"
-                className="bg-white/20 border-white/30 text-white placeholder:text-white/60"
-              />
-            </div>
-            {error && (
-              <div className="text-red-300 text-sm">{error}</div>
-            )}
-            <Button
-              type="submit"
-              className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30"
-              variant="outline"
+        <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm shadow-xl">
+          <CardHeader>
+            <CardTitle className="text-center text-2xl" style={{ color: '#1733a7' }}>Register as Donor</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <form onSubmit={handleRegister} className="space-y-4">
+              <div>
+                <Label htmlFor="register-email">Email</Label>
+                <Input
+                  id="register-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="Enter your email"
+                  disabled={loading}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="register-password">Password</Label>
+                <Input
+                  id="register-password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="Choose a password (min 6 characters)"
+                  disabled={loading}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  placeholder="Confirm your password"
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="text-sm text-orange-600 bg-orange-50 p-3 rounded-lg border border-orange-200">
+                <strong>⚠️ Security Notice:</strong> For safety reasons, please use a unique password that you don't use for other important accounts.
+              </div>
+
+              {error && (
+                <div className="text-red-600 text-sm">{error}</div>
+              )}
+
+              <Button 
+                type="submit" 
+                className="w-full" 
+                style={{ backgroundColor: '#1733a7' }}
+                disabled={loading}
+              >
+                {loading ? 'Registering...' : 'Register as Donor'}
+              </Button>
+            </form>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => setView('options')}
+              className="w-full"
+              style={{ borderColor: '#1733a7', color: '#1733a7' }}
+              disabled={loading}
             >
-              Login as Admin
+              Back to Options
             </Button>
-          </form>
-          <Button
-            onClick={() => setView('options')}
-            className="w-full text-white/80 hover:text-white hover:bg-white/10"
-            variant="ghost"
-          >
-            Back to Options
-          </Button>
-        </div>
+          </CardContent>
+        </Card>
       </PageWrapper>
     );
   }
@@ -191,11 +286,20 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
             Browse our items
           </Button>
           <Button
-            onClick={() => setView('donor-options')}
+            onClick={() => setView('register')}
             className="w-full bg-white/20 hover:bg-white/30 text-white h-12 text-lg border-white/30"
             variant="outline"
           >
-            Here you can donate
+            Register to donate
+          </Button>
+        </div>
+        <div className="text-center">
+          <Button
+            onClick={() => setView('login')}
+            className="text-white/80 hover:text-white text-lg underline"
+            variant="link"
+          >
+            Already have an account? Login here
           </Button>
         </div>
       </div>

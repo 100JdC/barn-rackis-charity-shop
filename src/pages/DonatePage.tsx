@@ -1,11 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { ItemForm } from "@/components/ItemForm";
 import { ThankYouAnimation } from "@/components/ThankYouAnimation";
 import { storage } from "@/utils/storage";
 import { useToast } from "@/hooks/use-toast";
 import type { Item, UserRole } from "@/types/item";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DonatePageProps {
   userRole: UserRole;
@@ -17,17 +18,49 @@ interface DonatePageProps {
 
 export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }: DonatePageProps) => {
   const [showThankYou, setShowThankYou] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const { toast } = useToast();
 
+  useEffect(() => {
+    // Check if user is authenticated
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to donate items.",
+          variant: "destructive"
+        });
+        onNavigate('home');
+        return;
+      }
+      setUser(user);
+    };
+
+    checkAuth();
+  }, [onNavigate, toast]);
+
   const handleItemSave = async (itemData: Partial<Item>) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to donate items.",
+        variant: "destructive"
+      });
+      onNavigate('home');
+      return;
+    }
+
     try {
+      const donorUsername = user.email?.split('@')[0] || user.user_metadata?.username || 'Anonymous Donor';
+      
       const newItem: Item = {
         id: Date.now().toString(),
         ...itemData as Item,
         status: 'pending_approval', // Always pending for donations
-        created_by: username || 'donor',
-        updated_by: username || 'donor',
-        donor_name: username || 'Anonymous Donor',
+        created_by: donorUsername,
+        updated_by: donorUsername,
+        donor_name: donorUsername,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         photos: itemData.photos || []
@@ -54,6 +87,24 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
     setShowThankYou(false);
     onNavigate('items');
   };
+
+  // Don't render the form if user is not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h1>
+          <p className="text-gray-600 mb-4">Please log in to donate items.</p>
+          <button 
+            onClick={() => onNavigate('home')}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
