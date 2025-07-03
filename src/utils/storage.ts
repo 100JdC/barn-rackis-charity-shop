@@ -140,7 +140,7 @@ export const storage = {
         return itemToAdd;
       }
       
-      return convertFromSupabase(data);
+      return data ? convertFromSupabase(data) : null;
     } catch (error) {
       console.error('Error adding item:', error);
       // Fallback to localStorage
@@ -194,7 +194,7 @@ export const storage = {
         return null;
       }
       
-      return convertFromSupabase(data);
+      return data ? convertFromSupabase(data) : null;
     } catch (error) {
       console.error('Error updating item:', error);
       // Fallback to localStorage
@@ -278,8 +278,8 @@ export const storage = {
         return null;
       }
       
-      console.log('Photo uploaded successfully:', data.path);
-      return data.path;
+      console.log('Photo uploaded successfully:', data?.path);
+      return data?.path || null;
     } catch (error) {
       console.error('Error uploading photo:', error);
       return null;
