@@ -16,7 +16,7 @@ export interface RegisteredUser {
 
 // Helper functions to convert between Item type and Supabase table format
 const convertFromSupabase = (dbItem: any): Item => ({
-  id: dbItem['Item ID'].toString(),
+  id: dbItem['Item ID']?.toString() || '',
   name: dbItem.Name || '',
   description: dbItem.Description || '',
   category: dbItem.Category || 'other',
@@ -58,7 +58,7 @@ const convertToSupabase = (item: Item) => ({
   'Updated By': item.updated_by,
   'Created At': item.created_at,
   'Updated At': item.updated_at,
-  'Photos Count': item.photos.length
+  'Photos Count': item.photos?.length || 0
 });
 
 export const storage = {

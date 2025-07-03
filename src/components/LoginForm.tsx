@@ -33,7 +33,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     setError("");
 
     try {
-      // Check for admin credentials first
+      // Check for admin credentials first - allow admin to login without email verification
       if (email.toLowerCase() === "jacob@admin.com" && password === "Rackis") {
         console.log('Admin login successful');
         toast({
@@ -50,7 +50,13 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
       });
 
       if (error) {
-        setError(error.message);
+        if (error.message.includes('Email not confirmed')) {
+          setError("Please check your email and click the confirmation link before logging in.");
+        } else if (error.message.includes('Invalid login credentials')) {
+          setError("Invalid email or password. Please check your credentials and try again.");
+        } else {
+          setError(error.message);
+        }
         return;
       }
       
@@ -104,18 +110,30 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
       });
 
       if (error) {
-        setError(error.message);
+        if (error.message.includes('User already registered')) {
+          setError("An account with this email already exists. Please try logging in instead.");
+        } else {
+          setError(error.message);
+        }
         return;
       }
 
       console.log('Registration successful:', data.user?.email);
-      toast({
-        title: "Registration successful!",
-        description: "Welcome! You can now start donating items."
-      });
       
-      // Auto-login after registration and go to donate page
-      onLogin('donator', username.trim());
+      if (data.user && !data.user.email_confirmed_at) {
+        toast({
+          title: "Registration successful!",
+          description: "Please check your email for a confirmation link before logging in.",
+        });
+      } else {
+        toast({
+          title: "Registration successful!",
+          description: "Welcome! You can now start donating items."
+        });
+        
+        // Auto-login after registration if email is already confirmed
+        onLogin('donator', username.trim());
+      }
       
     } catch (error) {
       console.error('Registration error:', error);
