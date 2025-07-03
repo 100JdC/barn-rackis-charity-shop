@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +13,7 @@ interface LoginFormProps {
 
 export const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [view, setView] = useState<'options' | 'login' | 'register'>('options');
-  const [email, setEmail] = useState("");
+  const [emailOrUsername, setEmailOrUsername] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -24,8 +23,8 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password.trim()) {
-      setError("Both email and password are required");
+    if (!emailOrUsername.trim() || !password.trim()) {
+      setError("Both email/username and password are required");
       return;
     }
 
@@ -34,18 +33,56 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
 
     try {
       // Check for admin credentials first - allow admin to login without email verification
-      if (email.toLowerCase() === "jacob@admin.com" && password === "Rackis") {
-        console.log('Admin login successful');
-        toast({
-          title: "Welcome back, Admin!",
-          description: "You have been successfully logged in."
-        });
-        onLogin('admin', 'Jacob');
-        return;
+      if (emailOrUsername.toLowerCase() === "jacob@admin.com" || emailOrUsername.toLowerCase() === "jacob") {
+        if (password === "Rackis") {
+          console.log('Admin login successful');
+          toast({
+            title: "Welcome back, Admin!",
+            description: "You have been successfully logged in."
+          });
+          onLogin('admin', 'Jacob');
+          return;
+        } else {
+          setError("Invalid admin password");
+          return;
+        }
+      }
+
+      // Check if input is an email or username
+      const isEmail = emailOrUsername.includes('@');
+      let loginEmail = emailOrUsername;
+
+      // If it's not an email, treat it as a username and find the corresponding email
+      if (!isEmail) {
+        try {
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('username', emailOrUsername.toLowerCase())
+            .single();
+
+          if (profileError || !profile) {
+            setError("Username not found. Please check your username or try using your email instead.");
+            return;
+          }
+
+          // Get the user's email from auth.users table
+          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          if (userError) {
+            // If we can't get current user, we need to use the email from the auth system
+            // For now, we'll show an error and ask them to use email
+            setError("Please use your email address to log in, or contact support if you only remember your username.");
+            return;
+          }
+        } catch (error) {
+          console.error('Error finding user by username:', error);
+          setError("Please use your email address to log in.");
+          return;
+        }
       }
 
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: loginEmail,
         password,
       });
 
@@ -53,7 +90,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
         if (error.message.includes('Email not confirmed')) {
           setError("Please check your email and click the confirmation link before logging in.");
         } else if (error.message.includes('Invalid login credentials')) {
-          setError("Invalid email or password. Please check your credentials and try again.");
+          setError("Invalid credentials. Please check your email/username and password.");
         } else {
           setError(error.message);
         }
@@ -79,7 +116,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !username.trim() || !password.trim()) {
+    if (!emailOrUsername.trim() || !username.trim() || !password.trim()) {
       setError("Email, username, and password are all required");
       return;
     }
@@ -99,7 +136,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
 
     try {
       const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
+        email: emailOrUsername.trim(),
         password: password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
@@ -153,14 +190,14 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           <CardContent className="space-y-4">
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="emailOrUsername">Email or Username</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="emailOrUsername"
+                  type="text"
+                  value={emailOrUsername}
+                  onChange={(e) => setEmailOrUsername(e.target.value)}
                   required
-                  placeholder="Enter your email"
+                  placeholder="Enter your email or username"
                   disabled={loading}
                 />
               </div>
@@ -221,8 +258,8 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
                 <Input
                   id="register-email"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={emailOrUsername}
+                  onChange={(e) => setEmailOrUsername(e.target.value)}
                   required
                   placeholder="Enter your email"
                   disabled={loading}

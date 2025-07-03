@@ -167,6 +167,7 @@ export const storage = {
       if (updates.internal_notes !== undefined) supabaseUpdates['Internal Notes'] = updates.internal_notes;
       if (updates.donor_name !== undefined) supabaseUpdates['Donor Name'] = updates.donor_name;
       if (updates.updated_by !== undefined) supabaseUpdates['Updated By'] = updates.updated_by;
+      if (updates.sold_quantity !== undefined) supabaseUpdates['Sold Quantity'] = updates.sold_quantity;
       if (updates.photos !== undefined) supabaseUpdates['Photos Count'] = updates.photos.length;
       
       supabaseUpdates['Updated At'] = new Date().toISOString();
@@ -255,7 +256,6 @@ export const storage = {
     return newUser;
   },
 
-  // Photo storage - using Supabase Storage
   savePhoto: async (file: File): Promise<string | null> => {
     try {
       const fileExt = file.name.split('.').pop();
