@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import type { Item } from "@/types/item";
 
@@ -6,6 +7,7 @@ interface StoredUser {
   username: string;
   role: string;
   registeredAt: string;
+  password?: string; // Add password field
 }
 
 export const storage = {
@@ -24,6 +26,43 @@ export const storage = {
   clearSession() {
     localStorage.removeItem('userRole');
     localStorage.removeItem('username');
+  },
+
+  async savePhoto(file: File): Promise<string | null> {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `photos/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('photos')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        return null;
+      }
+
+      return filePath;
+    } catch (error) {
+      console.error('Error saving photo:', error);
+      return null;
+    }
+  },
+
+  getPhoto(photoPath: string): string | null {
+    if (!photoPath) return null;
+    
+    try {
+      const { data } = supabase.storage
+        .from('photos')
+        .getPublicUrl(photoPath);
+      
+      return data?.publicUrl || null;
+    } catch (error) {
+      console.error('Error getting photo URL:', error);
+      return null;
+    }
   },
 
   async getItems(): Promise<Item[]> {
@@ -46,14 +85,14 @@ export const storage = {
         id: item['Item ID']?.toString() || '',
         name: item.Name || '',
         description: item.Description || '',
-        category: item.Category || '',
+        category: (item.Category || 'other') as Item['category'],
         subcategory: item.Subcategory || '',
-        condition: item.Condition || 'lightly_used',
+        condition: (item.Condition || 'lightly_used') as Item['condition'],
         original_price: item['Original Price (SEK)'] || 0,
         suggested_price: parseFloat(item['Suggested Price (SEK)'] || '0'),
         final_price: parseFloat(item['Final Price (SEK)'] || '0'),
         quantity: item.Quantity || 1,
-        status: item.Status || 'available',
+        status: (item.Status || 'available') as Item['status'],
         reserved_by: item['Reserved By'] || '',
         location: item.Location || '',
         internal_notes: item['Internal Notes'] || '',
@@ -153,14 +192,14 @@ export const storage = {
         id: data['Item ID']?.toString() || '',
         name: data.Name || '',
         description: data.Description || '',
-        category: data.Category || '',
+        category: (data.Category || 'other') as Item['category'],
         subcategory: data.Subcategory || '',
-        condition: data.Condition || 'lightly_used',
+        condition: (data.Condition || 'lightly_used') as Item['condition'],
         original_price: data['Original Price (SEK)'] || 0,
         suggested_price: parseFloat(data['Suggested Price (SEK)'] || '0'),
         final_price: parseFloat(data['Final Price (SEK)'] || '0'),
         quantity: data.Quantity || 1,
-        status: data.Status || 'available',
+        status: (data.Status || 'available') as Item['status'],
         reserved_by: data['Reserved By'] || '',
         location: data.Location || '',
         internal_notes: data['Internal Notes'] || '',

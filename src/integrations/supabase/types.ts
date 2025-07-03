@@ -105,6 +105,57 @@ export type Database = {
         }
         Relationships: []
       }
+      photos: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          height: number | null
+          id: number
+          is_public: boolean | null
+          metadata: Json | null
+          mime_type: string | null
+          size_bytes: number | null
+          storage_object_id: string | null
+          storage_path: string
+          title: string | null
+          updated_at: string | null
+          user_id: string
+          width: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          height?: number | null
+          id?: never
+          is_public?: boolean | null
+          metadata?: Json | null
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_object_id?: string | null
+          storage_path: string
+          title?: string | null
+          updated_at?: string | null
+          user_id: string
+          width?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          height?: number | null
+          id?: never
+          is_public?: boolean | null
+          metadata?: Json | null
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_object_id?: string | null
+          storage_path?: string
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string
+          width?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
