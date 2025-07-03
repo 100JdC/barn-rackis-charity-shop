@@ -59,11 +59,11 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => onNavigate && onNavigate('home')}
+            onClick={() => onNavigate && onNavigate('items')}
             className="hover:bg-gray-100"
           >
             <Home className="h-4 w-4 mr-2" />
-            Home
+            Browse Items
           </Button>
 
           <Button 
@@ -85,7 +85,7 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
             About Us
           </Button>
           
-          {userRole && (
+          {userRole && userRole !== 'buyer' && (
             <div className="flex items-center gap-3 bg-gray-50 px-3 py-2 rounded-lg">
               <Badge className={`${getRoleColor(userRole)} text-xs font-medium`}>
                 {userRole.charAt(0).toUpperCase() + userRole.slice(1)}

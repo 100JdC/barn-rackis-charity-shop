@@ -51,16 +51,13 @@ export default function Index() {
         setUserRole(role);
         setUsername(userUsername);
         
-        if (view === 'home') {
-          setView('items');
-        }
+        // Save session to localStorage for compatibility
+        storage.saveSession(role, userUsername);
       } else {
         setIsAuthenticated(false);
         setUserRole(null);
         setUsername('');
-        if (view !== 'home') {
-          setView('home');
-        }
+        storage.clearSession();
       }
     });
 
@@ -73,18 +70,19 @@ export default function Index() {
         setIsAuthenticated(true);
         setUserRole(role);
         setUsername(userUsername);
-        setView('items');
+        storage.saveSession(role, userUsername);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [view]);
+  }, []);
 
+  // Load items when the component mounts or when view changes to items
   useEffect(() => {
-    if (userRole && view === 'items') {
+    if (view === 'items') {
       loadItems();
     }
-  }, [userRole, view]);
+  }, [view]);
 
   const loadItems = async () => {
     try {
@@ -167,12 +165,12 @@ export default function Index() {
 
   const handleDonate = () => {
     if (!isAuthenticated || !userRole) {
-      // User is not logged in, show login message and stay on home
+      // User is not logged in, show login message and redirect to login
       toast({
         title: "Login Required",
         description: "Please log in or register to donate items.",
       });
-      setView('home');
+      setView('home'); // This will show the login form
     } else {
       // User is logged in, go to donate page
       setView('donate');
@@ -370,9 +368,14 @@ export default function Index() {
     { value: "other", label: "Other" }
   ];
 
-  // Always show the welcome page first if not authenticated
-  if (view === 'home') {
+  // Allow browsing without login - only show login page if explicitly going to 'home'
+  if (view === 'home' && !isAuthenticated) {
     return <LoginForm onLogin={handleLogin} />;
+  }
+
+  // If user is authenticated but trying to go to home, redirect to items
+  if (view === 'home' && isAuthenticated) {
+    setView('items');
   }
 
   if (view === 'donate') {
@@ -391,7 +394,7 @@ export default function Index() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          userRole={userRole}
+          userRole={userRole || 'buyer'} // Default to buyer for non-authenticated users
           username={username}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
@@ -416,7 +419,7 @@ export default function Index() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          userRole={userRole}
+          userRole={userRole || 'buyer'} // Default to buyer for non-authenticated users
           username={username}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
@@ -446,7 +449,7 @@ export default function Index() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          userRole={userRole}
+          userRole={userRole || 'buyer'} // Default to buyer for non-authenticated users
           username={username}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
@@ -475,9 +478,9 @@ export default function Index() {
       
       <div className="relative z-10">
         <Header 
-          userRole={userRole}
+          userRole={userRole || 'buyer'} // Default to buyer for non-authenticated users
           username={username}
-          onLogout={handleLogout}
+          onLogout={isAuthenticated ? handleLogout : undefined}
           onNavigate={handleNavigate}
           onDonate={handleDonate}
         />
@@ -559,6 +562,14 @@ export default function Index() {
                   </CardTitle>
                 </div>
                 <div className="flex flex-wrap gap-2">
+                  {!isAuthenticated && (
+                    <Button 
+                      onClick={() => setView('home')}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      Login / Register
+                    </Button>
+                  )}
                   {userRole === 'admin' && (
                     <>
                       <Button onClick={() => setView('add-item')} className="bg-green-600 hover:bg-green-700">
@@ -653,7 +664,7 @@ export default function Index() {
                 <div key={item.id} className="relative">
                   <ItemCard
                     item={item}
-                    userRole={userRole}
+                    userRole={userRole || 'buyer'} // Default to buyer for non-authenticated users
                     onView={() => {
                       setSelectedItem(item);
                       setView('item-detail');

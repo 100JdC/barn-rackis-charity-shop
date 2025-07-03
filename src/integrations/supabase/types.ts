@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      email_preferences: {
+        Row: {
+          account_emails: boolean | null
+          created_at: string | null
+          feature_updates: boolean | null
+          marketing: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          account_emails?: boolean | null
+          created_at?: string | null
+          feature_updates?: boolean | null
+          marketing?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          account_emails?: boolean | null
+          created_at?: string | null
+          feature_updates?: boolean | null
+          marketing?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       "Item inventory": {
         Row: {
           Category: string | null
@@ -75,6 +102,36 @@ export type Database = {
           "Suggested Price (SEK)"?: string | null
           "Updated At"?: string | null
           "Updated By"?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          display_name: string | null
+          email_visible: boolean | null
+          id: string
+          updated_at: string | null
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          email_visible?: boolean | null
+          id: string
+          updated_at?: string | null
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          email_visible?: boolean | null
+          id?: string
+          updated_at?: string | null
+          username?: string
         }
         Relationships: []
       }
