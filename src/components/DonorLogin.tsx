@@ -30,6 +30,13 @@ export const DonorLogin = ({ onLogin, onBack }: DonorLoginProps) => {
     setError("");
 
     try {
+      // Check for admin credentials first
+      if (username === "Jacob" && password === "Rackis") {
+        storage.saveSession('admin', username);
+        window.location.reload(); // Refresh to trigger admin login
+        return;
+      }
+
       // Check if user exists and password matches
       const users = await storage.getUsers();
       const user = users.find(u => u.username.toLowerCase() === username.trim().toLowerCase());
@@ -57,7 +64,7 @@ export const DonorLogin = ({ onLogin, onBack }: DonorLoginProps) => {
     <PageWrapper>
       <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm shadow-xl">
         <CardHeader>
-          <CardTitle className="text-center text-2xl" style={{ color: '#1733a7' }}>Donor Login</CardTitle>
+          <CardTitle className="text-center text-2xl" style={{ color: '#1733a7' }}>Login</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -96,7 +103,7 @@ export const DonorLogin = ({ onLogin, onBack }: DonorLoginProps) => {
               style={{ backgroundColor: '#1733a7' }}
               disabled={loading}
             >
-              {loading ? 'Logging in...' : 'Login as Donor'}
+              {loading ? 'Logging in...' : 'Login'}
             </Button>
           </form>
           

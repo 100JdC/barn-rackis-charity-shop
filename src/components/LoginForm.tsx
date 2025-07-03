@@ -198,15 +198,6 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
             Here you can donate
           </Button>
         </div>
-        <div className="text-center pt-4">
-          <Button
-            onClick={() => setView('admin')}
-            className="text-sm text-white/60 hover:text-white/80"
-            variant="ghost"
-          >
-            Admin Access
-          </Button>
-        </div>
       </div>
     </PageWrapper>
   );

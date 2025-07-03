@@ -34,16 +34,20 @@ export const ThankYouAnimation = ({ isVisible, onComplete }: ThankYouAnimationPr
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl p-8 text-center shadow-2xl max-w-sm mx-4">
         <div className="space-y-4">
-          {/* Jumping Man Animation */}
+          {/* Teddy Says Thanks Animation */}
           <div className="flex justify-center">
-            <div className={`text-6xl transition-all duration-300 ${
+            <div className={`transition-all duration-300 ${
               phase === 'jumping' 
                 ? 'animate-bounce' 
                 : phase === 'thanking' 
                 ? 'scale-110' 
                 : 'scale-100'
             }`}>
-              🤸‍♂️
+              <img 
+                src="/lovable-uploads/teddysaysthanks.png" 
+                alt="Teddy says thanks"
+                className="w-24 h-24 object-contain"
+              />
             </div>
           </div>
 
