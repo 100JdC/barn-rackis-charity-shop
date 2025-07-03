@@ -62,20 +62,27 @@ const convertToSupabase = (item: Item) => ({
 });
 
 export const storage = {
-  // Session management - uses Supabase auth
+  // Session management - uses localStorage for simplicity
   saveSession: (role: 'admin' | 'donator' | 'buyer', username?: string): void => {
-    // Session is now handled by Supabase auth
-    console.log('Session saved via Supabase auth:', role, username);
+    const session = { role, username, timestamp: Date.now() };
+    localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
   },
 
   getSession: (): { role: 'admin' | 'donator' | 'buyer' | null, username?: string } => {
-    // Session is now handled by Supabase auth state
+    try {
+      const session = localStorage.getItem(STORAGE_KEYS.SESSION);
+      if (session) {
+        const parsed = JSON.parse(session);
+        return { role: parsed.role, username: parsed.username };
+      }
+    } catch (error) {
+      console.error('Error parsing session:', error);
+    }
     return { role: null };
   },
 
   clearSession: (): void => {
-    // Session clearing is handled by Supabase auth.signOut()
-    console.log('Session cleared via Supabase auth');
+    localStorage.removeItem(STORAGE_KEYS.SESSION);
   },
 
   // Items storage - Try Supabase first, fallback to localStorage
@@ -96,7 +103,7 @@ export const storage = {
       }
       
       console.log('Successfully fetched items from Supabase:', data?.length || 0);
-      return data ? data.map(convertFromSupabase) : [];
+      return data && data.length > 0 ? data.map(convertFromSupabase) : [];
     } catch (error) {
       console.error('Error fetching items:', error);
       // Fallback to localStorage
