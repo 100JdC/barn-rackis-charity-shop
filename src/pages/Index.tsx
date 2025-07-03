@@ -80,6 +80,10 @@ export default function Index() {
 
   // Load items when the component mounts or when view changes to items
   useEffect(() => {
+    loadItems(); // Load items immediately when component mounts
+  }, []);
+
+  useEffect(() => {
     if (view === 'items') {
       loadItems();
     }
@@ -333,24 +337,37 @@ export default function Index() {
   };
 
   const handleCategorySelect = (category: string) => {
+    console.log('Category selected:', category);
     setCategoryFilter(category);
     setShowCategories(false);
+    setView('items'); // Ensure we're in items view
   };
 
   // Handle search with Enter key
   const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      // Search is already handled by the filteredItems effect
-      // This just provides user feedback that Enter was pressed
       console.log('Search executed:', searchTerm);
     }
   };
 
+  // Improved filtering logic with fuzzy search capabilities
   const filteredItems = items.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.subcategory.toLowerCase().includes(searchTerm.toLowerCase());
+    // Enhanced search functionality
+    const searchLower = searchTerm.toLowerCase().trim();
+    const matchesSearch = searchTerm === "" || 
+      item.name.toLowerCase().includes(searchLower) ||
+      (item.description && item.description.toLowerCase().includes(searchLower)) ||
+      item.category.toLowerCase().includes(searchLower) ||
+      item.subcategory.toLowerCase().includes(searchLower) ||
+      (item.donor_name && item.donor_name.toLowerCase().includes(searchLower)) ||
+      (item.location && item.location.toLowerCase().includes(searchLower)) ||
+      // Add fuzzy matching by checking if search terms are contained in any field
+      searchLower.split(' ').some(term => 
+        item.name.toLowerCase().includes(term) ||
+        (item.description && item.description.toLowerCase().includes(term)) ||
+        item.category.toLowerCase().includes(term) ||
+        item.subcategory.toLowerCase().includes(term)
+      );
     
     const matchesCategory = categoryFilter === "all" || item.category === categoryFilter;
     const matchesStatus = statusFilter === "all" || item.status === statusFilter;
@@ -504,7 +521,7 @@ export default function Index() {
                   <Package className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalItems}</div>
+                  <div className="text-2xl font-bold">{items.length}</div>
                 </CardContent>
               </Card>
               
@@ -514,7 +531,7 @@ export default function Index() {
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-green-600">{stats.availableItems}</div>
+                  <div className="text-2xl font-bold text-green-600">{items.filter(item => item.status === 'available').length}</div>
                 </CardContent>
               </Card>
               
@@ -524,7 +541,7 @@ export default function Index() {
                   <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-blue-600">{stats.soldItems}</div>
+                  <div className="text-2xl font-bold text-blue-600">{items.filter(item => item.status === 'sold').length}</div>
                 </CardContent>
               </Card>
 
@@ -534,7 +551,7 @@ export default function Index() {
                   <Package className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-orange-600">{stats.pendingItems}</div>
+                  <div className="text-2xl font-bold text-orange-600">{items.filter(item => item.status === 'pending_approval').length}</div>
                 </CardContent>
               </Card>
               
@@ -544,7 +561,7 @@ export default function Index() {
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalValue} SEK</div>
+                  <div className="text-2xl font-bold">{items.reduce((sum, item) => sum + (item.final_price || item.suggested_price), 0)} SEK</div>
                 </CardContent>
               </Card>
             </div>
@@ -556,7 +573,10 @@ export default function Index() {
                 <div className="flex items-center gap-3">
                   {!showCategories && (
                     <Button 
-                      onClick={() => setShowCategories(true)} 
+                      onClick={() => {
+                        setShowCategories(true);
+                        setCategoryFilter('all');
+                      }} 
                       variant="outline"
                       className="bg-white/80"
                     >
@@ -566,7 +586,7 @@ export default function Index() {
                   <CardTitle className="text-white" style={{ color: '#1733a7' }}>
                     {showCategories ? 'Browse Categories' : 
                      categoryFilter !== "all" ? 
-                       `${categories.find(c => c.value === categoryFilter)?.label || categoryFilter} Items` : 
+                       `${categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1).replace('_', ' ')} Items` : 
                        'All Items'
                     }
                   </CardTitle>
@@ -615,6 +635,7 @@ export default function Index() {
                 
                 <div className="flex flex-wrap gap-2">
                   <Select value={categoryFilter} onValueChange={(value) => {
+                    console.log('Category filter changed to:', value);
                     setCategoryFilter(value);
                     if (value !== "all") {
                       setShowCategories(false);
@@ -625,13 +646,21 @@ export default function Index() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Categories</SelectItem>
-                      {categories.map(cat => (
-                        <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                      ))}
+                      <SelectItem value="bedding">Bedding</SelectItem>
+                      <SelectItem value="bathroom">Bathroom</SelectItem>
+                      <SelectItem value="decoration">Decoration</SelectItem>
+                      <SelectItem value="other_room_inventory">Other Room Inventory</SelectItem>
+                      <SelectItem value="kitchen">Kitchen</SelectItem>
+                      <SelectItem value="bike_sports">Bike & Sports</SelectItem>
+                      <SelectItem value="electronics">Electronics</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                   
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <Select value={statusFilter} onValueChange={(value) => {
+                    console.log('Status filter changed to:', value);
+                    setStatusFilter(value);
+                  }}>
                     <SelectTrigger className="w-32">
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
@@ -647,7 +676,10 @@ export default function Index() {
                     </SelectContent>
                   </Select>
                   
-                  <Select value={conditionFilter} onValueChange={setConditionFilter}>
+                  <Select value={conditionFilter} onValueChange={(value) => {
+                    console.log('Condition filter changed to:', value);
+                    setConditionFilter(value);
+                  }}>
                     <SelectTrigger className="w-36">
                       <SelectValue placeholder="Condition" />
                     </SelectTrigger>
@@ -664,6 +696,8 @@ export default function Index() {
               {!showCategories && (
                 <div className="text-sm text-gray-600">
                   Showing {filteredItems.length} of {items.length} items
+                  {searchTerm && ` for "${searchTerm}"`}
+                  {categoryFilter !== "all" && ` in ${categoryFilter.replace('_', ' ')}`}
                 </div>
               )}
             </CardContent>
