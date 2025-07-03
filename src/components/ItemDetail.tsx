@@ -1,4 +1,3 @@
-
 import { Edit, Trash2, QrCode, MapPin, User, Calendar, Image, Images } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -60,6 +59,14 @@ export const ItemDetail = ({ item, userRole, onEdit, onDelete, onShowQRCode }: I
     });
   };
 
+  // Fix photo filtering - same as in ItemCard
+  const validPhotos = item.photos ? item.photos.filter(photo => 
+    photo && 
+    typeof photo === 'string' && 
+    photo !== 'undefined' && 
+    !photo.includes('_type')
+  ) : [];
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <Card>
@@ -102,15 +109,15 @@ export const ItemDetail = ({ item, userRole, onEdit, onDelete, onShowQRCode }: I
 
         <CardContent className="space-y-6">
           {/* Photos section */}
-          {item.photos && item.photos.length > 0 && (
+          {validPhotos.length > 0 && (
             <>
               <div>
                 <h3 className="font-semibold mb-3 flex items-center gap-2">
                   <Images className="h-4 w-4" />
-                  Photos ({item.photos.length})
+                  Photos ({validPhotos.length})
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {item.photos.map((photoPath, index) => {
+                  {validPhotos.map((photoPath, index) => {
                     const photoUrl = storage.getPhoto(photoPath);
                     return photoUrl ? (
                       <div key={index} className="aspect-square">

@@ -1,4 +1,3 @@
-
 import { Eye, Edit, Trash2, QrCode, MapPin, Image, ShoppingCart } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -50,13 +49,21 @@ export const ItemCard = ({ item, userRole, onView, onEdit, onDelete, onShowQRCod
     return names[category] || category;
   };
 
-  // Get the first photo URL if available with more detailed logging
-  const firstPhotoUrl = item.photos && item.photos.length > 0 ? storage.getPhoto(item.photos[0]) : null;
+  // Fix photo URL generation - filter out undefined/invalid entries
+  const validPhotos = item.photos ? item.photos.filter(photo => 
+    photo && 
+    typeof photo === 'string' && 
+    photo !== 'undefined' && 
+    !photo.includes('_type')
+  ) : [];
+  
+  const firstPhotoUrl = validPhotos.length > 0 ? storage.getPhoto(validPhotos[0]) : null;
   
   console.log('ItemCard photo debug:', {
     itemName: item.name,
-    photosArray: item.photos,
-    firstPhotoPath: item.photos?.[0],
+    rawPhotosArray: item.photos,
+    validPhotos: validPhotos,
+    firstPhotoPath: validPhotos[0],
     firstPhotoUrl: firstPhotoUrl
   });
 
