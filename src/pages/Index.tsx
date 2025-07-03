@@ -21,12 +21,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Download, Plus, Search, Users, Package, TrendingUp, ShoppingCart } from "lucide-react";
 import type { Item, UserRole } from "@/types/item";
 import { CategoryBrowser } from "@/components/CategoryBrowser";
-import { supabase } from "@/integrations/supabase/client";
-import type { User, Session } from '@supabase/supabase-js';
 
 export default function Index() {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [userRole, setUserRole] = useState<UserRole>(null);
+  const [username, setUsername] = useState<string>('');
   const [view, setView] = useState<'home' | 'items' | 'add-item' | 'item-detail' | 'edit-item' | 'user-management' | 'donate'>('home');
   const [items, setItems] = useState<Item[]>([]);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
@@ -40,35 +38,11 @@ export default function Index() {
   const [showCategories, setShowCategories] = useState(true);
   const { toast } = useToast();
 
-  // Set up auth state listener
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user && view === 'home') {
-          setView('items');
-        }
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Existing session:', session?.user?.email);
-      setSession(session);
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [view]);
-
-  useEffect(() => {
-    if (user && view === 'items') {
+    if (userRole && view === 'items') {
       loadItems();
     }
-  }, [user, view]);
+  }, [userRole, view]);
 
   const loadItems = async () => {
     try {
@@ -76,7 +50,6 @@ export default function Index() {
       console.log('Items loaded:', loadedItems.length);
       
       // Filter items based on user role - admin can see all, others can't see pending
-      const userRole = getUserRole();
       let filteredItems = loadedItems;
       if (userRole !== 'admin') {
         filteredItems = loadedItems.filter(item => item.status !== 'pending_approval');
@@ -103,38 +76,48 @@ export default function Index() {
     }
   };
 
-  const getUserRole = (): UserRole => {
-    if (!user) return null;
+  const handleLogin = (role: 'admin' | 'donator' | 'buyer', loginUsername?: string) => {
+    console.log('Login successful:', role, loginUsername);
+    setUserRole(role);
+    setUsername(loginUsername || '');
     
-    // Check if user is admin based on username stored in user_metadata
-    const username = user.user_metadata?.username || user.email?.split('@')[0];
-    if (username === 'admin' || username === 'jacob') {
-      return 'admin';
-    }
+    // Save session to localStorage
+    localStorage.setItem('user_session', JSON.stringify({
+      role,
+      username: loginUsername || '',
+      timestamp: new Date().toISOString()
+    }));
     
-    // For now, all registered users are considered donators
-    return 'donator';
+    setView('items');
   };
 
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      setUser(null);
-      setSession(null);
-      setView('home');
-      toast({
-        title: "Logged out",
-        description: "You have been successfully logged out."
-      });
-    } catch (error) {
-      console.error('Error logging out:', error);
-      toast({
-        title: "Error",
-        description: "Failed to log out. Please try again.",
-        variant: "destructive"
-      });
-    }
+  const handleLogout = () => {
+    setUserRole(null);
+    setUsername('');
+    localStorage.removeItem('user_session');
+    setView('home');
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out."
+    });
   };
+
+  // Check for existing session on component mount
+  useEffect(() => {
+    const savedSession = localStorage.getItem('user_session');
+    if (savedSession) {
+      try {
+        const session = JSON.parse(savedSession);
+        setUserRole(session.role);
+        setUsername(session.username);
+        setView('items');
+        console.log('Restored session:', session);
+      } catch (error) {
+        console.error('Error restoring session:', error);
+        localStorage.removeItem('user_session');
+      }
+    }
+  }, []);
 
   const handleNavigate = (newView: string) => {
     if (newView === 'home') {
@@ -151,7 +134,7 @@ export default function Index() {
   };
 
   const handleDonate = () => {
-    if (!user) {
+    if (!userRole) {
       // User is not logged in, show login message and stay on home
       toast({
         title: "Login Required",
@@ -166,9 +149,6 @@ export default function Index() {
 
   const handleItemSave = async (itemData: Partial<Item>) => {
     try {
-      const userRole = getUserRole();
-      const username = user?.user_metadata?.username || user?.email?.split('@')[0] || 'user';
-      
       if (selectedItem) {
         const updatedItem = await storage.updateItem(selectedItem.id, {
           ...itemData,
@@ -241,8 +221,6 @@ export default function Index() {
     if (!selectedItem) return;
     
     try {
-      const username = user?.user_metadata?.username || user?.email?.split('@')[0] || 'user';
-      
       const newItem: Item = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         ...selectedItem,
@@ -285,7 +263,6 @@ export default function Index() {
 
   const handleMarkAsSold = async (item: Item, soldQuantity: number) => {
     try {
-      const username = user?.user_metadata?.username || user?.email?.split('@')[0] || 'user';
       const currentSold = item.sold_quantity || 0;
       const newSoldQuantity = currentSold + soldQuantity;
       
@@ -342,7 +319,6 @@ export default function Index() {
     return matchesSearch && matchesCategory && matchesStatus && matchesCondition;
   });
 
-  const userRole = getUserRole();
   const stats = {
     totalItems: items.length,
     availableItems: items.filter(item => item.status === 'available').length,
@@ -364,16 +340,14 @@ export default function Index() {
 
   // Always show the welcome page first if not authenticated
   if (view === 'home') {
-    return <LoginForm onLogin={(role, username) => {
-      setView('items');
-    }} />;
+    return <LoginForm onLogin={handleLogin} />;
   }
 
   if (view === 'donate') {
     return (
       <DonatePage
         userRole={userRole}
-        username={user?.user_metadata?.username || user?.email?.split('@')[0]}
+        username={username}
         onLogout={handleLogout}
         onNavigate={handleNavigate}
         onBack={() => setView('items')}
@@ -386,7 +360,7 @@ export default function Index() {
       <div className="min-h-screen bg-gray-50">
         <Header 
           userRole={userRole}
-          username={user?.user_metadata?.username || user?.email?.split('@')[0]}
+          username={username}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
           onDonate={handleDonate}
@@ -411,7 +385,7 @@ export default function Index() {
       <div className="min-h-screen bg-gray-50">
         <Header 
           userRole={userRole}
-          username={user?.user_metadata?.username || user?.email?.split('@')[0]}
+          username={username}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
           onDonate={handleDonate}
@@ -441,7 +415,7 @@ export default function Index() {
       <div className="min-h-screen bg-gray-50">
         <Header 
           userRole={userRole}
-          username={user?.user_metadata?.username || user?.email?.split('@')[0]}
+          username={username}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
           onDonate={handleDonate}
@@ -470,7 +444,7 @@ export default function Index() {
       <div className="relative z-10">
         <Header 
           userRole={userRole}
-          username={user?.user_metadata?.username || user?.email?.split('@')[0]}
+          username={username}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
           onDonate={handleDonate}

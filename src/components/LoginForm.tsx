@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageWrapper } from "@/components/PageWrapper";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface LoginFormProps {
@@ -32,28 +31,38 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     setError("");
 
     try {
-      // Convert username to email format for Supabase Auth
-      const email = `${username.trim()}@rackisbarn.local`;
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) {
-        console.error('Login error:', error);
-        setError("Invalid username or password");
+      // Check for admin credentials first
+      if (username.toLowerCase() === "jacob" && password === "Rackis") {
+        console.log('Admin login successful:', username);
+        toast({
+          title: "Welcome back, Admin!",
+          description: "You have been successfully logged in."
+        });
+        onLogin('admin', username);
         return;
       }
 
-      if (data.user) {
-        console.log('Login successful:', username);
-        toast({
-          title: "Welcome back!",
-          description: "You have been successfully logged in."
-        });
-        // The onAuthStateChange will handle the login automatically
+      // For regular users, just check if username exists in localStorage for now
+      const users = JSON.parse(localStorage.getItem('registered_users') || '[]');
+      const user = users.find((u: any) => u.username.toLowerCase() === username.trim().toLowerCase());
+      
+      if (!user) {
+        setError("User not found. Please register first.");
+        return;
       }
+
+      if (user.password !== password) {
+        setError("Invalid password");
+        return;
+      }
+      
+      console.log('User login successful:', username);
+      toast({
+        title: "Welcome back!",
+        description: "You have been successfully logged in."
+      });
+      onLogin('donator', username.trim());
+      
     } catch (error) {
       console.error('Login error:', error);
       setError("Login failed. Please try again.");
@@ -83,40 +92,34 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     setError("");
 
     try {
-      // Convert username to email format for Supabase Auth
-      const email = `${username.trim()}@rackisbarn.local`;
-      
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            username: username.trim()
-          }
-        }
-      });
-
-      if (error) {
-        console.error('Registration error:', error);
-        if (error.message.includes('already registered')) {
-          setError("Username already exists");
-        } else {
-          setError(error.message);
-        }
+      // Check if username already exists
+      const users = JSON.parse(localStorage.getItem('registered_users') || '[]');
+      if (users.some((user: any) => user.username.toLowerCase() === username.trim().toLowerCase())) {
+        setError("Username already exists");
         return;
       }
+      
+      // Add user to localStorage
+      const newUser = {
+        id: Date.now().toString(),
+        username: username.trim(),
+        password: password,
+        role: 'donator',
+        registeredAt: new Date().toISOString()
+      };
+      
+      users.push(newUser);
+      localStorage.setItem('registered_users', JSON.stringify(users));
 
-      if (data.user) {
-        console.log('Registration successful:', username);
-        toast({
-          title: "Registration successful!",
-          description: "You can now log in with your username and password."
-        });
-        setView('login');
-        setUsername("");
-        setPassword("");
-        setConfirmPassword("");
-      }
+      console.log('Registration successful:', username);
+      toast({
+        title: "Registration successful!",
+        description: "You can now log in with your username and password."
+      });
+      setView('login');
+      setUsername("");
+      setPassword("");
+      setConfirmPassword("");
     } catch (error) {
       console.error('Registration error:', error);
       setError("Registration failed. Please try again.");

@@ -62,23 +62,33 @@ const convertToSupabase = (item: Item) => ({
 });
 
 export const storage = {
-  // Session management - using Supabase Auth
+  // Session management - simple localStorage based
   saveSession: (role: 'admin' | 'donator' | 'buyer', username?: string): void => {
-    // Supabase handles session management automatically
-    console.log('Session management handled by Supabase Auth');
+    localStorage.setItem('user_session', JSON.stringify({
+      role,
+      username: username || '',
+      timestamp: new Date().toISOString()
+    }));
   },
 
   getSession: (): { role: 'admin' | 'donator' | 'buyer' | null, username?: string } => {
-    // Supabase handles session management automatically
+    const saved = localStorage.getItem('user_session');
+    if (saved) {
+      try {
+        const session = JSON.parse(saved);
+        return { role: session.role, username: session.username };
+      } catch {
+        return { role: null };
+      }
+    }
     return { role: null };
   },
 
   clearSession: (): void => {
-    // Supabase handles session management automatically
-    console.log('Session cleared via Supabase Auth');
+    localStorage.removeItem('user_session');
   },
 
-  // Items storage - ALWAYS use Supabase
+  // Items storage - Try Supabase first, fallback to localStorage
   getItems: async (): Promise<Item[]> => {
     try {
       console.log('Fetching items from Supabase...');
@@ -90,14 +100,18 @@ export const storage = {
       
       if (error) {
         console.error('Supabase error fetching items:', error);
-        throw error;
+        // Fallback to localStorage
+        const localItems = localStorage.getItem('items');
+        return localItems ? JSON.parse(localItems) : [];
       }
       
       console.log('Successfully fetched items from Supabase:', data?.length || 0);
       return data ? data.map(convertFromSupabase) : [];
     } catch (error) {
       console.error('Error fetching items:', error);
-      return [];
+      // Fallback to localStorage
+      const localItems = localStorage.getItem('items');
+      return localItems ? JSON.parse(localItems) : [];
     }
   },
 
@@ -106,7 +120,7 @@ export const storage = {
       // Ensure donated items are always pending approval unless created by admin
       const itemToAdd = {
         ...item,
-        status: item.status === 'available' && item.created_by !== 'admin' ? 'pending_approval' : item.status
+        status: item.status === 'available' && item.created_by !== 'Jacob' ? 'pending_approval' : item.status
       };
       
       const supabaseData = convertToSupabase(itemToAdd);
@@ -118,14 +132,22 @@ export const storage = {
         .single();
       
       if (error) {
-        console.error('Error adding item:', error);
-        throw error;
+        console.error('Error adding item to Supabase:', error);
+        // Fallback to localStorage
+        const items = JSON.parse(localStorage.getItem('items') || '[]');
+        items.push(itemToAdd);
+        localStorage.setItem('items', JSON.stringify(items));
+        return itemToAdd;
       }
       
       return convertFromSupabase(data);
     } catch (error) {
       console.error('Error adding item:', error);
-      return null;
+      // Fallback to localStorage
+      const items = JSON.parse(localStorage.getItem('items') || '[]');
+      items.push(item);
+      localStorage.setItem('items', JSON.stringify(items));
+      return item;
     }
   },
 
@@ -160,13 +182,29 @@ export const storage = {
         .single();
       
       if (error) {
-        console.error('Error updating item:', error);
-        throw error;
+        console.error('Error updating item in Supabase:', error);
+        // Fallback to localStorage
+        const items = JSON.parse(localStorage.getItem('items') || '[]');
+        const itemIndex = items.findIndex((item: Item) => item.id === id);
+        if (itemIndex !== -1) {
+          items[itemIndex] = { ...items[itemIndex], ...updates };
+          localStorage.setItem('items', JSON.stringify(items));
+          return items[itemIndex];
+        }
+        return null;
       }
       
       return convertFromSupabase(data);
     } catch (error) {
       console.error('Error updating item:', error);
+      // Fallback to localStorage
+      const items = JSON.parse(localStorage.getItem('items') || '[]');
+      const itemIndex = items.findIndex((item: Item) => item.id === id);
+      if (itemIndex !== -1) {
+        items[itemIndex] = { ...items[itemIndex], ...updates };
+        localStorage.setItem('items', JSON.stringify(items));
+        return items[itemIndex];
+      }
       return null;
     }
   },
@@ -179,25 +217,32 @@ export const storage = {
         .eq('Item ID', parseInt(id));
       
       if (error) {
-        console.error('Error deleting item:', error);
-        throw error;
+        console.error('Error deleting item from Supabase:', error);
+        // Fallback to localStorage
+        const items = JSON.parse(localStorage.getItem('items') || '[]');
+        const filteredItems = items.filter((item: Item) => item.id !== id);
+        localStorage.setItem('items', JSON.stringify(filteredItems));
+        return true;
       }
       
       return true;
     } catch (error) {
       console.error('Error deleting item:', error);
-      return false;
+      // Fallback to localStorage
+      const items = JSON.parse(localStorage.getItem('items') || '[]');
+      const filteredItems = items.filter((item: Item) => item.id !== id);
+      localStorage.setItem('items', JSON.stringify(filteredItems));
+      return true;
     }
   },
 
-  // Users storage - using Supabase Auth instead of localStorage
+  // Users storage - localStorage based
   getUsers: async (): Promise<RegisteredUser[]> => {
-    console.log('Users are now managed by Supabase Auth');
-    return [];
+    const users = localStorage.getItem('registered_users');
+    return users ? JSON.parse(users) : [];
   },
 
   addUser: async (username: string, password?: string): Promise<RegisteredUser> => {
-    // This should now use Supabase Auth sign up
     const newUser: RegisteredUser = {
       id: Date.now().toString(),
       username,
@@ -205,6 +250,11 @@ export const storage = {
       role: 'donator',
       registeredAt: new Date().toISOString()
     };
+    
+    const users = await this.getUsers();
+    users.push(newUser);
+    localStorage.setItem('registered_users', JSON.stringify(users));
+    
     return newUser;
   },
 

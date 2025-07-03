@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { UserPlus, Users } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { storage } from "@/utils/storage";
 import { useToast } from "@/hooks/use-toast";
 import type { UserRole } from "@/types/item";
 
@@ -15,9 +15,9 @@ interface UserManagementProps {
 
 interface RegisteredUser {
   id: string;
-  email: string;
-  created_at: string;
-  email_confirmed_at?: string;
+  username: string;
+  role: string;
+  registeredAt: string;
 }
 
 export const UserManagement = ({ userRole, onBack }: UserManagementProps) => {
@@ -33,29 +33,19 @@ export const UserManagement = ({ userRole, onBack }: UserManagementProps) => {
 
   const loadUsers = async () => {
     try {
-      const { data, error } = await supabase.auth.admin.listUsers();
+      const registeredUsers = await storage.getUsers();
       
-      if (error) {
-        console.error('Error loading users:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load users",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      setUsers(data.users.map(user => ({
+      setUsers(registeredUsers.map(user => ({
         id: user.id,
-        email: user.email || 'No email',
-        created_at: user.created_at,
-        email_confirmed_at: user.email_confirmed_at
+        username: user.username,
+        role: user.role,
+        registeredAt: user.registeredAt
       })));
     } catch (error) {
       console.error('Error loading users:', error);
       toast({
         title: "Error",
-        description: "Failed to load users. Admin access may be required.",
+        description: "Failed to load users",
         variant: "destructive"
       });
     } finally {
@@ -105,14 +95,14 @@ export const UserManagement = ({ userRole, onBack }: UserManagementProps) => {
               {users.map((user) => (
                 <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div>
-                    <p className="font-medium">{user.email}</p>
+                    <p className="font-medium">{user.username}</p>
                     <p className="text-sm text-gray-600">
-                      Registered: {new Date(user.created_at).toLocaleDateString()}
+                      Registered: {new Date(user.registeredAt).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={user.email_confirmed_at ? "default" : "secondary"}>
-                      {user.email_confirmed_at ? "Verified" : "Unverified"}
+                    <Badge variant="default">
+                      {user.role}
                     </Badge>
                   </div>
                 </div>
@@ -124,13 +114,12 @@ export const UserManagement = ({ userRole, onBack }: UserManagementProps) => {
 
       <Card className="bg-yellow-50 border-yellow-200">
         <CardHeader>
-          <CardTitle className="text-yellow-800">Security Notice</CardTitle>
+          <CardTitle className="text-yellow-800">Authentication Notice</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-yellow-700">
-            User authentication is now handled securely by Supabase Auth. 
-            Passwords are encrypted and stored securely. Users can register 
-            and login from any device.
+            User authentication is currently handled by localStorage. 
+            For production use, consider implementing a more secure authentication system.
           </p>
         </CardContent>
       </Card>
