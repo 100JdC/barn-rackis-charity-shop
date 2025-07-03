@@ -9,9 +9,10 @@ interface HeaderProps {
   onBack?: () => void;
   onLogout?: () => void;
   onNavigate?: (view: string) => void;
+  onHome?: () => void;
 }
 
-export const Header = ({ userRole, username, onBack, onLogout, onNavigate }: HeaderProps) => {
+export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHome }: HeaderProps) => {
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'admin': return 'bg-red-100 text-red-800 border-red-200';
@@ -48,17 +49,24 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate }: Hea
         </div>
         
         <div className="flex items-center gap-4">
-          {onNavigate && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => onNavigate('items')}
-              className="hover:bg-gray-100"
-            >
-              <Home className="h-4 w-4 mr-2" />
-              All Items
-            </Button>
-          )}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => onNavigate && onNavigate('home')}
+            className="hover:bg-gray-100"
+          >
+            <Home className="h-4 w-4 mr-2" />
+            Home
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => window.location.href = '/about'}
+            className="hover:bg-gray-100"
+          >
+            About Us
+          </Button>
           
           <div className="flex items-center gap-3 bg-gray-50 px-3 py-2 rounded-lg">
             <Badge className={`${getRoleColor(userRole)} text-xs font-medium`}>

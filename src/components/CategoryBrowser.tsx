@@ -43,19 +43,19 @@ const categories = [
   { 
     value: "bike_sports", 
     label: "Bike & Sports", 
-    image: "/placeholder-category.jpg",
+    image: "",
     hasImage: false 
   },
   { 
     value: "electronics", 
     label: "Electronics", 
-    image: "/placeholder-category.jpg",
+    image: "",
     hasImage: false 
   },
   { 
     value: "other", 
     label: "Other", 
-    image: "/placeholder-category.jpg",
+    image: "",
     hasImage: false 
   }
 ];
@@ -66,61 +66,54 @@ export const CategoryBrowser = ({ items, onCategorySelect }: CategoryBrowserProp
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-3xl font-bold text-white mb-2">Browse by Category</h2>
-        <p className="text-white/80 text-lg">Find items by category</p>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {categories.map((category) => {
-          const itemCount = getCategoryCount(category.value);
-          
-          return (
-            <Card 
-              key={category.value} 
-              className="bg-white/95 backdrop-blur-sm hover:bg-white cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg"
-              onClick={() => onCategorySelect(category.value)}
-            >
-              <CardContent className="p-6">
-                <div className="aspect-square mb-4 bg-gray-100 rounded-lg overflow-hidden">
-                  {category.hasImage ? (
-                    <img
-                      src={category.image}
-                      alt={category.label}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        console.error(`Failed to load image for ${category.label}:`, category.image);
-                        e.currentTarget.style.display = 'none';
-                        const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
-                        if (placeholder) placeholder.style.display = 'flex';
-                      }}
-                    />
-                  ) : null}
-                  <div 
-                    className={`w-full h-full ${category.hasImage ? 'hidden' : 'flex'} items-center justify-center bg-gray-100`}
-                  >
-                    <ImageIcon className="h-12 w-12 text-gray-400" />
-                  </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {categories.map((category) => {
+        const itemCount = getCategoryCount(category.value);
+        
+        return (
+          <Card 
+            key={category.value} 
+            className="bg-white/95 backdrop-blur-sm hover:bg-white cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg"
+            onClick={() => onCategorySelect(category.value)}
+          >
+            <CardContent className="p-6">
+              <div className="aspect-square mb-4 bg-gray-100 rounded-lg overflow-hidden">
+                {category.hasImage ? (
+                  <img
+                    src={category.image}
+                    alt={category.label}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      console.error(`Failed to load image for ${category.label}:`, category.image);
+                      e.currentTarget.style.display = 'none';
+                      const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
+                      if (placeholder) placeholder.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div 
+                  className={`w-full h-full ${category.hasImage ? 'hidden' : 'flex'} items-center justify-center bg-gray-100`}
+                >
+                  <ImageIcon className="h-12 w-12 text-gray-400" />
                 </div>
+              </div>
+              
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {category.label}
+                </h3>
                 
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {category.label}
-                  </h3>
-                  
-                  <div className="flex items-center justify-center gap-2">
-                    <Package className="h-4 w-4 text-gray-500" />
-                    <Badge variant="secondary" className="text-sm">
-                      {itemCount} items
-                    </Badge>
-                  </div>
+                <div className="flex items-center justify-center gap-2">
+                  <Package className="h-4 w-4 text-gray-500" />
+                  <Badge variant="secondary" className="text-sm">
+                    {itemCount} items
+                  </Badge>
                 </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 };

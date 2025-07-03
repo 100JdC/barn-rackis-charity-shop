@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { LoginForm } from "@/components/LoginForm";
@@ -27,7 +28,7 @@ import { CategoryBrowser } from "@/components/CategoryBrowser";
 
 export default function Index() {
   const [currentUser, setCurrentUser] = useState<{ role: UserRole, username?: string }>({ role: null });
-  const [view, setView] = useState<'home' | 'register' | 'donor-login' | 'admin' | 'items' | 'add-item' | 'item-detail' | 'edit-item' | 'user-management' | 'categories'>('home');
+  const [view, setView] = useState<'home' | 'register' | 'donor-login' | 'admin' | 'items' | 'add-item' | 'item-detail' | 'edit-item' | 'user-management'>('home');
   const [items, setItems] = useState<Item[]>([]);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,13 +39,14 @@ export default function Index() {
   const [showSplitModal, setShowSplitModal] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
   const [soldQuantityInput, setSoldQuantityInput] = useState<{ [key: string]: number }>({});
+  const [showCategories, setShowCategories] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     const session = storage.getSession();
     if (session.role) {
       setCurrentUser(session);
-      setView('categories'); // Start with categories view instead of items
+      setView('items');
     }
   }, []);
 
@@ -91,6 +93,18 @@ export default function Index() {
     setCurrentUser({ role: null });
     storage.clearSession();
     setView('home');
+  };
+
+  const handleNavigate = (newView: string) => {
+    if (newView === 'home') {
+      setView('home');
+    } else if (newView === 'items') {
+      setView('items');
+      setShowCategories(true);
+      setCategoryFilter('all');
+    } else {
+      setView(newView as any);
+    }
   };
 
   const handleItemSave = async (itemData: Partial<Item>) => {
@@ -249,7 +263,7 @@ export default function Index() {
 
   const handleCategorySelect = (category: string) => {
     setCategoryFilter(category);
-    setView('items');
+    setShowCategories(false);
   };
 
   const filteredItems = items.filter(item => {
@@ -302,7 +316,7 @@ export default function Index() {
           userRole={currentUser.role!}
           username={currentUser.username}
           onLogout={handleLogout}
-          onNavigate={setView}
+          onNavigate={handleNavigate}
         />
         <div className="container mx-auto px-4 py-8">
           <ItemForm
@@ -326,7 +340,7 @@ export default function Index() {
           userRole={currentUser.role!}
           username={currentUser.username}
           onLogout={handleLogout}
-          onNavigate={setView}
+          onNavigate={handleNavigate}
         />
         <div className="container mx-auto px-4 py-8">
           {selectedItem && (
@@ -355,44 +369,10 @@ export default function Index() {
           userRole={currentUser.role!}
           username={currentUser.username}
           onLogout={handleLogout}
-          onNavigate={setView}
+          onNavigate={handleNavigate}
         />
         <div className="container mx-auto px-4 py-8">
           <UserManagement userRole={currentUser.role!} onBack={() => setView('items')} />
-        </div>
-      </div>
-    );
-  }
-
-  if (view === 'categories') {
-    return (
-      <div className="min-h-screen" style={{ backgroundColor: '#1733a7' }}>
-        <div className="absolute inset-0 flex items-center justify-center z-0 opacity-30 pointer-events-none">
-          <img
-            src="/lovable-uploads/bearlogo.png"
-            alt="Rackis for Barn Logo"
-            className="w-[600px] h-auto object-contain"
-            onError={(e) => {
-              console.error('Failed to load bear logo');
-              e.currentTarget.style.display = 'none';
-            }}
-          />
-        </div>
-        
-        <div className="relative z-10">
-          <Header 
-            userRole={currentUser.role!}
-            username={currentUser.username}
-            onLogout={handleLogout}
-            onNavigate={setView}
-          />
-          
-          <div className="container mx-auto px-4 py-12">
-            <CategoryBrowser 
-              items={items} 
-              onCategorySelect={handleCategorySelect}
-            />
-          </div>
         </div>
       </div>
     );
@@ -417,7 +397,7 @@ export default function Index() {
           userRole={currentUser.role!}
           username={currentUser.username}
           onLogout={handleLogout}
-          onNavigate={setView}
+          onNavigate={handleNavigate}
         />
         
         <div className="container mx-auto px-4 py-8">
@@ -469,17 +449,20 @@ export default function Index() {
             <CardHeader>
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div className="flex items-center gap-3">
-                  <Button 
-                    onClick={() => setView('categories')} 
-                    variant="outline"
-                    className="bg-white/80"
-                  >
-                    ← Categories
-                  </Button>
+                  {!showCategories && (
+                    <Button 
+                      onClick={() => setShowCategories(true)} 
+                      variant="outline"
+                      className="bg-white/80"
+                    >
+                      ← Back to Categories
+                    </Button>
+                  )}
                   <CardTitle className="text-white" style={{ color: '#1733a7' }}>
-                    {categoryFilter !== "all" ? 
-                      `${categories.find(c => c.value === categoryFilter)?.label || categoryFilter} Items` : 
-                      'All Items'
+                    {showCategories ? 'Browse Categories' : 
+                     categoryFilter !== "all" ? 
+                       `${categories.find(c => c.value === categoryFilter)?.label || categoryFilter} Items` : 
+                       'All Items'
                     }
                   </CardTitle>
                 </div>
@@ -505,129 +488,147 @@ export default function Index() {
             </CardHeader>
             
             <CardContent className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder="Search items..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                
-                <div className="flex flex-wrap gap-2">
-                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger className="w-40">
-                      <SelectValue placeholder="Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      {categories.map(cat => (
-                        <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              {!showCategories && (
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      placeholder="Search items..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
                   
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="available">Available</SelectItem>
-                      <SelectItem value="reserved">Reserved</SelectItem>
-                      <SelectItem value="sold">Sold</SelectItem>
-                      <SelectItem value="donated">Donated</SelectItem>
-                      <SelectItem value="pending_approval">Pending</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
-                  <Select value={conditionFilter} onValueChange={setConditionFilter}>
-                    <SelectTrigger className="w-36">
-                      <SelectValue placeholder="Condition" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Conditions</SelectItem>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="lightly_used">Lightly Used</SelectItem>
-                      <SelectItem value="worn">Worn</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="flex flex-wrap gap-2">
+                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                      <SelectTrigger className="w-40">
+                        <SelectValue placeholder="Category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Categories</SelectItem>
+                        {categories.map(cat => (
+                          <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="available">Available</SelectItem>
+                        <SelectItem value="reserved">Reserved</SelectItem>
+                        <SelectItem value="sold">Sold</SelectItem>
+                        <SelectItem value="donated">Donated</SelectItem>
+                        <SelectItem value="pending_approval">Pending</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select value={conditionFilter} onValueChange={setConditionFilter}>
+                      <SelectTrigger className="w-36">
+                        <SelectValue placeholder="Condition" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Conditions</SelectItem>
+                        <SelectItem value="new">New</SelectItem>
+                        <SelectItem value="lightly_used">Lightly Used</SelectItem>
+                        <SelectItem value="worn">Worn</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              </div>
+              )}
               
-              <div className="text-sm text-gray-600">
-                Showing {filteredItems.length} of {items.length} items
-              </div>
+              {!showCategories && (
+                <div className="text-sm text-gray-600">
+                  Showing {filteredItems.length} of {items.length} items
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredItems.map((item) => (
-              <div key={item.id} className="relative">
-                <ItemCard
-                  item={item}
-                  userRole={currentUser.role!}
-                  onView={() => {
-                    setSelectedItem(item);
-                    setView('item-detail');
-                  }}
-                  onEdit={() => {
-                    setSelectedItem(item);
-                    setView('edit-item');
-                  }}
-                  onDelete={() => handleItemDelete(item)}
-                  onShowQRCode={() => {
-                    setSelectedItem(item);
-                    setShowQRModal(true);
-                  }}
-                />
-                
-                {currentUser.role === 'admin' && item.quantity > 1 && (
-                  <div className="mt-2 p-3 bg-white rounded-lg border space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          setSelectedItem(item);
-                          setShowSplitModal(true);
-                        }}
-                        variant="outline"
-                      >
-                        Split Item
-                      </Button>
-                      
-                      <div className="flex items-center gap-2 flex-1">
-                        <Label className="text-xs">Mark as sold:</Label>
-                        <Input
-                          type="number"
-                          min="1"
-                          max={item.quantity - (item.sold_quantity || 0)}
-                          value={soldQuantityInput[item.id] || 1}
-                          onChange={(e) => setSoldQuantityInput(prev => ({
-                            ...prev,
-                            [item.id]: parseInt(e.target.value) || 1
-                          }))}
-                          className="w-16 h-8 text-xs"
-                        />
+          {showCategories ? (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-white mb-2">Browse by Category</h2>
+                <p className="text-white/80 text-lg">Find items by category</p>
+              </div>
+              
+              <CategoryBrowser 
+                items={items} 
+                onCategorySelect={handleCategorySelect}
+              />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredItems.map((item) => (
+                <div key={item.id} className="relative">
+                  <ItemCard
+                    item={item}
+                    userRole={currentUser.role!}
+                    onView={() => {
+                      setSelectedItem(item);
+                      setView('item-detail');
+                    }}
+                    onEdit={() => {
+                      setSelectedItem(item);
+                      setView('edit-item');
+                    }}
+                    onDelete={() => handleItemDelete(item)}
+                    onShowQRCode={() => {
+                      setSelectedItem(item);
+                      setShowQRModal(true);
+                    }}
+                  />
+                  
+                  {currentUser.role === 'admin' && item.quantity > 1 && (
+                    <div className="mt-2 p-3 bg-white rounded-lg border space-y-2">
+                      <div className="flex items-center gap-2">
                         <Button
                           size="sm"
-                          onClick={() => handleMarkAsSold(item, soldQuantityInput[item.id] || 1)}
-                          disabled={!soldQuantityInput[item.id] || (item.sold_quantity || 0) >= item.quantity}
-                          className="h-8 px-2 text-xs"
+                          onClick={() => {
+                            setSelectedItem(item);
+                            setShowSplitModal(true);
+                          }}
+                          variant="outline"
                         >
-                          Sell
+                          Split Item
                         </Button>
+                        
+                        <div className="flex items-center gap-2 flex-1">
+                          <Label className="text-xs">Mark as sold:</Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            max={item.quantity - (item.sold_quantity || 0)}
+                            value={soldQuantityInput[item.id] || 1}
+                            onChange={(e) => setSoldQuantityInput(prev => ({
+                              ...prev,
+                              [item.id]: parseInt(e.target.value) || 1
+                            }))}
+                            className="w-16 h-8 text-xs"
+                          />
+                          <Button
+                            size="sm"
+                            onClick={() => handleMarkAsSold(item, soldQuantityInput[item.id] || 1)}
+                            disabled={!soldQuantityInput[item.id] || (item.sold_quantity || 0) >= item.quantity}
+                            className="h-8 px-2 text-xs"
+                          >
+                            Sell
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
 
-          {filteredItems.length === 0 && (
+          {!showCategories && filteredItems.length === 0 && (
             <Card className="bg-white/90 backdrop-blur-sm">
               <CardContent className="py-12 text-center">
                 <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
