@@ -12,7 +12,7 @@ import { UserManagement } from "@/components/UserManagement";
 import { ItemSplitModal } from "@/components/ItemSplitModal";
 import { ThankYouAnimation } from "@/components/ThankYouAnimation";
 import { storage } from "@/utils/storage";
-import { exportToExcel } from "@/utils/exportUtils";
+import { exportItemsToExcel } from "@/utils/exportUtils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -278,11 +278,11 @@ export default function Index() {
   ];
 
   if (view === 'home') {
-    return <LoginForm onNavigate={setView} onLogin={handleLogin} />;
+    return <LoginForm onLogin={handleLogin} />;
   }
 
   if (view === 'register') {
-    return <DonorRegistration onBack={() => setView('home')} onSuccess={handleDonationSubmit} />;
+    return <DonorRegistration onBack={() => setView('home')} onSubmit={handleDonationSubmit} />;
   }
 
   if (view === 'donor-login') {
@@ -293,14 +293,15 @@ export default function Index() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          currentUser={currentUser} 
+          role={currentUser.role!}
+          username={currentUser.username}
           onLogout={handleLogout}
           onNavigate={setView}
         />
         <div className="container mx-auto px-4 py-8">
           <ItemForm
             item={selectedItem}
-            onSave={handleItemSave}
+            onSubmit={handleItemSave}
             onCancel={() => {
               setView('items');
               setSelectedItem(null);
@@ -315,7 +316,8 @@ export default function Index() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          currentUser={currentUser} 
+          role={currentUser.role!}
+          username={currentUser.username}
           onLogout={handleLogout}
           onNavigate={setView}
         />
@@ -343,12 +345,13 @@ export default function Index() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          currentUser={currentUser} 
+          role={currentUser.role!}
+          username={currentUser.username}
           onLogout={handleLogout}
           onNavigate={setView}
         />
         <div className="container mx-auto px-4 py-8">
-          <UserManagement onBack={() => setView('items')} />
+          <UserManagement userRole={currentUser.role!} onBack={() => setView('items')} />
         </div>
       </div>
     );
@@ -370,7 +373,8 @@ export default function Index() {
       
       <div className="relative z-10">
         <Header 
-          currentUser={currentUser} 
+          role={currentUser.role!}
+          username={currentUser.username}
           onLogout={handleLogout}
           onNavigate={setView}
         />
@@ -433,7 +437,7 @@ export default function Index() {
                         <Plus className="h-4 w-4 mr-2" />
                         Add Item
                       </Button>
-                      <Button onClick={() => exportToExcel(items)} variant="outline">
+                      <Button onClick={() => exportItemsToExcel(items)} variant="outline">
                         <Download className="h-4 w-4 mr-2" />
                         Export
                       </Button>
@@ -595,14 +599,14 @@ export default function Index() {
       {selectedItem && (
         <>
           <QRCodeModal
-            isOpen={showQRModal}
-            onClose={() => setShowQRModal(false)}
+            open={showQRModal}
+            onOpenChange={setShowQRModal}
             item={selectedItem}
           />
           
           <ItemSplitModal
-            isOpen={showSplitModal}
-            onClose={() => setShowSplitModal(false)}
+            open={showSplitModal}
+            onOpenChange={setShowSplitModal}
             item={selectedItem}
             onSplit={handleSplitItem}
           />

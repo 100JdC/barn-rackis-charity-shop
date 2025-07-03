@@ -8,6 +8,7 @@ export interface Item {
   condition: 'new' | 'lightly_used' | 'worn';
   quantity: number;
   original_quantity?: number; // Track original quantity for sold/total display
+  sold_quantity?: number; // Track how many have been sold
   original_price: number;
   suggested_price: number;
   final_price?: number;
