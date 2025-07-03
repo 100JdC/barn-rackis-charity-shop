@@ -23,10 +23,11 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Download, Plus, Search, Filter, Users, Package, TrendingUp, ShoppingCart } from "lucide-react";
 import type { Item, UserRole } from "@/types/item";
+import { CategoryBrowser } from "@/components/CategoryBrowser";
 
 export default function Index() {
   const [currentUser, setCurrentUser] = useState<{ role: UserRole, username?: string }>({ role: null });
-  const [view, setView] = useState<'home' | 'register' | 'donor-login' | 'admin' | 'items' | 'add-item' | 'item-detail' | 'edit-item' | 'user-management'>('home');
+  const [view, setView] = useState<'home' | 'register' | 'donor-login' | 'admin' | 'items' | 'add-item' | 'item-detail' | 'edit-item' | 'user-management' | 'categories'>('home');
   const [items, setItems] = useState<Item[]>([]);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -43,7 +44,7 @@ export default function Index() {
     const session = storage.getSession();
     if (session.role) {
       setCurrentUser(session);
-      setView('items');
+      setView('categories'); // Start with categories view instead of items
     }
   }, []);
 
@@ -246,6 +247,11 @@ export default function Index() {
     setView('home');
   };
 
+  const handleCategorySelect = (category: string) => {
+    setCategoryFilter(category);
+    setView('items');
+  };
+
   const filteredItems = items.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -293,7 +299,7 @@ export default function Index() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          role={currentUser.role!}
+          userRole={currentUser.role!}
           username={currentUser.username}
           onLogout={handleLogout}
           onNavigate={setView}
@@ -301,6 +307,7 @@ export default function Index() {
         <div className="container mx-auto px-4 py-8">
           <ItemForm
             item={selectedItem}
+            userRole={currentUser.role!}
             onSubmit={handleItemSave}
             onCancel={() => {
               setView('items');
@@ -316,7 +323,7 @@ export default function Index() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          role={currentUser.role!}
+          userRole={currentUser.role!}
           username={currentUser.username}
           onLogout={handleLogout}
           onNavigate={setView}
@@ -345,13 +352,47 @@ export default function Index() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          role={currentUser.role!}
+          userRole={currentUser.role!}
           username={currentUser.username}
           onLogout={handleLogout}
           onNavigate={setView}
         />
         <div className="container mx-auto px-4 py-8">
           <UserManagement userRole={currentUser.role!} onBack={() => setView('items')} />
+        </div>
+      </div>
+    );
+  }
+
+  if (view === 'categories') {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: '#1733a7' }}>
+        <div className="absolute inset-0 flex items-center justify-center z-0 opacity-30 pointer-events-none">
+          <img
+            src="/lovable-uploads/bearlogo.png"
+            alt="Rackis for Barn Logo"
+            className="w-[600px] h-auto object-contain"
+            onError={(e) => {
+              console.error('Failed to load bear logo');
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        </div>
+        
+        <div className="relative z-10">
+          <Header 
+            userRole={currentUser.role!}
+            username={currentUser.username}
+            onLogout={handleLogout}
+            onNavigate={setView}
+          />
+          
+          <div className="container mx-auto px-4 py-12">
+            <CategoryBrowser 
+              items={items} 
+              onCategorySelect={handleCategorySelect}
+            />
+          </div>
         </div>
       </div>
     );
@@ -373,7 +414,7 @@ export default function Index() {
       
       <div className="relative z-10">
         <Header 
-          role={currentUser.role!}
+          userRole={currentUser.role!}
           username={currentUser.username}
           onLogout={handleLogout}
           onNavigate={setView}
@@ -427,9 +468,21 @@ export default function Index() {
           <Card className="bg-white/90 backdrop-blur-sm mb-6">
             <CardHeader>
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <CardTitle className="text-white" style={{ color: '#1733a7' }}>
-                  Inventory Management
-                </CardTitle>
+                <div className="flex items-center gap-3">
+                  <Button 
+                    onClick={() => setView('categories')} 
+                    variant="outline"
+                    className="bg-white/80"
+                  >
+                    ← Categories
+                  </Button>
+                  <CardTitle className="text-white" style={{ color: '#1733a7' }}>
+                    {categoryFilter !== "all" ? 
+                      `${categories.find(c => c.value === categoryFilter)?.label || categoryFilter} Items` : 
+                      'All Items'
+                    }
+                  </CardTitle>
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {currentUser.role === 'admin' && (
                     <>
