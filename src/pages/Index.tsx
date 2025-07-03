@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { LoginForm } from "@/components/LoginForm";
@@ -336,6 +337,15 @@ export default function Index() {
     setShowCategories(false);
   };
 
+  // Handle search with Enter key
+  const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      // Search is already handled by the filteredItems effect
+      // This just provides user feedback that Enter was pressed
+      console.log('Search executed:', searchTerm);
+    }
+  };
+
   const filteredItems = items.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -595,15 +605,21 @@ export default function Index() {
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    placeholder="Search items..."
+                    placeholder="Search items... (Press Enter to search)"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyPress={handleSearchKeyPress}
                     className="pl-10"
                   />
                 </div>
                 
                 <div className="flex flex-wrap gap-2">
-                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <Select value={categoryFilter} onValueChange={(value) => {
+                    setCategoryFilter(value);
+                    if (value !== "all") {
+                      setShowCategories(false);
+                    }
+                  }}>
                     <SelectTrigger className="w-40">
                       <SelectValue placeholder="Category" />
                     </SelectTrigger>
