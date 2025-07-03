@@ -106,8 +106,9 @@ export default function Index() {
   const getUserRole = (): UserRole => {
     if (!user) return null;
     
-    // Check if user is admin (Jacob with specific email or admin role)
-    if (user.email === 'jacob@example.com' || user.user_metadata?.role === 'admin') {
+    // Check if user is admin based on username stored in user_metadata
+    const username = user.user_metadata?.username || user.email?.split('@')[0];
+    if (username === 'admin' || username === 'jacob') {
       return 'admin';
     }
     
@@ -166,7 +167,7 @@ export default function Index() {
   const handleItemSave = async (itemData: Partial<Item>) => {
     try {
       const userRole = getUserRole();
-      const username = user?.email?.split('@')[0] || user?.user_metadata?.username || 'user';
+      const username = user?.user_metadata?.username || user?.email?.split('@')[0] || 'user';
       
       if (selectedItem) {
         const updatedItem = await storage.updateItem(selectedItem.id, {
@@ -240,7 +241,7 @@ export default function Index() {
     if (!selectedItem) return;
     
     try {
-      const username = user?.email?.split('@')[0] || user?.user_metadata?.username || 'user';
+      const username = user?.user_metadata?.username || user?.email?.split('@')[0] || 'user';
       
       const newItem: Item = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -284,7 +285,7 @@ export default function Index() {
 
   const handleMarkAsSold = async (item: Item, soldQuantity: number) => {
     try {
-      const username = user?.email?.split('@')[0] || user?.user_metadata?.username || 'user';
+      const username = user?.user_metadata?.username || user?.email?.split('@')[0] || 'user';
       const currentSold = item.sold_quantity || 0;
       const newSoldQuantity = currentSold + soldQuantity;
       
@@ -372,7 +373,7 @@ export default function Index() {
     return (
       <DonatePage
         userRole={userRole}
-        username={user?.email?.split('@')[0] || user?.user_metadata?.username}
+        username={user?.user_metadata?.username || user?.email?.split('@')[0]}
         onLogout={handleLogout}
         onNavigate={handleNavigate}
         onBack={() => setView('items')}
@@ -385,7 +386,7 @@ export default function Index() {
       <div className="min-h-screen bg-gray-50">
         <Header 
           userRole={userRole}
-          username={user?.email?.split('@')[0] || user?.user_metadata?.username}
+          username={user?.user_metadata?.username || user?.email?.split('@')[0]}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
           onDonate={handleDonate}
@@ -410,7 +411,7 @@ export default function Index() {
       <div className="min-h-screen bg-gray-50">
         <Header 
           userRole={userRole}
-          username={user?.email?.split('@')[0] || user?.user_metadata?.username}
+          username={user?.user_metadata?.username || user?.email?.split('@')[0]}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
           onDonate={handleDonate}
@@ -440,7 +441,7 @@ export default function Index() {
       <div className="min-h-screen bg-gray-50">
         <Header 
           userRole={userRole}
-          username={user?.email?.split('@')[0] || user?.user_metadata?.username}
+          username={user?.user_metadata?.username || user?.email?.split('@')[0]}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
           onDonate={handleDonate}
@@ -469,7 +470,7 @@ export default function Index() {
       <div className="relative z-10">
         <Header 
           userRole={userRole}
-          username={user?.email?.split('@')[0] || user?.user_metadata?.username}
+          username={user?.user_metadata?.username || user?.email?.split('@')[0]}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
           onDonate={handleDonate}

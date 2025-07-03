@@ -14,7 +14,7 @@ interface LoginFormProps {
 
 export const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [view, setView] = useState<'options' | 'login' | 'register'>('options');
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -23,8 +23,8 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password.trim()) {
-      setError("Both email and password are required");
+    if (!username.trim() || !password.trim()) {
+      setError("Both username and password are required");
       return;
     }
 
@@ -32,19 +32,22 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     setError("");
 
     try {
+      // Convert username to email format for Supabase Auth
+      const email = `${username.trim()}@rackisbarn.local`;
+      
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
+        email,
         password
       });
 
       if (error) {
         console.error('Login error:', error);
-        setError(error.message);
+        setError("Invalid username or password");
         return;
       }
 
       if (data.user) {
-        console.log('Login successful:', data.user.email);
+        console.log('Login successful:', username);
         toast({
           title: "Welcome back!",
           description: "You have been successfully logged in."
@@ -61,8 +64,8 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password.trim()) {
-      setError("Both email and password are required");
+    if (!username.trim() || !password.trim()) {
+      setError("Both username and password are required");
       return;
     }
 
@@ -80,29 +83,39 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     setError("");
 
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      // Convert username to email format for Supabase Auth
+      const email = `${username.trim()}@rackisbarn.local`;
       
       const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
+        email,
         password,
         options: {
-          emailRedirectTo: redirectUrl
+          data: {
+            username: username.trim()
+          }
         }
       });
 
       if (error) {
         console.error('Registration error:', error);
-        setError(error.message);
+        if (error.message.includes('already registered')) {
+          setError("Username already exists");
+        } else {
+          setError(error.message);
+        }
         return;
       }
 
       if (data.user) {
-        console.log('Registration successful:', data.user.email);
+        console.log('Registration successful:', username);
         toast({
           title: "Registration successful!",
-          description: "Please check your email to verify your account."
+          description: "You can now log in with your username and password."
         });
-        // The onAuthStateChange will handle the login automatically
+        setView('login');
+        setUsername("");
+        setPassword("");
+        setConfirmPassword("");
       }
     } catch (error) {
       console.error('Registration error:', error);
@@ -122,14 +135,14 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           <CardContent className="space-y-4">
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="username">Username</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   required
-                  placeholder="Enter your email"
+                  placeholder="Enter your username"
                   disabled={loading}
                 />
               </div>
@@ -186,14 +199,14 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           <CardContent className="space-y-4">
             <form onSubmit={handleRegister} className="space-y-4">
               <div>
-                <Label htmlFor="register-email">Email</Label>
+                <Label htmlFor="register-username">Username</Label>
                 <Input
-                  id="register-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="register-username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   required
-                  placeholder="Enter your email"
+                  placeholder="Choose a username"
                   disabled={loading}
                 />
               </div>
