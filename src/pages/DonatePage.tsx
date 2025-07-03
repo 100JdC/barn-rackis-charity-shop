@@ -19,6 +19,7 @@ interface DonatePageProps {
 export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }: DonatePageProps) => {
   const [showThankYou, setShowThankYou] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -26,19 +27,42 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
+      setLoading(false);
+      
+      // If user is not authenticated and not admin, redirect to login
+      if (!user && userRole !== 'admin') {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to donate items.",
+          variant: "destructive"
+        });
+        onNavigate('home');
+        return;
+      }
     };
 
     checkAuth();
-  }, [onNavigate, toast]);
+  }, [onNavigate, toast, userRole]);
 
   const handleItemSave = async (itemData: Partial<Item>) => {
+    // Double-check authentication before saving
+    if (!user && userRole !== 'admin') {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to donate items.",
+        variant: "destructive"
+      });
+      onNavigate('home');
+      return;
+    }
+
     try {
       const donorUsername = username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Anonymous Donor';
       
       const newItem: Item = {
         id: Date.now().toString(),
         ...itemData as Item,
-        status: userRole === 'admin' ? 'available' : 'pending_approval', // Always pending for donations unless admin
+        status: userRole === 'admin' ? 'available' : 'pending_approval',
         created_by: donorUsername,
         updated_by: donorUsername,
         donor_name: donorUsername,
@@ -68,6 +92,17 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
     setShowThankYou(false);
     onNavigate('items');
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p>Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

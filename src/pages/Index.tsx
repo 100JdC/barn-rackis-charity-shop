@@ -9,6 +9,8 @@ import { ItemForm } from "@/components/ItemForm";
 import { QRCodeModal } from "@/components/QRCodeModal";
 import { UserManagement } from "@/components/UserManagement";
 import { ItemSplitModal } from "@/components/ItemSplitModal";
+import { PendingDonations } from "@/components/PendingDonations";
+import { PhotoGallery } from "@/components/PhotoGallery";
 import { storage } from "@/utils/storage";
 import { exportItemsToExcel } from "@/utils/exportUtils";
 import { Button } from "@/components/ui/button";
@@ -18,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Download, Plus, Search, Users, Package, TrendingUp, ShoppingCart } from "lucide-react";
+import { Download, Plus, Search, Users, Package, TrendingUp, ShoppingCart, Clock, Image } from "lucide-react";
 import type { Item, UserRole } from "@/types/item";
 import { CategoryBrowser } from "@/components/CategoryBrowser";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,7 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
 export default function Index() {
   const [userRole, setUserRole] = useState<UserRole>(null);
   const [username, setUsername] = useState<string>('');
-  const [view, setView] = useState<'home' | 'items' | 'add-item' | 'item-detail' | 'edit-item' | 'user-management' | 'donate'>('home');
+  const [view, setView] = useState<'home' | 'items' | 'add-item' | 'item-detail' | 'edit-item' | 'user-management' | 'donate' | 'pending-donations' | 'photo-gallery'>('home');
   const [items, setItems] = useState<Item[]>([]);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -174,23 +176,29 @@ export default function Index() {
       setCategoryFilter('all');
     } else if (newView === 'donate') {
       setView('donate');
+    } else if (newView === 'pending-donations') {
+      setView('pending-donations');
+    } else if (newView === 'photo-gallery') {
+      setView('photo-gallery');
     } else {
       setView(newView as any);
     }
   };
 
-  const handleDonate = () => {
-    if (!isAuthenticated || !userRole) {
-      // User is not logged in, show login message and redirect to login
+  const handleDonate = async () => {
+    // Check if user is properly authenticated
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user && userRole !== 'admin') {
       toast({
         title: "Login Required",
         description: "Please log in or register to donate items.",
       });
-      setView('home'); // This will show the login form
-    } else {
-      // User is logged in, go to donate page
-      setView('donate');
+      setView('home');
+      return;
     }
+    
+    setView('donate');
   };
 
   const handleItemSave = async (itemData: Partial<Item>) => {
@@ -500,6 +508,45 @@ export default function Index() {
     );
   }
 
+  if (view === 'pending-donations') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header 
+          userRole={userRole || 'buyer'} 
+          username={username}
+          onLogout={handleLogout}
+          onNavigate={handleNavigate}
+          onDonate={handleDonate}
+        />
+        <PendingDonations
+          userRole={userRole}
+          username={username}
+          onBack={() => setView('items')}
+        />
+      </div>
+    );
+  }
+
+  if (view === 'photo-gallery') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header 
+          userRole={userRole || 'buyer'} 
+          username={username}
+          onLogout={handleLogout}
+          onNavigate={handleNavigate}
+          onDonate={handleDonate}
+        />
+        <PhotoGallery />
+        <div className="container mx-auto px-4 pb-8">
+          <Button onClick={() => setView('items')} variant="outline">
+            Back to Items
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#1733a7' }}>
       <div className="absolute inset-0 flex items-center justify-center z-0 opacity-30 pointer-events-none">
@@ -617,6 +664,14 @@ export default function Index() {
                       <Button onClick={() => setView('add-item')} className="bg-green-600 hover:bg-green-700">
                         <Plus className="h-4 w-4 mr-2" />
                         Add Item
+                      </Button>
+                      <Button onClick={() => setView('pending-donations')} variant="outline" className="bg-orange-50 border-orange-200">
+                        <Clock className="h-4 w-4 mr-2" />
+                        Pending ({stats.pendingItems})
+                      </Button>
+                      <Button onClick={() => setView('photo-gallery')} variant="outline">
+                        <Image className="h-4 w-4 mr-2" />
+                        Photos
                       </Button>
                       <Button onClick={() => exportItemsToExcel(items)} variant="outline">
                         <Download className="h-4 w-4 mr-2" />
