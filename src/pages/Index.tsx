@@ -174,24 +174,33 @@ export default function Index() {
     }
   };
 
-  const handleSplitItem = async (originalItem: Item, newItems: Partial<Item>[]) => {
+  const handleSplitItem = async (soldQuantity: number, finalPrice: number, status: 'sold' | 'reserved', reservedBy?: string) => {
+    if (!selectedItem) return;
+    
     try {
-      for (const newItemData of newItems) {
-        const newItem: Item = {
-          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-          ...originalItem,
-          ...newItemData,
-          quantity: newItemData.quantity || 1,
-          created_by: currentUser.username || 'admin',
-          updated_by: currentUser.username || 'admin',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-        
-        await storage.addItem(newItem);
-      }
+      // Create a new item with the sold/reserved quantity
+      const newItem: Item = {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        ...selectedItem,
+        quantity: soldQuantity,
+        status: status,
+        final_price: finalPrice,
+        reserved_by: reservedBy,
+        created_by: currentUser.username || 'admin',
+        updated_by: currentUser.username || 'admin',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
       
-      await storage.deleteItem(originalItem.id);
+      await storage.addItem(newItem);
+      
+      // Update the original item with reduced quantity
+      const remainingQuantity = selectedItem.quantity - soldQuantity;
+      await storage.updateItem(selectedItem.id, {
+        quantity: remainingQuantity,
+        updated_by: currentUser.username || 'admin',
+        updated_at: new Date().toISOString()
+      });
       
       loadItems();
       setShowSplitModal(false);
@@ -199,7 +208,7 @@ export default function Index() {
       
       toast({
         title: "Success",
-        description: `Item split into ${newItems.length} separate items`
+        description: `Item split successfully`
       });
     } catch (error) {
       console.error('Error splitting item:', error);
@@ -301,7 +310,12 @@ export default function Index() {
   }
 
   if (view === 'register') {
-    return <DonorRegistration onBack={() => setView('home')} onSubmit={handleDonationSubmit} />;
+    return <DonorRegistration 
+      onBack={() => setView('home')} 
+      onRegister={() => {
+        handleDonationSubmit();
+      }} 
+    />;
   }
 
   if (view === 'donor-login') {
@@ -640,21 +654,19 @@ export default function Index() {
         </div>
       </div>
 
-      {selectedItem && (
-        <>
-          <QRCodeModal
-            open={showQRModal}
-            onOpenChange={setShowQRModal}
-            item={selectedItem}
-          />
-          
-          <ItemSplitModal
-            open={showSplitModal}
-            onOpenChange={setShowSplitModal}
-            item={selectedItem}
-            onSplit={handleSplitItem}
-          />
-        </>
+      {selectedItem && showQRModal && (
+        <QRCodeModal
+          item={selectedItem}
+          onClose={() => setShowQRModal(false)}
+        />
+      )}
+      
+      {selectedItem && showSplitModal && (
+        <ItemSplitModal
+          item={selectedItem}
+          onSplit={handleSplitItem}
+          onClose={() => setShowSplitModal(false)}
+        />
       )}
 
       <ThankYouAnimation
