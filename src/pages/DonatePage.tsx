@@ -24,7 +24,7 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
       const newItem: Item = {
         id: Date.now().toString(),
         ...itemData as Item,
-        status: 'pending_approval',
+        status: 'pending_approval', // Always pending for donations
         created_by: username || 'donor',
         updated_by: username || 'donor',
         donor_name: username || 'Anonymous Donor',
@@ -38,7 +38,7 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
       
       toast({
         title: "Success",
-        description: "Thank you for your donation! Your item has been submitted for review."
+        description: "Thank you for your donation! Your item has been submitted for admin approval."
       });
     } catch (error) {
       console.error('Error saving donation:', error);
@@ -71,7 +71,7 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Donate an Item</h1>
             <p className="text-gray-600">
               Thank you for donating! Please fill out the form below to add your item to our inventory.
-              All donations will be reviewed before becoming available for purchase.
+              All donations will be reviewed by an admin before becoming available for purchase.
             </p>
           </div>
           
@@ -80,7 +80,6 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
             userRole={userRole}
             onSubmit={handleItemSave}
             onCancel={onBack}
-            isDonationForm={true}
           />
         </div>
       </div>

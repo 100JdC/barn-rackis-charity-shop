@@ -1,101 +1,139 @@
 
 import { useState, useEffect } from "react";
-import { Users, Calendar, Trash2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Header } from "@/components/Header";
-import { storage, type RegisteredUser } from "@/utils/storage";
+import { UserPlus, Users } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import type { UserRole } from "@/types/item";
 
 interface UserManagementProps {
+  userRole: UserRole;
   onBack: () => void;
-  onLogout?: () => void;
-  onHome?: () => void;
-  userRole: string;
 }
 
-export const UserManagement = ({ onBack, onLogout, onHome, userRole }: UserManagementProps) => {
+interface RegisteredUser {
+  id: string;
+  email: string;
+  created_at: string;
+  email_confirmed_at?: string;
+}
+
+export const UserManagement = ({ userRole, onBack }: UserManagementProps) => {
   const [users, setUsers] = useState<RegisteredUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    const loadUsers = async () => {
-      const loadedUsers = await storage.getUsers();
-      setUsers(loadedUsers);
-    };
-    loadUsers();
-  }, []);
+    if (userRole === 'admin') {
+      loadUsers();
+    }
+  }, [userRole]);
 
-  const handleDeleteUser = async (userId: string) => {
-    // Update local state and localStorage
-    const updatedUsers = users.filter(user => user.id !== userId);
-    setUsers(updatedUsers);
-    storage.setUsers(updatedUsers);
+  const loadUsers = async () => {
+    try {
+      const { data, error } = await supabase.auth.admin.listUsers();
+      
+      if (error) {
+        console.error('Error loading users:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load users",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      setUsers(data.users.map(user => ({
+        id: user.id,
+        email: user.email || 'No email',
+        created_at: user.created_at,
+        email_confirmed_at: user.email_confirmed_at
+      })));
+    } catch (error) {
+      console.error('Error loading users:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load users. Admin access may be required.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  if (userRole !== 'admin') {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center">
+          <p className="text-gray-600">Access denied. Admin privileges required.</p>
+          <Button onClick={onBack} className="mt-4">
+            Back
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header 
-        userRole={userRole}
-        onBack={onBack}
-        onLogout={onLogout}
-        onHome={onHome}
-      />
-
-      <div className="p-4 space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Registered Users ({users.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {users.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                No registered users yet.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {users.map((user) => (
-                  <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex-1">
-                      <div className="font-medium">{user.username}</div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar className="h-3 w-3" />
-                        Registered: {formatDate(user.registeredAt)}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">
-                        {user.role}
-                      </Badge>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="text-red-600 hover:text-red-700"
-                        onClick={() => handleDeleteUser(user.id)}
-                      >
-                        <Trash2 className="h-3 w-3 mr-1" />
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
+          <p className="text-gray-600 mt-2">Manage registered users and their access</p>
+        </div>
+        <Button onClick={onBack} variant="outline">
+          Back to Items
+        </Button>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Registered Users ({users.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <p className="text-center py-4">Loading users...</p>
+          ) : users.length === 0 ? (
+            <p className="text-center py-4 text-gray-600">No registered users found</p>
+          ) : (
+            <div className="space-y-3">
+              {users.map((user) => (
+                <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium">{user.email}</p>
+                    <p className="text-sm text-gray-600">
+                      Registered: {new Date(user.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={user.email_confirmed_at ? "default" : "secondary"}>
+                      {user.email_confirmed_at ? "Verified" : "Unverified"}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="bg-yellow-50 border-yellow-200">
+        <CardHeader>
+          <CardTitle className="text-yellow-800">Security Notice</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-yellow-700">
+            User authentication is now handled securely by Supabase Auth. 
+            Passwords are encrypted and stored securely. Users can register 
+            and login from any device.
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 };

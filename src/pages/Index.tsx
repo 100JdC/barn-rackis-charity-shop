@@ -56,7 +56,14 @@ export default function Index() {
       const loadedItems = await storage.getItems();
       console.log('Items loaded:', loadedItems.length);
       
-      const processedItems = loadedItems.map(item => {
+      // Filter items based on user role
+      let filteredItems = loadedItems;
+      if (currentUser.role !== 'admin') {
+        // Non-admin users can only see approved items
+        filteredItems = loadedItems.filter(item => item.status !== 'pending_approval');
+      }
+      
+      const processedItems = filteredItems.map(item => {
         if (item.sold_quantity && item.sold_quantity > 0) {
           return {
             ...item,
@@ -109,8 +116,12 @@ export default function Index() {
       // User is logged in, go directly to donate page
       setView('donate');
     } else {
-      // User is not logged in, go to login page
+      // User is not logged in, go to login page first
       setView('home');
+      toast({
+        title: "Please Log In",
+        description: "You need to register or log in to donate items.",
+      });
     }
   };
 
@@ -290,6 +301,7 @@ export default function Index() {
     totalItems: items.length,
     availableItems: items.filter(item => item.status === 'available').length,
     soldItems: items.filter(item => item.status === 'sold').length,
+    pendingItems: items.filter(item => item.status === 'pending_approval').length,
     totalValue: items.reduce((sum, item) => sum + (item.final_price || item.suggested_price), 0)
   };
 
@@ -416,9 +428,8 @@ export default function Index() {
         />
         
         <div className="container mx-auto px-4 py-8">
-          {
-            currentUser.role === 'admin' && (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          {currentUser.role === 'admin' && (
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
               <Card className="bg-white/90 backdrop-blur-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Items</CardTitle>
@@ -448,6 +459,16 @@ export default function Index() {
                   <div className="text-2xl font-bold text-blue-600">{stats.soldItems}</div>
                 </CardContent>
               </Card>
+
+              <Card className="bg-white/90 backdrop-blur-sm">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Pending Approval</CardTitle>
+                  <Package className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-orange-600">{stats.pendingItems}</div>
+                </CardContent>
+              </Card>
               
               <Card className="bg-white/90 backdrop-blur-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -461,7 +482,6 @@ export default function Index() {
             </div>
           )}
 
-          
           <Card className="bg-white/90 backdrop-blur-sm mb-6">
             <CardHeader>
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -539,7 +559,9 @@ export default function Index() {
                       <SelectItem value="reserved">Reserved</SelectItem>
                       <SelectItem value="sold">Sold</SelectItem>
                       <SelectItem value="donated">Donated</SelectItem>
-                      <SelectItem value="pending_approval">Pending</SelectItem>
+                      {currentUser.role === 'admin' && (
+                        <SelectItem value="pending_approval">Pending</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                   
