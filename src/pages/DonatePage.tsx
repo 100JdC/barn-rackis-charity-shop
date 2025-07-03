@@ -25,15 +25,6 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
     // Check if user is authenticated
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "Authentication Required",
-          description: "Please log in to donate items.",
-          variant: "destructive"
-        });
-        onNavigate('home');
-        return;
-      }
       setUser(user);
     };
 
@@ -41,23 +32,13 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
   }, [onNavigate, toast]);
 
   const handleItemSave = async (itemData: Partial<Item>) => {
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to donate items.",
-        variant: "destructive"
-      });
-      onNavigate('home');
-      return;
-    }
-
     try {
-      const donorUsername = user.email?.split('@')[0] || user.user_metadata?.username || 'Anonymous Donor';
+      const donorUsername = username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Anonymous Donor';
       
       const newItem: Item = {
         id: Date.now().toString(),
         ...itemData as Item,
-        status: 'pending_approval', // Always pending for donations
+        status: userRole === 'admin' ? 'available' : 'pending_approval', // Always pending for donations unless admin
         created_by: donorUsername,
         updated_by: donorUsername,
         donor_name: donorUsername,
@@ -71,7 +52,7 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
       
       toast({
         title: "Success",
-        description: "Thank you for your donation! Your item has been submitted for admin approval."
+        description: userRole === 'admin' ? "Item added successfully!" : "Thank you for your donation! Your item has been submitted for admin approval."
       });
     } catch (error) {
       console.error('Error saving donation:', error);
@@ -87,24 +68,6 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
     setShowThankYou(false);
     onNavigate('items');
   };
-
-  // Don't render the form if user is not authenticated
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h1>
-          <p className="text-gray-600 mb-4">Please log in to donate items.</p>
-          <button 
-            onClick={() => onNavigate('home')}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
-            Go to Login
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -122,7 +85,7 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Donate an Item</h1>
             <p className="text-gray-600">
               Thank you for donating! Please fill out the form below to add your item to our inventory.
-              All donations will be reviewed by an admin before becoming available for purchase.
+              {userRole !== 'admin' && " All donations will be reviewed by an admin before becoming available for purchase."}
             </p>
           </div>
           

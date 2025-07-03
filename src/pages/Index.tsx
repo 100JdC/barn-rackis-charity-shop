@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Download, Plus, Search, Users, Package, TrendingUp, ShoppingCart } from "lucide-react";
 import type { Item, UserRole } from "@/types/item";
 import { CategoryBrowser } from "@/components/CategoryBrowser";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Index() {
   const [userRole, setUserRole] = useState<UserRole>(null);
@@ -36,7 +37,48 @@ export default function Index() {
   const [showSplitModal, setShowSplitModal] = useState(false);
   const [soldQuantityInput, setSoldQuantityInput] = useState<{ [key: string]: number }>({});
   const [showCategories, setShowCategories] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { toast } = useToast();
+
+  // Set up Supabase auth listener
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        const userUsername = session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
+        const role = session.user.email === 'jacob@admin.com' ? 'admin' : 'donator';
+        
+        setIsAuthenticated(true);
+        setUserRole(role);
+        setUsername(userUsername);
+        
+        if (view === 'home') {
+          setView('items');
+        }
+      } else {
+        setIsAuthenticated(false);
+        setUserRole(null);
+        setUsername('');
+        if (view !== 'home') {
+          setView('home');
+        }
+      }
+    });
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const userUsername = session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
+        const role = session.user.email === 'jacob@admin.com' ? 'admin' : 'donator';
+        
+        setIsAuthenticated(true);
+        setUserRole(role);
+        setUsername(userUsername);
+        setView('items');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [view]);
 
   useEffect(() => {
     if (userRole && view === 'items') {
@@ -80,44 +122,34 @@ export default function Index() {
     console.log('Login successful:', role, loginUsername);
     setUserRole(role);
     setUsername(loginUsername || '');
+    setIsAuthenticated(true);
     
-    // Save session to localStorage
-    localStorage.setItem('user_session', JSON.stringify({
-      role,
-      username: loginUsername || '',
-      timestamp: new Date().toISOString()
-    }));
-    
-    setView('items');
+    // If registering as donator, go directly to donate page
+    if (role === 'donator' && view === 'home') {
+      // Check if this is a new registration by looking at the auth state
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user && new Date(user.created_at).getTime() > Date.now() - 10000) { // User created in last 10 seconds
+          setView('donate');
+        } else {
+          setView('items');
+        }
+      });
+    } else {
+      setView('items');
+    }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setUserRole(null);
     setUsername('');
-    localStorage.removeItem('user_session');
+    setIsAuthenticated(false);
     setView('home');
     toast({
       title: "Logged out",
       description: "You have been successfully logged out."
     });
   };
-
-  // Check for existing session on component mount
-  useEffect(() => {
-    const savedSession = localStorage.getItem('user_session');
-    if (savedSession) {
-      try {
-        const session = JSON.parse(savedSession);
-        setUserRole(session.role);
-        setUsername(session.username);
-        setView('items');
-        console.log('Restored session:', session);
-      } catch (error) {
-        console.error('Error restoring session:', error);
-        localStorage.removeItem('user_session');
-      }
-    }
-  }, []);
 
   const handleNavigate = (newView: string) => {
     if (newView === 'home') {
@@ -134,7 +166,7 @@ export default function Index() {
   };
 
   const handleDonate = () => {
-    if (!userRole) {
+    if (!isAuthenticated || !userRole) {
       // User is not logged in, show login message and stay on home
       toast({
         title: "Login Required",

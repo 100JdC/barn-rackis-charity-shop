@@ -62,30 +62,20 @@ const convertToSupabase = (item: Item) => ({
 });
 
 export const storage = {
-  // Session management - simple localStorage based
+  // Session management - uses Supabase auth
   saveSession: (role: 'admin' | 'donator' | 'buyer', username?: string): void => {
-    localStorage.setItem('user_session', JSON.stringify({
-      role,
-      username: username || '',
-      timestamp: new Date().toISOString()
-    }));
+    // Session is now handled by Supabase auth
+    console.log('Session saved via Supabase auth:', role, username);
   },
 
   getSession: (): { role: 'admin' | 'donator' | 'buyer' | null, username?: string } => {
-    const saved = localStorage.getItem('user_session');
-    if (saved) {
-      try {
-        const session = JSON.parse(saved);
-        return { role: session.role, username: session.username };
-      } catch {
-        return { role: null };
-      }
-    }
+    // Session is now handled by Supabase auth state
     return { role: null };
   },
 
   clearSession: (): void => {
-    localStorage.removeItem('user_session');
+    // Session clearing is handled by Supabase auth.signOut()
+    console.log('Session cleared via Supabase auth');
   },
 
   // Items storage - Try Supabase first, fallback to localStorage
@@ -236,7 +226,7 @@ export const storage = {
     }
   },
 
-  // Users storage - localStorage based
+  // Users storage - localStorage based (kept for compatibility)
   getUsers: async (): Promise<RegisteredUser[]> => {
     const users = localStorage.getItem('registered_users');
     return users ? JSON.parse(users) : [];

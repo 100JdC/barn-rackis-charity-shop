@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageWrapper } from "@/components/PageWrapper";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface LoginFormProps {
   onLogin: (role: 'admin' | 'donator' | 'buyer', username?: string) => void;
@@ -13,6 +14,7 @@ interface LoginFormProps {
 
 export const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [view, setView] = useState<'options' | 'login' | 'register'>('options');
+  const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -22,8 +24,8 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username.trim() || !password.trim()) {
-      setError("Both username and password are required");
+    if (!email.trim() || !password.trim()) {
+      setError("Both email and password are required");
       return;
     }
 
@@ -32,36 +34,34 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
 
     try {
       // Check for admin credentials first
-      if (username.toLowerCase() === "jacob" && password === "Rackis") {
-        console.log('Admin login successful:', username);
+      if (email.toLowerCase() === "jacob@admin.com" && password === "Rackis") {
+        console.log('Admin login successful');
         toast({
           title: "Welcome back, Admin!",
           description: "You have been successfully logged in."
         });
-        onLogin('admin', username);
+        onLogin('admin', 'Jacob');
         return;
       }
 
-      // For regular users, just check if username exists in localStorage for now
-      const users = JSON.parse(localStorage.getItem('registered_users') || '[]');
-      const user = users.find((u: any) => u.username.toLowerCase() === username.trim().toLowerCase());
-      
-      if (!user) {
-        setError("User not found. Please register first.");
-        return;
-      }
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      if (user.password !== password) {
-        setError("Invalid password");
+      if (error) {
+        setError(error.message);
         return;
       }
       
-      console.log('User login successful:', username);
+      console.log('User login successful:', data.user?.email);
       toast({
         title: "Welcome back!",
         description: "You have been successfully logged in."
       });
-      onLogin('donator', username.trim());
+      
+      const userUsername = data.user?.user_metadata?.username || data.user?.email?.split('@')[0] || 'User';
+      onLogin('donator', userUsername);
       
     } catch (error) {
       console.error('Login error:', error);
@@ -73,8 +73,8 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username.trim() || !password.trim()) {
-      setError("Both username and password are required");
+    if (!email.trim() || !username.trim() || !password.trim()) {
+      setError("Email, username, and password are all required");
       return;
     }
 
@@ -92,34 +92,31 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     setError("");
 
     try {
-      // Check if username already exists
-      const users = JSON.parse(localStorage.getItem('registered_users') || '[]');
-      if (users.some((user: any) => user.username.toLowerCase() === username.trim().toLowerCase())) {
-        setError("Username already exists");
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            username: username.trim()
+          }
+        }
+      });
+
+      if (error) {
+        setError(error.message);
         return;
       }
-      
-      // Add user to localStorage
-      const newUser = {
-        id: Date.now().toString(),
-        username: username.trim(),
-        password: password,
-        role: 'donator',
-        registeredAt: new Date().toISOString()
-      };
-      
-      users.push(newUser);
-      localStorage.setItem('registered_users', JSON.stringify(users));
 
-      console.log('Registration successful:', username);
+      console.log('Registration successful:', data.user?.email);
       toast({
         title: "Registration successful!",
-        description: "You can now log in with your username and password."
+        description: "Welcome! You can now start donating items."
       });
-      setView('login');
-      setUsername("");
-      setPassword("");
-      setConfirmPassword("");
+      
+      // Auto-login after registration and go to donate page
+      onLogin('donator', username.trim());
+      
     } catch (error) {
       console.error('Registration error:', error);
       setError("Registration failed. Please try again.");
@@ -138,14 +135,14 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           <CardContent className="space-y-4">
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
-                  placeholder="Enter your username"
+                  placeholder="Enter your email"
                   disabled={loading}
                 />
               </div>
@@ -201,6 +198,19 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={handleRegister} className="space-y-4">
+              <div>
+                <Label htmlFor="register-email">Email</Label>
+                <Input
+                  id="register-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="Enter your email"
+                  disabled={loading}
+                />
+              </div>
+
               <div>
                 <Label htmlFor="register-username">Username</Label>
                 <Input
