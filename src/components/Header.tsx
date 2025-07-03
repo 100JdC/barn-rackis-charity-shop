@@ -26,6 +26,17 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
   const handleDonate = () => {
     if (onDonate) {
       onDonate();
+    } else {
+      // Fallback navigation if onDonate is not provided
+      if (onNavigate) {
+        onNavigate('donate');
+      }
+    }
+  };
+
+  const handleBrowseItems = () => {
+    if (onNavigate) {
+      onNavigate('items');
     }
   };
 
@@ -59,7 +70,7 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => onNavigate && onNavigate('items')}
+            onClick={handleBrowseItems}
             className="hover:bg-gray-100"
           >
             <Home className="h-4 w-4 mr-2" />

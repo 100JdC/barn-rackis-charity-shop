@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { LoginForm } from "@/components/LoginForm";
@@ -111,6 +110,18 @@ export default function Index() {
       });
       
       setItems(processedItems);
+
+      // Show admin notification for pending items
+      if (userRole === 'admin') {
+        const pendingItems = loadedItems.filter(item => item.status === 'pending_approval');
+        if (pendingItems.length > 0) {
+          toast({
+            title: "Pending Donations",
+            description: `You have ${pendingItems.length} donation(s) waiting for approval.`,
+            duration: 5000,
+          });
+        }
+      }
     } catch (error) {
       console.error('Error loading items:', error);
       toast({
@@ -421,7 +432,7 @@ export default function Index() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          userRole={userRole || 'buyer'} // Default to buyer for non-authenticated users
+          userRole={userRole || 'buyer'} 
           username={username}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
@@ -446,7 +457,7 @@ export default function Index() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          userRole={userRole || 'buyer'} // Default to buyer for non-authenticated users
+          userRole={userRole || 'buyer'} 
           username={username}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
@@ -476,7 +487,7 @@ export default function Index() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          userRole={userRole || 'buyer'} // Default to buyer for non-authenticated users
+          userRole={userRole || 'buyer'} 
           username={username}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
@@ -505,7 +516,7 @@ export default function Index() {
       
       <div className="relative z-10">
         <Header 
-          userRole={userRole || 'buyer'} // Default to buyer for non-authenticated users
+          userRole={userRole || 'buyer'} 
           username={username}
           onLogout={isAuthenticated ? handleLogout : undefined}
           onNavigate={handleNavigate}
@@ -513,59 +524,60 @@ export default function Index() {
         />
         
         <div className="container mx-auto px-4 py-8">
-          {userRole === 'admin' && (
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-              <Card className="bg-white/90 backdrop-blur-sm">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Items</CardTitle>
-                  <Package className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{items.length}</div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-white/90 backdrop-blur-sm">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Available</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-600">{items.filter(item => item.status === 'available').length}</div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-white/90 backdrop-blur-sm">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Sold</CardTitle>
-                  <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-blue-600">{items.filter(item => item.status === 'sold').length}</div>
-                </CardContent>
-              </Card>
+          {/* Show stats to everyone, not just admins */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+            <Card className="bg-white/90 backdrop-blur-sm">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Items</CardTitle>
+                <Package className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalItems}</div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-white/90 backdrop-blur-sm">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Available</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">{stats.availableItems}</div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-white/90 backdrop-blur-sm">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Sold</CardTitle>
+                <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-blue-600">{stats.soldItems}</div>
+              </CardContent>
+            </Card>
 
+            {userRole === 'admin' && (
               <Card className="bg-white/90 backdrop-blur-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Pending Approval</CardTitle>
                   <Package className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-orange-600">{items.filter(item => item.status === 'pending_approval').length}</div>
+                  <div className="text-2xl font-bold text-orange-600">{stats.pendingItems}</div>
                 </CardContent>
               </Card>
-              
-              <Card className="bg-white/90 backdrop-blur-sm">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Value</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{items.reduce((sum, item) => sum + (item.final_price || item.suggested_price), 0)} SEK</div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+            )}
+            
+            <Card className="bg-white/90 backdrop-blur-sm">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Value</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalValue} SEK</div>
+              </CardContent>
+            </Card>
+          </div>
 
           <Card className="bg-white/90 backdrop-blur-sm mb-6">
             <CardHeader>
@@ -714,7 +726,7 @@ export default function Index() {
                 <div key={item.id} className="relative">
                   <ItemCard
                     item={item}
-                    userRole={userRole || 'buyer'} // Default to buyer for non-authenticated users
+                    userRole={userRole || 'buyer'} 
                     onView={() => {
                       setSelectedItem(item);
                       setView('item-detail');
@@ -752,7 +764,7 @@ export default function Index() {
                             max={item.quantity - (item.sold_quantity || 0)}
                             value={soldQuantityInput[item.id] || 1}
                             onChange={(e) => setSoldQuantityInput(prev => ({
-                              ...prev,
+                              ...prev,  
                               [item.id]: parseInt(e.target.value) || 1
                             }))}
                             className="w-16 h-8 text-xs"
