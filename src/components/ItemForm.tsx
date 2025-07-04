@@ -138,18 +138,26 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
     const updatedItems = [...items];
     updatedItems[index] = { ...updatedItems[index], [field]: value };
     
-    // Auto-assign photos when subcategory changes
+    // Auto-fill name based on subcategory and auto-assign photos
     if (field === 'subcategory') {
+      // Auto-fill the name with the subcategory if name is empty
+      if (!updatedItems[index].name) {
+        updatedItems[index].name = value;
+      }
+      
+      // Auto-assign photos when subcategory changes
       const subcategoryPhotos = SUBCATEGORY_PHOTOS[value];
       if (subcategoryPhotos && subcategoryPhotos.length > 0) {
         updatedItems[index].photos = [...subcategoryPhotos];
+      } else {
+        updatedItems[index].photos = [];
       }
-      // Don't change photos if no predefined photos for this subcategory
     }
     
-    // Clear subcategory and photos when category changes
+    // Clear subcategory, name, and photos when category changes
     if (field === 'category') {
       updatedItems[index].subcategory = '';
+      updatedItems[index].name = '';
       updatedItems[index].photos = [];
     }
     
@@ -214,10 +222,6 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
     }));
 
     onSubmit(formattedItems);
-  };
-
-  const hasAssignedPhotos = (subcategory: string) => {
-    return SUBCATEGORY_PHOTOS[subcategory]?.length > 0;
   };
 
   return (
@@ -301,43 +305,7 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Basic Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor={`name-${index}`}>Name *</Label>
-                  <Input
-                    id={`name-${index}`}
-                    value={itemData.name}
-                    onChange={(e) => updateItem(index, 'name', e.target.value)}
-                    placeholder="Item name"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor={`quantity-${index}`}>Quantity *</Label>
-                  <Input
-                    id={`quantity-${index}`}
-                    type="number"
-                    min="1"
-                    value={itemData.quantity}
-                    onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor={`description-${index}`}>Description</Label>
-                <Textarea
-                  id={`description-${index}`}
-                  value={itemData.description}
-                  onChange={(e) => updateItem(index, 'description', e.target.value)}
-                  placeholder="Item description"
-                  rows={3}
-                />
-              </div>
-
-              {/* Category and Subcategory */}
+              {/* Category and Subcategory - First and most prominent */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor={`category-${index}`}>Category *</Label>
@@ -380,21 +348,57 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
                 </div>
               </div>
 
+              {/* Name - Auto-filled based on subcategory */}
               <div>
-                <Label htmlFor={`condition-${index}`}>Condition *</Label>
-                <Select
-                  value={itemData.condition}
-                  onValueChange={(value) => updateItem(index, 'condition', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select condition" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="new">New</SelectItem>
-                    <SelectItem value="lightly_used">Lightly Used</SelectItem>
-                    <SelectItem value="worn">Worn</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor={`name-${index}`}>Name *</Label>
+                <Input
+                  id={`name-${index}`}
+                  value={itemData.name}
+                  onChange={(e) => updateItem(index, 'name', e.target.value)}
+                  placeholder="Item name (auto-filled from subcategory)"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor={`description-${index}`}>Description</Label>
+                <Textarea
+                  id={`description-${index}`}
+                  value={itemData.description}
+                  onChange={(e) => updateItem(index, 'description', e.target.value)}
+                  placeholder="Item description"
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor={`condition-${index}`}>Condition *</Label>
+                  <Select
+                    value={itemData.condition}
+                    onValueChange={(value) => updateItem(index, 'condition', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select condition" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="new">New</SelectItem>
+                      <SelectItem value="lightly_used">Lightly Used</SelectItem>
+                      <SelectItem value="worn">Worn</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor={`quantity-${index}`}>Quantity *</Label>
+                  <Input
+                    id={`quantity-${index}`}
+                    type="number"
+                    min="1"
+                    value={itemData.quantity}
+                    onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
+                    required
+                  />
+                </div>
               </div>
 
               {/* Pricing */}
@@ -508,37 +512,37 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
                 </div>
               )}
 
-              {/* Photos */}
+              {/* Photos - Display automatically assigned photos */}
               <div>
                 <Label>Photos</Label>
                 <div className="space-y-4">
-                  {itemData.photos.length > 0 && (
+                  {itemData.photos.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {itemData.photos.map((photo, photoIndex) => (
                         <div key={photoIndex} className="relative">
                           <img
                             src={photo}
-                            alt={`Photo ${photoIndex + 1}`}
+                            alt={`${itemData.subcategory} photo ${photoIndex + 1}`}
                             className="w-full h-24 object-cover rounded-md border"
                           />
                         </div>
                       ))}
                     </div>
-                  )}
-                  
-                  {/* Show message for items with automatically assigned photos */}
-                  {hasAssignedPhotos(itemData.subcategory) && (
-                    <div className="flex items-center gap-2 text-sm text-green-600">
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
                       <Image className="h-4 w-4" />
-                      Photos automatically assigned for this subcategory
+                      <span>
+                        {itemData.subcategory 
+                          ? `No photos available for ${itemData.subcategory}` 
+                          : 'Select a subcategory to see if photos are available'}
+                      </span>
                     </div>
                   )}
                   
-                  {/* Show message for items without assigned photos */}
-                  {!hasAssignedPhotos(itemData.subcategory) && itemData.subcategory && (
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                  {itemData.photos.length > 0 && (
+                    <div className="flex items-center gap-2 text-sm text-green-600">
                       <Image className="h-4 w-4" />
-                      No photos available for this subcategory
+                      Photos automatically assigned for {itemData.subcategory}
                     </div>
                   )}
                 </div>
