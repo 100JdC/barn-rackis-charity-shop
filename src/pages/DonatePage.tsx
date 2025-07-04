@@ -44,7 +44,7 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
     checkAuth();
   }, [onNavigate, toast, userRole]);
 
-  const handleItemSave = async (itemData: Partial<Item>) => {
+  const handleItemSave = async (itemData: Partial<Item>, addAnother: boolean = false) => {
     // Double-check authentication before saving
     if (!user && userRole !== 'admin') {
       toast({
@@ -68,16 +68,25 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
         donor_name: donorUsername,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        photos: itemData.photos || []
+        photos: []
       };
       
       await storage.addItem(newItem);
-      setShowThankYou(true);
       
-      toast({
-        title: "Success",
-        description: userRole === 'admin' ? "Item added successfully!" : "Thank you for your donation! Your item has been submitted for admin approval."
-      });
+      if (addAnother) {
+        // Don't show thank you animation, just show success message
+        toast({
+          title: "Success",
+          description: userRole === 'admin' ? "Item added successfully! Add another item below." : "Item submitted for approval! Add another item below."
+        });
+      } else {
+        // Show thank you animation for single item submission
+        setShowThankYou(true);
+        toast({
+          title: "Success",
+          description: userRole === 'admin' ? "Item added successfully!" : "Thank you for your donation! Your item has been submitted for admin approval."
+        });
+      }
     } catch (error) {
       console.error('Error saving donation:', error);
       toast({

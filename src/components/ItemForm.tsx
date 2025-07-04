@@ -164,18 +164,25 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
       onSubmit(finalItemData, addAnother);
       
       if (addAnother) {
-        // Reset form for next item but keep donor name
+        // Reset form for next item but keep donor name and category/subcategory
+        const resetCategory = formData.category;
+        const resetSubcategory = formData.subcategory;
         setFormData(prev => ({
           ...prev,
-          name: '',
+          name: resetSubcategory.charAt(0).toUpperCase() + resetSubcategory.slice(1),
           description: '',
+          category: resetCategory,
+          subcategory: resetSubcategory,
+          condition: 'new',
           quantity: 1,
           original_price: 0,
           suggested_price: 0,
           final_price: undefined,
+          location: '',
           custom_location: '',
-          photos: [],
+          internal_notes: '',
           donor_name: currentUsername || '',
+          photos: []
         }));
       }
     }
