@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +28,7 @@ const CATEGORY_SUBCATEGORIES = {
   other: ['other']
 };
 
-// Updated photo mapping with your new images
+// Photo mapping for bedding subcategories
 const SUBCATEGORY_PHOTOS: Record<string, string[]> = {
   'pillow cover': ['/lovable-uploads/0821fd07-eb1a-415b-8030-75b16e71349e.png'],
   'regular duvet (blanket)': ['/lovable-uploads/8aaaa293-1c21-4856-9a90-59dcdfb53d55.png'],
@@ -40,19 +39,6 @@ const SUBCATEGORY_PHOTOS: Record<string, string[]> = {
   'pillow': ['/lovable-uploads/33d9e0cd-e2a5-4b47-809b-c8ec1d2b122e.png'],
   'duvet cover': ['/lovable-uploads/34ec46f2-e0c7-4af4-9664-dc56e99c3fdf.png']
 };
-
-// Location options for the dropdown
-const LOCATION_OPTIONS = [
-  'Warehouse A',
-  'Warehouse B',
-  'Storage Room 1',
-  'Storage Room 2',
-  'Main Floor',
-  'Basement',
-  'Attic',
-  'Garage',
-  'Other'
-];
 
 interface ItemData {
   name: string;
@@ -328,7 +314,7 @@ export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemF
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Category and Subcategory - First and most prominent */}
+              {/* Category and Subcategory */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor={`category-${index}`}>Category *</Label>
@@ -371,7 +357,7 @@ export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemF
                 </div>
               </div>
 
-              {/* Name - Auto-filled based on subcategory */}
+              {/* Name */}
               <div>
                 <Label htmlFor={`name-${index}`}>Name *</Label>
                 <Input
@@ -506,21 +492,12 @@ export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemF
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor={`location-${index}`}>Location</Label>
-                  <Select
+                  <Input
+                    id={`location-${index}`}
                     value={itemData.location || ''}
-                    onValueChange={(value) => updateItem(index, 'location', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select location" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LOCATION_OPTIONS.map((location) => (
-                        <SelectItem key={location} value={location}>
-                          {location}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={(e) => updateItem(index, 'location', e.target.value)}
+                    placeholder="Where is this item located?"
+                  />
                 </div>
                 <div>
                   <Label htmlFor={`donor_name-${index}`}>Donor Name</Label>
