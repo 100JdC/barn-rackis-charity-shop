@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { LoginForm } from "@/components/LoginForm";
@@ -202,9 +201,11 @@ export default function Index() {
     setView('donate');
   };
 
-  const handleItemSave = async (itemData: Partial<Item>) => {
+  const handleItemSave = async (itemsData: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>[]) => {
     try {
       if (selectedItem) {
+        // For editing, we should only have one item
+        const itemData = itemsData[0];
         const updatedItem = await storage.updateItem(selectedItem.id, {
           ...itemData,
           updated_by: username,
@@ -217,22 +218,28 @@ export default function Index() {
           });
         }
       } else {
-        const newItem: Item = {
-          id: Date.now().toString(),
-          ...itemData as Item,
-          status: userRole === 'admin' ? (itemData.status || 'available') : 'pending_approval',
-          created_by: username,
-          updated_by: username,
-          donor_name: username,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          photos: itemData.photos || []
-        };
+        // For adding new items
+        for (const itemData of itemsData) {
+          const newItem: Item = {
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            ...itemData,
+            status: userRole === 'admin' ? (itemData.status || 'available') : 'pending_approval',
+            created_by: username,
+            updated_by: username,
+            donor_name: itemData.donor_name || username,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            photos: itemData.photos || []
+          };
+          
+          await storage.addItem(newItem);
+        }
         
-        await storage.addItem(newItem);
         toast({
           title: "Success",
-          description: userRole === 'admin' ? "Item added successfully" : "Item submitted for approval"
+          description: userRole === 'admin' 
+            ? `${itemsData.length} item${itemsData.length > 1 ? 's' : ''} added successfully`
+            : `${itemsData.length} item${itemsData.length > 1 ? 's' : ''} submitted for approval`
         });
       }
       
@@ -240,10 +247,10 @@ export default function Index() {
       setView('items');
       setSelectedItem(null);
     } catch (error) {
-      console.error('Error saving item:', error);
+      console.error('Error saving items:', error);
       toast({
         title: "Error",
-        description: "Failed to save item",
+        description: "Failed to save items",
         variant: "destructive"
       });
     }
