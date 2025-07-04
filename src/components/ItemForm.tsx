@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { X, Plus, Image } from "lucide-react";
+import { X, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Item, UserRole } from "@/types/item";
 
@@ -29,17 +29,30 @@ const CATEGORY_SUBCATEGORIES = {
   other: ['other']
 };
 
-// Photo mapping based on your specified correspondences
+// Updated photo mapping with your new images
 const SUBCATEGORY_PHOTOS: Record<string, string[]> = {
-  'bedspread': ['/lovable-uploads/c57b86d5-b328-4772-b64d-395290573d13.png'],
-  'thick duvet': ['/lovable-uploads/97c57dcc-37a1-4603-9224-829f8035c6f2.png'],
-  'pillow': ['/lovable-uploads/e864de0e-0b29-4248-a8d7-0a94ae10521b.png'],
-  'duvet cover': ['/lovable-uploads/f66a4279-172c-4960-8e91-d687f82c9610.png'],
-  'pillow cover': ['/lovable-uploads/74b13bd1-2a11-44cc-986f-298a9ebc67b6.png'],
-  'matching duvet+pillow cover': ['/lovable-uploads/d12293c7-20a6-4048-9e25-9404ac21e90e.png'],
-  'matress cover': ['/lovable-uploads/aa69fbc7-a9a8-4842-9493-ceff69afc35a.png'],
-  'regular duvet (blanket)': ['/lovable-uploads/826485e4-8e7b-4da4-8296-5679cab7c192.png']
+  'pillow cover': ['/lovable-uploads/0821fd07-eb1a-415b-8030-75b16e71349e.png'],
+  'regular duvet (blanket)': ['/lovable-uploads/8aaaa293-1c21-4856-9a90-59dcdfb53d55.png'],
+  'thick duvet': ['/lovable-uploads/32a63d4c-20c5-41af-907a-1b05082e2f39.png'],
+  'bedspread': ['/lovable-uploads/f394b99a-4fbc-4e8f-865e-e4d193184f6b.png'],
+  'matress cover': ['/lovable-uploads/64001d16-d0ac-4d99-8624-4b82334fa3b7.png'],
+  'matching duvet+pillow cover': ['/lovable-uploads/d9859291-db59-42d7-a21a-0a9491a92e39.png'],
+  'pillow': ['/lovable-uploads/33d9e0cd-e2a5-4b47-809b-c8ec1d2b122e.png'],
+  'duvet cover': ['/lovable-uploads/34ec46f2-e0c7-4af4-9664-dc56e99c3fdf.png']
 };
+
+// Location options for the dropdown
+const LOCATION_OPTIONS = [
+  'Warehouse A',
+  'Warehouse B',
+  'Storage Room 1',
+  'Storage Room 2',
+  'Main Floor',
+  'Basement',
+  'Attic',
+  'Garage',
+  'Other'
+];
 
 interface ItemData {
   name: string;
@@ -139,9 +152,9 @@ export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemF
     updatedItems[index] = { ...updatedItems[index], [field]: value };
     
     // Auto-fill name based on subcategory and auto-assign photos
-    if (field === 'subcategory') {
+    if (field === 'subcategory' && value) {
       // Auto-fill the name with the subcategory if name is empty
-      if (!updatedItems[index].name) {
+      if (!updatedItems[index].name.trim()) {
         updatedItems[index].name = value;
       }
       
@@ -493,12 +506,21 @@ export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemF
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor={`location-${index}`}>Location</Label>
-                  <Input
-                    id={`location-${index}`}
+                  <Select
                     value={itemData.location || ''}
-                    onChange={(e) => updateItem(index, 'location', e.target.value)}
-                    placeholder="Where is this item located?"
-                  />
+                    onValueChange={(value) => updateItem(index, 'location', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LOCATION_OPTIONS.map((location) => (
+                        <SelectItem key={location} value={location}>
+                          {location}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor={`donor_name-${index}`}>Donor Name</Label>
@@ -521,24 +543,6 @@ export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemF
                     placeholder="Internal notes (only visible to admins)"
                     rows={2}
                   />
-                </div>
-              )}
-
-              {/* Photos - Display automatically assigned photos */}
-              {itemData.photos.length > 0 && (
-                <div>
-                  <Label>Photos</Label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {itemData.photos.map((photo, photoIndex) => (
-                      <div key={photoIndex} className="relative">
-                        <img
-                          src={photo}
-                          alt={`${itemData.subcategory} photo ${photoIndex + 1}`}
-                          className="w-full h-24 object-cover rounded-md border"
-                        />
-                      </div>
-                    ))}
-                  </div>
                 </div>
               )}
             </CardContent>
