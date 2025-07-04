@@ -40,6 +40,16 @@ const SUBCATEGORY_PHOTOS: Record<string, string[]> = {
   'duvet cover': ['/lovable-uploads/34ec46f2-e0c7-4af4-9664-dc56e99c3fdf.png']
 };
 
+const LOCATION_OPTIONS = [
+  'Main Storage',
+  'Warehouse',
+  'Bedroom',
+  'Living Room',
+  'Kitchen',
+  'Basement',
+  'Other'
+];
+
 interface ItemData {
   name: string;
   description: string;
@@ -492,12 +502,21 @@ export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemF
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor={`location-${index}`}>Location</Label>
-                  <Input
-                    id={`location-${index}`}
+                  <Select
                     value={itemData.location || ''}
-                    onChange={(e) => updateItem(index, 'location', e.target.value)}
-                    placeholder="Where is this item located?"
-                  />
+                    onValueChange={(value) => updateItem(index, 'location', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LOCATION_OPTIONS.map((location) => (
+                        <SelectItem key={location} value={location}>
+                          {location}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor={`donor_name-${index}`}>Donor Name</Label>

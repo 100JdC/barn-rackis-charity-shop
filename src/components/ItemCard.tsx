@@ -14,6 +14,18 @@ interface ItemCardProps {
   onShowQRCode: () => void;
 }
 
+// Photo mapping for bedding subcategories - same as in ItemForm
+const SUBCATEGORY_PHOTOS: Record<string, string[]> = {
+  'pillow cover': ['/lovable-uploads/0821fd07-eb1a-415b-8030-75b16e71349e.png'],
+  'regular duvet (blanket)': ['/lovable-uploads/8aaaa293-1c21-4856-9a90-59dcdfb53d55.png'],
+  'thick duvet': ['/lovable-uploads/32a63d4c-20c5-41af-907a-1b05082e2f39.png'],
+  'bedspread': ['/lovable-uploads/f394b99a-4fbc-4e8f-865e-e4d193184f6b.png'],
+  'matress cover': ['/lovable-uploads/64001d16-d0ac-4d99-8624-4b82334fa3b7.png'],
+  'matching duvet+pillow cover': ['/lovable-uploads/d9859291-db59-42d7-a21a-0a9491a92e39.png'],
+  'pillow': ['/lovable-uploads/33d9e0cd-e2a5-4b47-809b-c8ec1d2b122e.png'],
+  'duvet cover': ['/lovable-uploads/34ec46f2-e0c7-4af4-9664-dc56e99c3fdf.png']
+};
+
 export const ItemCard = ({ item, userRole, onView, onEdit, onDelete, onShowQRCode }: ItemCardProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -49,40 +61,56 @@ export const ItemCard = ({ item, userRole, onView, onEdit, onDelete, onShowQRCod
     return names[category] || category;
   };
 
-  // Fix photo URL generation - filter out undefined/invalid entries
-  const validPhotos = item.photos ? item.photos.filter(photo => 
-    photo && 
-    typeof photo === 'string' && 
-    photo !== 'undefined' && 
-    !photo.includes('_type')
-  ) : [];
-  
-  const firstPhotoUrl = validPhotos.length > 0 ? storage.getPhoto(validPhotos[0]) : null;
+  // Get photo for this item - prioritize subcategory photos for bedding items
+  const getItemPhoto = () => {
+    // If it's a bedding item, use the subcategory photo mapping
+    if (item.category === 'bedding' && item.subcategory && SUBCATEGORY_PHOTOS[item.subcategory]) {
+      return SUBCATEGORY_PHOTOS[item.subcategory][0];
+    }
+    
+    // Otherwise, use the item's stored photos
+    if (item.photos && item.photos.length > 0) {
+      const validPhotos = item.photos.filter(photo => 
+        photo && 
+        typeof photo === 'string' && 
+        photo !== 'undefined' && 
+        !photo.includes('_type')
+      );
+      
+      if (validPhotos.length > 0) {
+        return storage.getPhoto(validPhotos[0]);
+      }
+    }
+    
+    return null;
+  };
+
+  const photoUrl = getItemPhoto();
   
   console.log('ItemCard photo debug:', {
     itemName: item.name,
-    rawPhotosArray: item.photos,
-    validPhotos: validPhotos,
-    firstPhotoPath: validPhotos[0],
-    firstPhotoUrl: firstPhotoUrl
+    category: item.category,
+    subcategory: item.subcategory,
+    photoUrl: photoUrl,
+    hasSubcategoryPhoto: !!(item.category === 'bedding' && SUBCATEGORY_PHOTOS[item.subcategory])
   });
 
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-4">
         {/* Photo section */}
-        {firstPhotoUrl ? (
+        {photoUrl ? (
           <div className="mb-3">
             <img 
-              src={firstPhotoUrl} 
+              src={photoUrl} 
               alt={item.name}
               className="w-full h-40 object-cover rounded-md"
               onError={(e) => {
-                console.error('Failed to load image:', firstPhotoUrl);
+                console.error('Failed to load image:', photoUrl);
                 e.currentTarget.style.display = 'none';
               }}
               onLoad={() => {
-                console.log('Image loaded successfully:', firstPhotoUrl);
+                console.log('Image loaded successfully:', photoUrl);
               }}
             />
           </div>
