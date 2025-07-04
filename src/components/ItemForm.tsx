@@ -39,7 +39,8 @@ const SUBCATEGORY_PHOTOS: Record<string, string[]> = {
   'pillow': ['/lovable-uploads/33d9e0cd-e2a5-4b47-809b-c8ec1d2b122e.png'],
   'duvet cover': ['/lovable-uploads/34ec46f2-e0c7-4af4-9664-dc56e99c3fdf.png'],
   'mirror': ['/lovable-uploads/54254c2e-2b34-4212-89f2-a57955c91c26.png'],
-  'container': ['/lovable-uploads/09dcfd5c-cd3b-43e4-9273-19b7664fc35c.png']
+  'container': ['/lovable-uploads/09dcfd5c-cd3b-43e4-9273-19b7664fc35c.png'],
+  'towel': ['/lovable-uploads/116e0341-a0a5-41c2-9bbd-015bb33ce398.png']
 };
 
 const LOCATION_OPTIONS = [

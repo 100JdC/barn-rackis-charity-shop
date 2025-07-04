@@ -44,7 +44,7 @@ export const ThankYouAnimation = ({ isVisible, onComplete }: ThankYouAnimationPr
                 : 'scale-100'
             }`}>
               <img 
-                src="/lovable-uploads/826485e4-8e7b-4da4-8296-5679cab7c192.png" 
+                src="/lovable-uploads/66828e04-ca12-4680-80e2-f4704d6832eb.png" 
                 alt="Teddy says thanks"
                 className="w-32 h-32 object-contain"
               />

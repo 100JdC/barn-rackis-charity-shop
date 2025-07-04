@@ -51,7 +51,7 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
           )}
           <div className="flex items-center gap-3">
             <img
-              src="/lovable-uploads/bearlogo.png"
+              src="/lovable-uploads/66828e04-ca12-4680-80e2-f4704d6832eb.png"
               alt="Rackis for Barn Logo"
               className="w-10 h-10 object-contain"
               onError={(e) => {
@@ -109,7 +109,7 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
             </div>
           )}
           
-          {onLogout && (
+          {onLogout && userRole && userRole !== 'buyer' && (
             <Button 
               variant="ghost" 
               size="sm" 

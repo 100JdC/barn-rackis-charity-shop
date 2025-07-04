@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { LoginForm } from "@/components/LoginForm";
@@ -193,10 +192,7 @@ export default function Index() {
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user && userRole !== 'admin') {
-      toast({
-        title: "Login Required",
-        description: "Please log in or register to donate items.",
-      });
+      // Take user to welcome page instead of donate page
       setView('home');
       return;
     }
@@ -562,7 +558,7 @@ export default function Index() {
     <div className="min-h-screen" style={{ backgroundColor: '#1733a7' }}>
       <div className="absolute inset-0 flex items-center justify-center z-0 opacity-30 pointer-events-none">
         <img
-          src="/lovable-uploads/bearlogo.png"
+          src="/lovable-uploads/66828e04-ca12-4680-80e2-f4704d6832eb.png"
           alt="Rackis for Barn Logo"
           className="w-[600px] h-auto object-contain"
           onError={(e) => {
