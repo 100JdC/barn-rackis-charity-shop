@@ -30,17 +30,18 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
   const handleDonate = () => {
     if (onDonate) {
       onDonate();
-    } else {
-      // Fallback navigation if onDonate is not provided
-      if (onNavigate) {
-        onNavigate('donate');
-      }
     }
   };
 
   const handleBrowseItems = () => {
-    if (onNavigate) {
-      onNavigate('items');
+    navigate('/items');
+  };
+
+  const handleHome = () => {
+    if (isAuthenticated && onHome) {
+      onHome();
+    } else {
+      navigate('/');
     }
   };
 
@@ -100,7 +101,7 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
             About Us
           </Button>
           
-          {userRole && userRole !== 'buyer' && (
+          {isAuthenticated && userRole && userRole !== 'buyer' && (
             <div className="flex items-center gap-3 bg-gray-50 px-3 py-2 rounded-lg">
               <Badge className={`${getRoleColor(userRole)} text-xs font-medium`}>
                 {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
@@ -130,7 +131,7 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={onHome}
+              onClick={handleHome}
               className="hover:bg-blue-50 hover:text-blue-600"
             >
               <Home className="h-4 w-4" />
