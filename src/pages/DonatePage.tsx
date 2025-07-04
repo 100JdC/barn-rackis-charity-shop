@@ -44,7 +44,7 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
     checkAuth();
   }, [onNavigate, toast, userRole]);
 
-  const handleItemSave = async (itemData: Partial<Item>, addAnother: boolean = false) => {
+  const handleItemsSave = async (itemsData: Partial<Item>[]) => {
     // Double-check authentication before saving
     if (!user && userRole !== 'admin') {
       toast({
@@ -59,39 +59,36 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
     try {
       const donorUsername = username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Anonymous Donor';
       
-      const newItem: Item = {
-        id: Date.now().toString(),
-        ...itemData as Item,
-        status: userRole === 'admin' ? 'available' : 'pending_approval',
-        created_by: donorUsername,
-        updated_by: donorUsername,
-        donor_name: donorUsername,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        photos: []
-      };
-      
-      await storage.addItem(newItem);
-      
-      if (addAnother) {
-        // Don't show thank you animation, just show success message
-        toast({
-          title: "Success",
-          description: userRole === 'admin' ? "Item added successfully! Add another item below." : "Item submitted for approval! Add another item below."
-        });
-      } else {
-        // Show thank you animation for single item submission
-        setShowThankYou(true);
-        toast({
-          title: "Success",
-          description: userRole === 'admin' ? "Item added successfully!" : "Thank you for your donation! Your item has been submitted for admin approval."
-        });
+      // Process and save all items
+      for (const itemData of itemsData) {
+        const newItem: Item = {
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          ...itemData as Item,
+          status: userRole === 'admin' ? 'available' : 'pending_approval',
+          created_by: donorUsername,
+          updated_by: donorUsername,
+          donor_name: itemData.donor_name || donorUsername,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          photos: []
+        };
+        
+        await storage.addItem(newItem);
       }
+      
+      // Show thank you animation
+      setShowThankYou(true);
+      toast({
+        title: "Success",
+        description: userRole === 'admin' 
+          ? `${itemsData.length} item${itemsData.length > 1 ? 's' : ''} added successfully!`
+          : `Thank you for your donation! ${itemsData.length} item${itemsData.length > 1 ? 's have' : ' has'} been submitted for admin approval.`
+      });
     } catch (error) {
-      console.error('Error saving donation:', error);
+      console.error('Error saving donations:', error);
       toast({
         title: "Error",
-        description: "Failed to submit donation. Please try again.",
+        description: "Failed to submit donations. Please try again.",
         variant: "destructive"
       });
     }
@@ -126,9 +123,9 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Donate an Item</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Donate Items</h1>
             <p className="text-gray-600">
-              Thank you for donating! Please fill out the form below to add your item to our inventory.
+              Thank you for donating! Please fill out the form below to add your items to our inventory.
               {userRole !== 'admin' && " All donations will be reviewed by an admin before becoming available for purchase."}
             </p>
           </div>
@@ -137,7 +134,7 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
             item={null}
             userRole={userRole}
             currentUsername={username}
-            onSubmit={handleItemSave}
+            onSubmit={handleItemsSave}
             onCancel={onBack}
           />
         </div>
