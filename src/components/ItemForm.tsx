@@ -28,7 +28,7 @@ const CATEGORY_SUBCATEGORIES = {
   other: ['other']
 };
 
-// Photo mapping for bedding subcategories
+// Photo mapping for bedding and bathroom subcategories
 const SUBCATEGORY_PHOTOS: Record<string, string[]> = {
   'pillow cover': ['/lovable-uploads/0821fd07-eb1a-415b-8030-75b16e71349e.png'],
   'regular duvet (blanket)': ['/lovable-uploads/8aaaa293-1c21-4856-9a90-59dcdfb53d55.png'],
@@ -37,17 +37,15 @@ const SUBCATEGORY_PHOTOS: Record<string, string[]> = {
   'matress cover': ['/lovable-uploads/64001d16-d0ac-4d99-8624-4b82334fa3b7.png'],
   'matching duvet+pillow cover': ['/lovable-uploads/d9859291-db59-42d7-a21a-0a9491a92e39.png'],
   'pillow': ['/lovable-uploads/33d9e0cd-e2a5-4b47-809b-c8ec1d2b122e.png'],
-  'duvet cover': ['/lovable-uploads/34ec46f2-e0c7-4af4-9664-dc56e99c3fdf.png']
+  'duvet cover': ['/lovable-uploads/34ec46f2-e0c7-4af4-9664-dc56e99c3fdf.png'],
+  'mirror': ['/lovable-uploads/54254c2e-2b34-4212-89f2-a57955c91c26.png'],
+  'container': ['/lovable-uploads/09dcfd5c-cd3b-43e4-9273-19b7664fc35c.png']
 };
 
 const LOCATION_OPTIONS = [
-  'Main Storage',
-  'Warehouse',
-  'Bedroom',
-  'Living Room',
-  'Kitchen',
-  'Basement',
-  'Other'
+  'Rackis 32 basement',
+  'Bike garage',
+  'other'
 ];
 
 interface ItemData {
