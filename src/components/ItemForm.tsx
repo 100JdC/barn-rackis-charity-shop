@@ -1,22 +1,21 @@
-import { useState, useEffect } from "react";
-import { Save, X, Plus, Trash2 } from "lucide-react";
+
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { storage } from "@/utils/storage";
-import type { Item } from "@/types/item";
+import { Badge } from "@/components/ui/badge";
+import { X, Plus, Upload, Image } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import type { Item, UserRole } from "@/types/item";
 
 interface ItemFormProps {
   item?: Item | null;
-  userRole: 'admin' | 'donator' | 'buyer';
-  currentUsername?: string | null;
-  onSubmit?: (items: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>[]) => void;
-  onEdit?: (item: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>) => void;
+  userRole: UserRole;
+  onSubmit: (items: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>[]) => void;
   onCancel: () => void;
-  isEditing?: boolean;
 }
 
 const CATEGORY_SUBCATEGORIES = {
@@ -24,56 +23,67 @@ const CATEGORY_SUBCATEGORIES = {
   bathroom: ['mirror', 'container', 'towel', 'other'],
   decoration: ['plant', 'picture', 'light chain', 'lamp', 'other'],
   other_room_inventory: ['hangers', 'curtains', 'other'],
-  kitchen: ['plate', 'kettle', 'other'],
-  bike_sports: ['bike', 'ball', 'other'],
-  electronics: ['wifi router', 'lamp', 'other'],
+  kitchen: ['pot', 'pan', 'plate', 'cup', 'cutlery', 'appliance', 'other'],
+  bike_sports: ['bike', 'helmet', 'equipment', 'clothing', 'other'],
+  electronics: ['computer', 'phone', 'tablet', 'cable', 'other'],
   other: ['other']
 };
 
-const LOCATION_OPTIONS = [
-  '32 basement',
-  'bike cellar',
-  'other'
-];
+// Subcategory photos mapping
+const SUBCATEGORY_PHOTOS: Record<string, Record<string, string[]>> = {
+  bedding: {
+    'thick duvet': ['/lovable-uploads/97c57dcc-37a1-4603-9224-829f8035c6f2.png'],
+    'regular duvet (blanket)': ['/lovable-uploads/826485e4-8e7b-4da4-8296-5679cab7c192.png'],
+    'pillow': ['/lovable-uploads/e864de0e-0b29-4248-a8d7-0a94ae10521b.png'],
+    'duvet cover': ['/lovable-uploads/f66a4279-172c-4960-8e91-d687f82c9610.png'],
+    'pillow cover': ['/lovable-uploads/74b13bd1-2a11-44cc-986f-298a9ebc67b6.png'],
+    'matching duvet+pillow cover': ['/lovable-uploads/97c57dcc-37a1-4603-9224-829f8035c6f2.png'],
+    'matress cover': ['/lovable-uploads/97c57dcc-37a1-4603-9224-829f8035c6f2.png'],
+    'bedspread': ['/lovable-uploads/97c57dcc-37a1-4603-9224-829f8035c6f2.png']
+  }
+};
 
-type ItemFormData = {
+interface ItemData {
   name: string;
   description: string;
-  category: 'bedding' | 'bathroom' | 'decoration' | 'other_room_inventory' | 'kitchen' | 'bike_sports' | 'electronics' | 'other';
+  category: Item['category'];
   subcategory: string;
-  condition: 'new' | 'lightly_used' | 'worn';
+  condition: Item['condition'];
   quantity: number;
   original_price: number;
   suggested_price: number;
-  final_price: number | undefined;
-  status: 'available' | 'reserved' | 'sold' | 'donated' | 'pending_approval';
-  location: string;
-  custom_location: string;
+  final_price?: number;
+  status: Item['status'];
+  reserved_by?: string;
+  location?: string;
   photos: string[];
-  internal_notes: string;
-  donor_name: string;
-};
+  internal_notes?: string;
+  donor_name?: string;
+}
 
-export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, onCancel, isEditing = false }: ItemFormProps) => {
-  const [items, setItems] = useState<ItemFormData[]>([]);
-
-  const createEmptyItem = (): ItemFormData => ({
+export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) => {
+  const [items, setItems] = useState<ItemData[]>([{
     name: '',
     description: '',
-    category: 'other',
-    subcategory: 'other',
-    condition: 'new',
+    category: 'bedding',
+    subcategory: '',
+    condition: 'lightly_used',
     quantity: 1,
     original_price: 0,
     suggested_price: 0,
     final_price: undefined,
-    status: userRole === 'donator' ? 'pending_approval' : 'available',
+    status: 'available',
+    reserved_by: '',
     location: '',
-    custom_location: '',
     photos: [],
     internal_notes: '',
-    donor_name: currentUsername || '',
-  });
+    donor_name: ''
+  }]);
+  
+  const [showBulkAdd, setShowBulkAdd] = useState(false);
+  const [bulkQuantity, setBulkQuantity] = useState(1);
+  const isEditing = !!item;
+  const { toast } = useToast();
 
   useEffect(() => {
     if (item && isEditing) {
@@ -91,289 +101,344 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
         suggested_price: item.suggested_price,
         final_price: item.final_price,
         status: item.status,
-        location: LOCATION_OPTIONS.includes(item.location || '') ? item.location || '' : 'other',
-        custom_location: LOCATION_OPTIONS.includes(item.location || '') ? '' : item.location || '',
-        photos: item.photos,
+        reserved_by: item.reserved_by || '',
+        location: item.location || '',
+        photos: item.photos || [],
         internal_notes: item.internal_notes || '',
-        donor_name: item.donor_name || '',
+        donor_name: item.donor_name || ''
       }]);
-    } else {
-      // For new donations, start with one empty item
-      setItems([createEmptyItem()]);
     }
-  }, [item, currentUsername, userRole, isEditing]);
+  }, [item, isEditing]);
 
-  const updateItem = (index: number, field: keyof ItemFormData, value: any) => {
-    setItems(prev => prev.map((item, i) => 
-      i === index ? { ...item, [field]: value } : item
-    ));
-  };
-
-  const handleCategoryChange = (index: number, value: string) => {
-    const category = value as keyof typeof CATEGORY_SUBCATEGORIES;
-    const firstSubcategory = CATEGORY_SUBCATEGORIES[category][0];
-    setItems(prev => prev.map((item, i) => 
-      i === index ? {
-        ...item,
-        category,
-        subcategory: firstSubcategory,
-        name: firstSubcategory.charAt(0).toUpperCase() + firstSubcategory.slice(1)
-      } : item
-    ));
-  };
-
-  const handleSubcategoryChange = (index: number, value: string) => {
-    setItems(prev => prev.map((item, i) => 
-      i === index ? {
-        ...item,
-        subcategory: value,
-        name: value.charAt(0).toUpperCase() + value.slice(1)
-      } : item
-    ));
-  };
-
-  const handleOriginalPriceChange = (index: number, value: string) => {
-    const numValue = value === '' ? 0 : parseInt(value);
-    const roundedSuggested = Math.ceil((isNaN(numValue) ? 0 : numValue) * 0.5);
-    
-    setItems(prev => prev.map((item, i) => 
-      i === index ? {
-        ...item,
-        original_price: isNaN(numValue) ? 0 : numValue,
-        suggested_price: item.suggested_price === Math.ceil(item.original_price * 0.5) ? roundedSuggested : item.suggested_price
-      } : item
-    ));
-  };
-
-  const handleSuggestedPriceChange = (index: number, value: string) => {
-    const numValue = value === '' ? 0 : Math.ceil(parseFloat(value) || 0);
-    setItems(prev => prev.map((item, i) => 
-      i === index ? { ...item, suggested_price: numValue } : item
-    ));
-  };
-
-  const handleFinalPriceChange = (index: number, value: string) => {
-    const numValue = value === '' ? undefined : parseInt(value);
-    setItems(prev => prev.map((item, i) => 
-      i === index ? { ...item, final_price: isNaN(numValue as number) ? undefined : numValue } : item
-    ));
-  };
-
-  const addItem = () => {
-    setItems(prev => [...prev, createEmptyItem()]);
+  const addNewItem = () => {
+    setItems([...items, {
+      name: '',
+      description: '',
+      category: 'bedding',
+      subcategory: '',
+      condition: 'lightly_used',
+      quantity: 1,
+      original_price: 0,
+      suggested_price: 0,
+      final_price: undefined,
+      status: 'available',
+      reserved_by: '',
+      location: '',
+      photos: [],
+      internal_notes: '',
+      donor_name: ''
+    }]);
   };
 
   const removeItem = (index: number) => {
     if (items.length > 1) {
-      setItems(prev => prev.filter((_, i) => i !== index));
+      setItems(items.filter((_, i) => i !== index));
     }
   };
 
-  const validateItem = (item: ItemFormData): boolean => {
-    return !!(
-      item.name.trim() &&
-      item.category &&
-      item.subcategory &&
-      item.condition &&
-      item.quantity > 0 &&
-      item.original_price >= 0 &&
-      item.suggested_price >= 0
-    );
+  const updateItem = (index: number, field: keyof ItemData, value: any) => {
+    const updatedItems = [...items];
+    updatedItems[index] = { ...updatedItems[index], [field]: value };
+    
+    // Auto-assign photos when subcategory changes for bedding items
+    if (field === 'subcategory' && updatedItems[index].category === 'bedding') {
+      const categoryPhotos = SUBCATEGORY_PHOTOS.bedding[value];
+      if (categoryPhotos && categoryPhotos.length > 0) {
+        updatedItems[index].photos = [...categoryPhotos];
+      }
+    }
+    
+    // Clear subcategory when category changes
+    if (field === 'category') {
+      updatedItems[index].subcategory = '';
+      updatedItems[index].photos = [];
+    }
+    
+    setItems(updatedItems);
+  };
+
+  const handleBulkAdd = () => {
+    const newItems = [];
+    for (let i = 0; i < bulkQuantity; i++) {
+      newItems.push({
+        name: '',
+        description: '',
+        category: 'bedding' as Item['category'],
+        subcategory: '',
+        condition: 'lightly_used' as Item['condition'],
+        quantity: 1,
+        original_price: 0,
+        suggested_price: 0,
+        final_price: undefined,
+        status: 'available' as Item['status'],
+        reserved_by: '',
+        location: '',
+        photos: [],
+        internal_notes: '',
+        donor_name: ''
+      });
+    }
+    setItems([...items, ...newItems]);
+    setShowBulkAdd(false);
+    setBulkQuantity(1);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate all items
-    const invalidItems = items.filter((item, index) => !validateItem(item));
+    // Validate required fields
+    const invalidItems = items.filter(item => 
+      !item.name.trim() || 
+      !item.subcategory || 
+      item.original_price < 0 || 
+      item.suggested_price < 0 ||
+      item.quantity < 1
+    );
+
     if (invalidItems.length > 0) {
-      alert('Please fill in all required fields for all items before submitting.');
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields and ensure values are valid.",
+        variant: "destructive"
+      });
       return;
     }
 
-    const processedItems = items.map(item => {
-      const finalLocation = item.location === 'other' ? item.custom_location : item.location;
-      const { custom_location, ...finalItemData } = { ...item, location: finalLocation };
-      return finalItemData;
-    });
-    
-    if (isEditing && onEdit && items.length === 1) {
-      onEdit(processedItems[0]);
-    } else if (onSubmit) {
-      onSubmit(processedItems);
-    }
+    // Convert to the expected format
+    const formattedItems = items.map(item => ({
+      ...item,
+      final_price: item.final_price || undefined,
+      reserved_by: item.reserved_by || undefined,
+      location: item.location || undefined,
+      internal_notes: item.internal_notes || undefined,
+      donor_name: item.donor_name || undefined
+    }));
+
+    onSubmit(formattedItems);
   };
 
-  const getCategoryDisplayName = (category: string) => {
-    const names: Record<string, string> = {
-      bedding: 'Bedding',
-      bathroom: 'Bathroom',
-      decoration: 'Decoration',
-      other_room_inventory: 'Other Room Inventory',
-      kitchen: 'Kitchen',
-      bike_sports: 'Bike & Sports',
-      electronics: 'Electronics',
-      other: 'Other'
-    };
-    return names[category] || category;
+  const handlePhotoUpload = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    // For now, we'll just store the file names
+    // In a real implementation, you'd upload to a service and get URLs
+    const newPhotos = Array.from(files).map(file => URL.createObjectURL(file));
+    updateItem(index, 'photos', [...items[index].photos, ...newPhotos]);
+  };
+
+  const removePhoto = (itemIndex: number, photoIndex: number) => {
+    const updatedPhotos = items[itemIndex].photos.filter((_, i) => i !== photoIndex);
+    updateItem(itemIndex, 'photos', updatedPhotos);
   };
 
   return (
-    <Card className="max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle>
-          {item ? 'Edit Item' : 'Add New Items'}
-          {userRole === 'donator' && !item && (
-            <div className="text-sm text-gray-600 mt-1">Items require admin approval before appearing in the inventory</div>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {items.map((itemData, index) => (
-            <Card key={index} className="border-2">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-lg">Item {index + 1}</CardTitle>
-                {!isEditing && items.length > 1 && (
+    <div className="max-w-4xl mx-auto space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">
+          {isEditing ? 'Edit Item' : 'Add New Item(s)'}
+        </h1>
+        {!isEditing && (
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowBulkAdd(!showBulkAdd)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Bulk Add
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={addNewItem}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Another Item
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {showBulkAdd && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Bulk Add Items</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="bulkQuantity">Number of items to add</Label>
+              <Input
+                id="bulkQuantity"
+                type="number"
+                min="1"
+                max="50"
+                value={bulkQuantity}
+                onChange={(e) => setBulkQuantity(parseInt(e.target.value) || 1)}
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleBulkAdd}>Add {bulkQuantity} Items</Button>
+              <Button variant="outline" onClick={() => setShowBulkAdd(false)}>
+                Cancel
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {items.map((itemData, index) => (
+          <Card key={index}>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle>
+                  Item {index + 1}
+                  {items.length > 1 && (
+                    <Badge variant="outline" className="ml-2">
+                      {index + 1} of {items.length}
+                    </Badge>
+                  )}
+                </CardTitle>
+                {items.length > 1 && (
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => removeItem(index)}
                   >
-                    <Trash2 className="h-4 w-4" />
-                    Remove
+                    <X className="h-4 w-4" />
                   </Button>
                 )}
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor={`category-${index}`}>Category *</Label>
-                    <Select value={itemData.category} onValueChange={(value) => handleCategoryChange(index, value)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.keys(CATEGORY_SUBCATEGORIES).map(category => (
-                          <SelectItem key={category} value={category}>
-                            {getCategoryDisplayName(category)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor={`subcategory-${index}`}>Subcategory *</Label>
-                    <Select value={itemData.subcategory} onValueChange={(value) => handleSubcategoryChange(index, value)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CATEGORY_SUBCATEGORIES[itemData.category].map(sub => (
-                          <SelectItem key={sub} value={sub}>
-                            {sub.charAt(0).toUpperCase() + sub.slice(1)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Basic Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor={`name-${index}`}>Item Name *</Label>
+                  <Label htmlFor={`name-${index}`}>Name *</Label>
                   <Input
                     id={`name-${index}`}
                     value={itemData.name}
                     onChange={(e) => updateItem(index, 'name', e.target.value)}
+                    placeholder="Item name"
                     required
-                    placeholder="Enter item name"
                   />
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor={`quantity-${index}`}>Quantity *</Label>
-                    <Input
-                      id={`quantity-${index}`}
-                      type="number"
-                      min="1"
-                      value={itemData.quantity}
-                      onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
-                      required
-                    />
-                  </div>
-
-                  {index === 0 && (
-                    <div>
-                      <Label htmlFor="donor_name">Donor Name</Label>
-                      <Input
-                        id="donor_name"
-                        value={itemData.donor_name}
-                        onChange={(e) => updateItem(index, 'donor_name', e.target.value)}
-                        placeholder="Enter donor name"
-                      />
-                    </div>
-                  )}
-                </div>
-
                 <div>
-                  <Label htmlFor={`description-${index}`}>Description (optional)</Label>
-                  <Textarea
-                    id={`description-${index}`}
-                    value={itemData.description}
-                    onChange={(e) => updateItem(index, 'description', e.target.value)}
-                    placeholder="Describe the item (optional)"
-                    rows={3}
+                  <Label htmlFor={`quantity-${index}`}>Quantity *</Label>
+                  <Input
+                    id={`quantity-${index}`}
+                    type="number"
+                    min="1"
+                    value={itemData.quantity}
+                    onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
+                    required
                   />
                 </div>
+              </div>
 
+              <div>
+                <Label htmlFor={`description-${index}`}>Description</Label>
+                <Textarea
+                  id={`description-${index}`}
+                  value={itemData.description}
+                  onChange={(e) => updateItem(index, 'description', e.target.value)}
+                  placeholder="Item description"
+                  rows={3}
+                />
+              </div>
+
+              {/* Category and Subcategory */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor={`condition-${index}`}>Condition *</Label>
-                  <Select value={itemData.condition} onValueChange={(value: any) => updateItem(index, 'condition', value)}>
+                  <Label htmlFor={`category-${index}`}>Category *</Label>
+                  <Select
+                    value={itemData.category}
+                    onValueChange={(value) => updateItem(index, 'category', value)}
+                  >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="lightly_used">Lightly Used</SelectItem>
-                      <SelectItem value="worn">Worn</SelectItem>
+                      <SelectItem value="bedding">Bedding</SelectItem>
+                      <SelectItem value="bathroom">Bathroom</SelectItem>
+                      <SelectItem value="decoration">Decoration</SelectItem>
+                      <SelectItem value="other_room_inventory">Other Room Inventory</SelectItem>
+                      <SelectItem value="kitchen">Kitchen</SelectItem>
+                      <SelectItem value="bike_sports">Bike & Sports</SelectItem>
+                      <SelectItem value="electronics">Electronics</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor={`original_price-${index}`}>Original Price (SEK) *</Label>
-                    <Input
-                      id={`original_price-${index}`}
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={itemData.original_price || ''}
-                      onChange={(e) => handleOriginalPriceChange(index, e.target.value)}
-                      required
-                      placeholder="0"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor={`suggested_price-${index}`}>Suggested Price (SEK) *</Label>
-                    <Input
-                      id={`suggested_price-${index}`}
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={itemData.suggested_price || ''}
-                      onChange={(e) => handleSuggestedPriceChange(index, e.target.value)}
-                      required
-                      placeholder="0"
-                    />
-                  </div>
+                <div>
+                  <Label htmlFor={`subcategory-${index}`}>Subcategory *</Label>
+                  <Select
+                    value={itemData.subcategory}
+                    onValueChange={(value) => updateItem(index, 'subcategory', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select subcategory" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CATEGORY_SUBCATEGORIES[itemData.category]?.map((sub) => (
+                        <SelectItem key={sub} value={sub}>
+                          {sub}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
+              </div>
 
-                {userRole === 'admin' && (
+              <div>
+                <Label htmlFor={`condition-${index}`}>Condition *</Label>
+                <Select
+                  value={itemData.condition}
+                  onValueChange={(value) => updateItem(index, 'condition', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select condition" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="new">New</SelectItem>
+                    <SelectItem value="lightly_used">Lightly Used</SelectItem>
+                    <SelectItem value="worn">Worn</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Pricing */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor={`original_price-${index}`}>Original Price (SEK) *</Label>
+                  <Input
+                    id={`original_price-${index}`}
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={itemData.original_price}
+                    onChange={(e) => updateItem(index, 'original_price', parseFloat(e.target.value) || 0)}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor={`suggested_price-${index}`}>Suggested Price (SEK) *</Label>
+                  <Input
+                    id={`suggested_price-${index}`}
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={itemData.suggested_price}
+                    onChange={(e) => updateItem(index, 'suggested_price', parseFloat(e.target.value) || 0)}
+                    required
+                  />
+                </div>
+              </div>
+
+              {userRole === 'admin' && (
+                <>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor={`final_price-${index}`}>Final Price (SEK)</Label>
@@ -381,98 +446,139 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
                         id={`final_price-${index}`}
                         type="number"
                         min="0"
-                        step="1"
+                        step="0.01"
                         value={itemData.final_price || ''}
-                        onChange={(e) => handleFinalPriceChange(index, e.target.value)}
+                        onChange={(e) => updateItem(index, 'final_price', parseFloat(e.target.value) || undefined)}
                       />
                     </div>
-
                     <div>
-                      <Label htmlFor={`status-${index}`}>Status *</Label>
-                      <Select value={itemData.status} onValueChange={(value: any) => updateItem(index, 'status', value)}>
+                      <Label htmlFor={`status-${index}`}>Status</Label>
+                      <Select
+                        value={itemData.status}
+                        onValueChange={(value) => updateItem(index, 'status', value)}
+                      >
                         <SelectTrigger>
-                          <SelectValue />
+                          <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="pending_approval">Pending Approval</SelectItem>
                           <SelectItem value="available">Available</SelectItem>
                           <SelectItem value="reserved">Reserved</SelectItem>
                           <SelectItem value="sold">Sold</SelectItem>
                           <SelectItem value="donated">Donated</SelectItem>
+                          <SelectItem value="pending_approval">Pending Approval</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
-                )}
 
-                <div className="space-y-2">
-                  <Label htmlFor={`location-${index}`}>Location</Label>
-                  <Select value={itemData.location} onValueChange={(value) => updateItem(index, 'location', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select location" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LOCATION_OPTIONS.map(location => (
-                        <SelectItem key={location} value={location}>
-                          {location}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  
-                  {itemData.location === 'other' && (
-                    <div className="mt-2">
-                      <Label htmlFor={`custom_location-${index}`}>Custom Location</Label>
+                  {itemData.status === 'reserved' && (
+                    <div>
+                      <Label htmlFor={`reserved_by-${index}`}>Reserved By</Label>
                       <Input
-                        id={`custom_location-${index}`}
-                        value={itemData.custom_location}
-                        onChange={(e) => updateItem(index, 'custom_location', e.target.value)}
-                        placeholder="Enter custom location"
+                        id={`reserved_by-${index}`}
+                        value={itemData.reserved_by || ''}
+                        onChange={(e) => updateItem(index, 'reserved_by', e.target.value)}
+                        placeholder="Person who reserved this item"
                       />
                     </div>
                   )}
+                </>
+              )}
+
+              {/* Location and Notes */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor={`location-${index}`}>Location</Label>
+                  <Input
+                    id={`location-${index}`}
+                    value={itemData.location || ''}
+                    onChange={(e) => updateItem(index, 'location', e.target.value)}
+                    placeholder="Where is this item located?"
+                  />
                 </div>
+                <div>
+                  <Label htmlFor={`donor_name-${index}`}>Donor Name</Label>
+                  <Input
+                    id={`donor_name-${index}`}
+                    value={itemData.donor_name || ''}
+                    onChange={(e) => updateItem(index, 'donor_name', e.target.value)}
+                    placeholder="Who donated this item?"
+                  />
+                </div>
+              </div>
 
-                {userRole === 'admin' && (
-                  <div>
-                    <Label htmlFor={`internal_notes-${index}`}>Internal Notes</Label>
-                    <Textarea
-                      id={`internal_notes-${index}`}
-                      value={itemData.internal_notes}
-                      onChange={(e) => updateItem(index, 'internal_notes', e.target.value)}
-                      placeholder="Internal notes (visible to admins only)"
-                      rows={2}
+              {userRole === 'admin' && (
+                <div>
+                  <Label htmlFor={`internal_notes-${index}`}>Internal Notes</Label>
+                  <Textarea
+                    id={`internal_notes-${index}`}
+                    value={itemData.internal_notes || ''}
+                    onChange={(e) => updateItem(index, 'internal_notes', e.target.value)}
+                    placeholder="Internal notes (only visible to admins)"
+                    rows={2}
+                  />
+                </div>
+              )}
+
+              {/* Photos */}
+              <div>
+                <Label>Photos</Label>
+                <div className="space-y-4">
+                  {itemData.photos.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {itemData.photos.map((photo, photoIndex) => (
+                        <div key={photoIndex} className="relative">
+                          <img
+                            src={photo}
+                            alt={`Photo ${photoIndex + 1}`}
+                            className="w-full h-24 object-cover rounded-md border"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removePhoto(index, photoIndex)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-4">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => handlePhotoUpload(index, e)}
+                      className="hidden"
+                      id={`photo-upload-${index}`}
                     />
+                    <Label
+                      htmlFor={`photo-upload-${index}`}
+                      className="cursor-pointer flex items-center gap-2 px-4 py-2 border border-dashed border-gray-300 rounded-md hover:border-gray-400"
+                    >
+                      <Upload className="h-4 w-4" />
+                      Add Photos
+                    </Label>
+                    <span className="text-sm text-gray-500">
+                      {itemData.photos.length} photo(s) added
+                    </span>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
 
-          <div className="flex gap-3 pt-4">
-            {!isEditing && (
-              <Button 
-                type="button" 
-                onClick={addItem}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Another Item
-              </Button>
-            )}
-            
-            <Button type="submit" className="flex-1 bg-green-600 hover:bg-green-700">
-              <Save className="h-4 w-4 mr-2" />
-              {isEditing ? 'Update Item' : `Submit ${items.length} Item${items.length > 1 ? 's' : ''}`}
-            </Button>
-            
-            <Button type="button" variant="outline" onClick={onCancel}>
-              <X className="h-4 w-4 mr-2" />
-              Cancel
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+        <div className="flex justify-end gap-4">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button type="submit" className="bg-green-600 hover:bg-green-700">
+            {isEditing ? 'Update Item' : `Add ${items.length} Item${items.length > 1 ? 's' : ''}`}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 };
