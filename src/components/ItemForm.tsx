@@ -29,7 +29,7 @@ const CATEGORY_SUBCATEGORIES = {
   other: ['other']
 };
 
-// Photo mapping based on subcategory names
+// Photo mapping based on your specified correspondences
 const SUBCATEGORY_PHOTOS: Record<string, string[]> = {
   'bedspread': ['/lovable-uploads/c57b86d5-b328-4772-b64d-395290573d13.png'],
   'thick duvet': ['/lovable-uploads/97c57dcc-37a1-4603-9224-829f8035c6f2.png'],
@@ -48,8 +48,8 @@ interface ItemData {
   subcategory: string;
   condition: Item['condition'];
   quantity: number;
-  original_price: number;
-  suggested_price: number;
+  original_price: number | '';
+  suggested_price: number | '';
   final_price?: number;
   status: Item['status'];
   reserved_by?: string;
@@ -59,7 +59,7 @@ interface ItemData {
   donor_name?: string;
 }
 
-export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) => {
+export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemFormProps & { username?: string }) => {
   const [items, setItems] = useState<ItemData[]>([{
     name: '',
     description: '',
@@ -67,15 +67,15 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
     subcategory: '',
     condition: 'lightly_used',
     quantity: 1,
-    original_price: 0,
-    suggested_price: 0,
+    original_price: '',
+    suggested_price: '',
     final_price: undefined,
     status: 'available',
     reserved_by: '',
     location: '',
     photos: [],
     internal_notes: '',
-    donor_name: ''
+    donor_name: username || ''
   }]);
   
   const [showBulkAdd, setShowBulkAdd] = useState(false);
@@ -103,10 +103,10 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
         location: item.location || '',
         photos: item.photos || [],
         internal_notes: item.internal_notes || '',
-        donor_name: item.donor_name || ''
+        donor_name: item.donor_name || username || ''
       }]);
     }
-  }, [item, isEditing]);
+  }, [item, isEditing, username]);
 
   const addNewItem = () => {
     setItems([...items, {
@@ -116,15 +116,15 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
       subcategory: '',
       condition: 'lightly_used',
       quantity: 1,
-      original_price: 0,
-      suggested_price: 0,
+      original_price: '',
+      suggested_price: '',
       final_price: undefined,
       status: 'available',
       reserved_by: '',
       location: '',
       photos: [],
       internal_notes: '',
-      donor_name: ''
+      donor_name: username || ''
     }]);
   };
 
@@ -160,6 +160,12 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
       updatedItems[index].name = '';
       updatedItems[index].photos = [];
     }
+
+    // Auto-fill suggested price when original price changes
+    if (field === 'original_price' && value && !isNaN(parseFloat(value))) {
+      const originalPrice = parseFloat(value);
+      updatedItems[index].suggested_price = Math.round(originalPrice / 2);
+    }
     
     setItems(updatedItems);
   };
@@ -174,15 +180,15 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
         subcategory: '',
         condition: 'lightly_used' as Item['condition'],
         quantity: 1,
-        original_price: 0,
-        suggested_price: 0,
+        original_price: '' as number | '',
+        suggested_price: '' as number | '',
         final_price: undefined,
         status: 'available' as Item['status'],
         reserved_by: '',
         location: '',
         photos: [],
         internal_notes: '',
-        donor_name: ''
+        donor_name: username || ''
       });
     }
     setItems([...items, ...newItems]);
@@ -197,8 +203,10 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
     const invalidItems = items.filter(item => 
       !item.name.trim() || 
       !item.subcategory || 
-      item.original_price < 0 || 
-      item.suggested_price < 0 ||
+      item.original_price === '' || 
+      item.suggested_price === '' ||
+      parseFloat(item.original_price.toString()) < 0 || 
+      parseFloat(item.suggested_price.toString()) < 0 ||
       item.quantity < 1
     );
 
@@ -214,6 +222,8 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
     // Convert to the expected format
     const formattedItems = items.map(item => ({
       ...item,
+      original_price: parseFloat(item.original_price.toString()) || 0,
+      suggested_price: parseFloat(item.suggested_price.toString()) || 0,
       final_price: item.final_price || undefined,
       reserved_by: item.reserved_by || undefined,
       location: item.location || undefined,
@@ -411,7 +421,8 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
                     min="0"
                     step="0.01"
                     value={itemData.original_price}
-                    onChange={(e) => updateItem(index, 'original_price', parseFloat(e.target.value) || 0)}
+                    onChange={(e) => updateItem(index, 'original_price', e.target.value)}
+                    placeholder="0"
                     required
                   />
                 </div>
@@ -423,7 +434,8 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
                     min="0"
                     step="0.01"
                     value={itemData.suggested_price}
-                    onChange={(e) => updateItem(index, 'suggested_price', parseFloat(e.target.value) || 0)}
+                    onChange={(e) => updateItem(index, 'suggested_price', e.target.value)}
+                    placeholder="Auto-filled from original price"
                     required
                   />
                 </div>
@@ -513,40 +525,22 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
               )}
 
               {/* Photos - Display automatically assigned photos */}
-              <div>
-                <Label>Photos</Label>
-                <div className="space-y-4">
-                  {itemData.photos.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {itemData.photos.map((photo, photoIndex) => (
-                        <div key={photoIndex} className="relative">
-                          <img
-                            src={photo}
-                            alt={`${itemData.subcategory} photo ${photoIndex + 1}`}
-                            className="w-full h-24 object-cover rounded-md border"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <Image className="h-4 w-4" />
-                      <span>
-                        {itemData.subcategory 
-                          ? `No photos available for ${itemData.subcategory}` 
-                          : 'Select a subcategory to see if photos are available'}
-                      </span>
-                    </div>
-                  )}
-                  
-                  {itemData.photos.length > 0 && (
-                    <div className="flex items-center gap-2 text-sm text-green-600">
-                      <Image className="h-4 w-4" />
-                      Photos automatically assigned for {itemData.subcategory}
-                    </div>
-                  )}
+              {itemData.photos.length > 0 && (
+                <div>
+                  <Label>Photos</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {itemData.photos.map((photo, photoIndex) => (
+                      <div key={photoIndex} className="relative">
+                        <img
+                          src={photo}
+                          alt={`${itemData.subcategory} photo ${photoIndex + 1}`}
+                          className="w-full h-24 object-cover rounded-md border"
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         ))}
