@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +28,7 @@ const CATEGORY_SUBCATEGORIES = {
   other: ['other']
 };
 
-// Subcategory photos mapping
+// Subcategory photos mapping using the uploaded photos
 const SUBCATEGORY_PHOTOS: Record<string, Record<string, string[]>> = {
   bedding: {
     'thick duvet': ['/lovable-uploads/97c57dcc-37a1-4603-9224-829f8035c6f2.png'],
@@ -37,9 +36,9 @@ const SUBCATEGORY_PHOTOS: Record<string, Record<string, string[]>> = {
     'pillow': ['/lovable-uploads/e864de0e-0b29-4248-a8d7-0a94ae10521b.png'],
     'duvet cover': ['/lovable-uploads/f66a4279-172c-4960-8e91-d687f82c9610.png'],
     'pillow cover': ['/lovable-uploads/74b13bd1-2a11-44cc-986f-298a9ebc67b6.png'],
-    'matching duvet+pillow cover': ['/lovable-uploads/97c57dcc-37a1-4603-9224-829f8035c6f2.png'],
-    'matress cover': ['/lovable-uploads/97c57dcc-37a1-4603-9224-829f8035c6f2.png'],
-    'bedspread': ['/lovable-uploads/97c57dcc-37a1-4603-9224-829f8035c6f2.png']
+    'matching duvet+pillow cover': ['/lovable-uploads/d12293c7-20a6-4048-9e25-9404ac21e90e.png'],
+    'matress cover': ['/lovable-uploads/aa69fbc7-a9a8-4842-9493-ceff69afc35a.png'],
+    'bedspread': ['/lovable-uploads/c57b86d5-b328-4772-b64d-395290573d13.png']
   }
 };
 
@@ -145,10 +144,13 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
       const categoryPhotos = SUBCATEGORY_PHOTOS.bedding[value];
       if (categoryPhotos && categoryPhotos.length > 0) {
         updatedItems[index].photos = [...categoryPhotos];
+      } else {
+        // Clear photos if no matching subcategory photos found
+        updatedItems[index].photos = [];
       }
     }
     
-    // Clear subcategory when category changes
+    // Clear subcategory and photos when category changes
     if (field === 'category') {
       updatedItems[index].subcategory = '';
       updatedItems[index].photos = [];
