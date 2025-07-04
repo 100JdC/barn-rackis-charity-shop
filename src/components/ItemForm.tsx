@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { X, Plus, Upload, Image } from "lucide-react";
+import { X, Plus, Image } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Item, UserRole } from "@/types/item";
 
@@ -28,18 +29,16 @@ const CATEGORY_SUBCATEGORIES = {
   other: ['other']
 };
 
-// Subcategory photos mapping using the uploaded photos
-const SUBCATEGORY_PHOTOS: Record<string, Record<string, string[]>> = {
-  bedding: {
-    'thick duvet': ['/lovable-uploads/97c57dcc-37a1-4603-9224-829f8035c6f2.png'],
-    'regular duvet (blanket)': ['/lovable-uploads/826485e4-8e7b-4da4-8296-5679cab7c192.png'],
-    'pillow': ['/lovable-uploads/e864de0e-0b29-4248-a8d7-0a94ae10521b.png'],
-    'duvet cover': ['/lovable-uploads/f66a4279-172c-4960-8e91-d687f82c9610.png'],
-    'pillow cover': ['/lovable-uploads/74b13bd1-2a11-44cc-986f-298a9ebc67b6.png'],
-    'matching duvet+pillow cover': ['/lovable-uploads/d12293c7-20a6-4048-9e25-9404ac21e90e.png'],
-    'matress cover': ['/lovable-uploads/aa69fbc7-a9a8-4842-9493-ceff69afc35a.png'],
-    'bedspread': ['/lovable-uploads/c57b86d5-b328-4772-b64d-395290573d13.png']
-  }
+// Photo mapping based on subcategory names
+const SUBCATEGORY_PHOTOS: Record<string, string[]> = {
+  'bedspread': ['/lovable-uploads/c57b86d5-b328-4772-b64d-395290573d13.png'],
+  'thick duvet': ['/lovable-uploads/97c57dcc-37a1-4603-9224-829f8035c6f2.png'],
+  'pillow': ['/lovable-uploads/e864de0e-0b29-4248-a8d7-0a94ae10521b.png'],
+  'duvet cover': ['/lovable-uploads/f66a4279-172c-4960-8e91-d687f82c9610.png'],
+  'pillow cover': ['/lovable-uploads/74b13bd1-2a11-44cc-986f-298a9ebc67b6.png'],
+  'matching duvet+pillow cover': ['/lovable-uploads/d12293c7-20a6-4048-9e25-9404ac21e90e.png'],
+  'matress cover': ['/lovable-uploads/aa69fbc7-a9a8-4842-9493-ceff69afc35a.png'],
+  'regular duvet (blanket)': ['/lovable-uploads/826485e4-8e7b-4da4-8296-5679cab7c192.png']
 };
 
 interface ItemData {
@@ -139,13 +138,13 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
     const updatedItems = [...items];
     updatedItems[index] = { ...updatedItems[index], [field]: value };
     
-    // Auto-assign photos when subcategory changes for categories that have predefined photos
+    // Auto-assign photos when subcategory changes
     if (field === 'subcategory') {
-      const categoryPhotos = SUBCATEGORY_PHOTOS[updatedItems[index].category]?.[value];
-      if (categoryPhotos && categoryPhotos.length > 0) {
-        updatedItems[index].photos = [...categoryPhotos];
+      const subcategoryPhotos = SUBCATEGORY_PHOTOS[value];
+      if (subcategoryPhotos && subcategoryPhotos.length > 0) {
+        updatedItems[index].photos = [...subcategoryPhotos];
       }
-      // Don't clear photos if no predefined photos - keep any manually uploaded ones
+      // Don't change photos if no predefined photos for this subcategory
     }
     
     // Clear subcategory and photos when category changes
@@ -217,23 +216,8 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
     onSubmit(formattedItems);
   };
 
-  const handlePhotoUpload = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files) return;
-
-    // For now, we'll just store the file names
-    // In a real implementation, you'd upload to a service and get URLs
-    const newPhotos = Array.from(files).map(file => URL.createObjectURL(file));
-    updateItem(index, 'photos', [...items[index].photos, ...newPhotos]);
-  };
-
-  const removePhoto = (itemIndex: number, photoIndex: number) => {
-    const updatedPhotos = items[itemIndex].photos.filter((_, i) => i !== photoIndex);
-    updateItem(itemIndex, 'photos', updatedPhotos);
-  };
-
-  const hasPredefindedPhotos = (category: string, subcategory: string) => {
-    return SUBCATEGORY_PHOTOS[category]?.[subcategory]?.length > 0;
+  const hasAssignedPhotos = (subcategory: string) => {
+    return SUBCATEGORY_PHOTOS[subcategory]?.length > 0;
   };
 
   return (
@@ -537,47 +521,24 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
                             alt={`Photo ${photoIndex + 1}`}
                             className="w-full h-24 object-cover rounded-md border"
                           />
-                          <button
-                            type="button"
-                            onClick={() => removePhoto(index, photoIndex)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-                          >
-                            ×
-                          </button>
                         </div>
                       ))}
                     </div>
                   )}
                   
-                  {/* Show upload option only if no predefined photos exist for this subcategory */}
-                  {!hasPredefindedPhotos(itemData.category, itemData.subcategory) && (
-                    <div className="flex items-center gap-4">
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={(e) => handlePhotoUpload(index, e)}
-                        className="hidden"
-                        id={`photo-upload-${index}`}
-                      />
-                      <Label
-                        htmlFor={`photo-upload-${index}`}
-                        className="cursor-pointer flex items-center gap-2 px-4 py-2 border border-dashed border-gray-300 rounded-md hover:border-gray-400"
-                      >
-                        <Upload className="h-4 w-4" />
-                        Add Photos
-                      </Label>
-                      <span className="text-sm text-gray-500">
-                        {itemData.photos.length} photo(s) added
-                      </span>
-                    </div>
-                  )}
-                  
-                  {/* Show message for items with predefined photos */}
-                  {hasPredefindedPhotos(itemData.category, itemData.subcategory) && (
+                  {/* Show message for items with automatically assigned photos */}
+                  {hasAssignedPhotos(itemData.subcategory) && (
                     <div className="flex items-center gap-2 text-sm text-green-600">
                       <Image className="h-4 w-4" />
                       Photos automatically assigned for this subcategory
+                    </div>
+                  )}
+                  
+                  {/* Show message for items without assigned photos */}
+                  {!hasAssignedPhotos(itemData.subcategory) && itemData.subcategory && (
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Image className="h-4 w-4" />
+                      No photos available for this subcategory
                     </div>
                   )}
                 </div>
