@@ -133,7 +133,6 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
           <ItemForm
             item={null}
             userRole={userRole}
-            currentUsername={username}
             onSubmit={handleItemsSave}
             onCancel={onBack}
           />
