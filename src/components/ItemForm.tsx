@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Save, X, Plus, Image } from "lucide-react";
+import { Save, X, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -68,7 +68,7 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
     custom_location: '',
     photos: [],
     internal_notes: '',
-    donor_name: currentUsername || '',
+    donor_name: '',
   });
 
   useEffect(() => {
@@ -90,14 +90,14 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
         internal_notes: item.internal_notes || '',
         donor_name: item.donor_name || '',
       });
-    } else if (currentUsername && userRole === 'donator') {
+    } else {
       // Auto-fill donor name for new donations
       setFormData(prev => ({
         ...prev,
-        donor_name: currentUsername
+        donor_name: currentUsername || ''
       }));
     }
-  }, [item, currentUsername, userRole]);
+  }, [item, currentUsername]);
 
   const handleCategoryChange = (value: string) => {
     const category = value as keyof typeof CATEGORY_SUBCATEGORIES;
@@ -119,41 +119,29 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
   };
 
   const handleOriginalPriceChange = (value: string) => {
-    const numValue = value === '' ? 0 : parseFloat(value);
+    const numValue = value === '' ? 0 : parseInt(value);
+    const roundedSuggested = Math.ceil((isNaN(numValue) ? 0 : numValue) * 0.5);
+    
     setFormData(prev => ({
       ...prev,
       original_price: isNaN(numValue) ? 0 : numValue,
-      suggested_price: prev.suggested_price === prev.original_price * 0.5 ? (isNaN(numValue) ? 0 : numValue) * 0.5 : prev.suggested_price
+      suggested_price: prev.suggested_price === Math.ceil(prev.original_price * 0.5) ? roundedSuggested : prev.suggested_price
     }));
   };
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      const newPhotoPaths: string[] = [];
-      
-      for (const file of Array.from(files)) {
-        try {
-          const photoPath = await storage.savePhoto(file);
-          if (photoPath) {
-            newPhotoPaths.push(photoPath);
-          }
-        } catch (error) {
-          console.error('Failed to save photo:', error);
-        }
-      }
-      
-      setFormData(prev => ({
-        ...prev,
-        photos: [...prev.photos, ...newPhotoPaths.filter(path => path !== null)]
-      }));
-    }
-  };
-
-  const removePhoto = (index: number) => {
+  const handleSuggestedPriceChange = (value: string) => {
+    const numValue = value === '' ? 0 : parseInt(value);
     setFormData(prev => ({
       ...prev,
-      photos: prev.photos.filter((_, i) => i !== index)
+      suggested_price: isNaN(numValue) ? 0 : numValue
+    }));
+  };
+
+  const handleFinalPriceChange = (value: string) => {
+    const numValue = value === '' ? undefined : parseInt(value);
+    setFormData(prev => ({
+      ...prev,
+      final_price: isNaN(numValue as number) ? undefined : numValue
     }));
   };
 
@@ -176,7 +164,7 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
       onSubmit(finalItemData, addAnother);
       
       if (addAnother) {
-        // Reset form for next item but keep some fields - DON'T clear photos immediately
+        // Reset form for next item but keep donor name
         setFormData(prev => ({
           ...prev,
           name: '',
@@ -185,44 +173,12 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
           original_price: 0,
           suggested_price: 0,
           final_price: undefined,
-          // Keep photos for a moment, then clear after a short delay to allow saving
           custom_location: '',
+          photos: [],
           donor_name: currentUsername || '',
         }));
-        
-        // Clear photos after a short delay to ensure they're saved first
-        setTimeout(() => {
-          setFormData(prev => ({
-            ...prev,
-            photos: []
-          }));
-        }, 1000);
       }
     }
-  };
-
-  const renderPhotoPreview = (photoPath: string, index: number) => {
-    const photoUrl = storage.getPhoto(photoPath);
-    if (!photoUrl) return null;
-
-    return (
-      <div key={index} className="relative">
-        <img 
-          src={photoUrl} 
-          alt={`Preview ${index + 1}`}
-          className="w-full h-20 object-cover rounded border"
-        />
-        <Button
-          type="button"
-          variant="destructive"
-          size="sm"
-          className="absolute -top-1 -right-1 h-6 w-6 p-0"
-          onClick={() => removePhoto(index)}
-        >
-          <X className="h-3 w-3" />
-        </Button>
-      </div>
-    );
   };
 
   const getCategoryDisplayName = (category: string) => {
@@ -309,18 +265,15 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
               />
             </div>
 
-            {/* Donor Name Field - Show for donors and admins */}
-            {(userRole === 'donator' || userRole === 'admin') && (
-              <div>
-                <Label htmlFor="donor_name">Donor Name</Label>
-                <Input
-                  id="donor_name"
-                  value={formData.donor_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, donor_name: e.target.value }))}
-                  placeholder="Enter donor name"
-                />
-              </div>
-            )}
+            <div>
+              <Label htmlFor="donor_name">Donor Name</Label>
+              <Input
+                id="donor_name"
+                value={formData.donor_name}
+                onChange={(e) => setFormData(prev => ({ ...prev, donor_name: e.target.value }))}
+                placeholder="Enter donor name"
+              />
+            </div>
 
             <div>
               <Label htmlFor="description">Description (optional)</Label>
@@ -354,7 +307,7 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
                   id="original_price"
                   type="number"
                   min="0"
-                  step="0.01"
+                  step="1"
                   value={formData.original_price || ''}
                   onChange={(e) => handleOriginalPriceChange(e.target.value)}
                   required
@@ -368,9 +321,9 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
                   id="suggested_price"
                   type="number"
                   min="0"
-                  step="0.01"
+                  step="1"
                   value={formData.suggested_price || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, suggested_price: parseFloat(e.target.value) || 0 }))}
+                  onChange={(e) => handleSuggestedPriceChange(e.target.value)}
                   required
                   placeholder="0"
                 />
@@ -385,9 +338,9 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
                     id="final_price"
                     type="number"
                     min="0"
-                    step="0.01"
+                    step="1"
                     value={formData.final_price || ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, final_price: e.target.value ? parseFloat(e.target.value) : undefined }))}
+                    onChange={(e) => handleFinalPriceChange(e.target.value)}
                   />
                 </div>
 
@@ -435,36 +388,6 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
                   />
                 </div>
               )}
-            </div>
-
-            <div>
-              <Label htmlFor="photos">Photos</Label>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Input
-                    id="photos"
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handlePhotoUpload}
-                    className="hidden"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => document.getElementById('photos')?.click()}
-                  >
-                    <Image className="h-4 w-4 mr-2" />
-                    Add Photos
-                  </Button>
-                </div>
-                
-                {formData.photos.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {formData.photos.map((photoPath, index) => renderPhotoPreview(photoPath, index))}
-                  </div>
-                )}
-              </div>
             </div>
 
             {userRole === 'admin' && (

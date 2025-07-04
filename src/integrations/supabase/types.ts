@@ -112,6 +112,7 @@ export type Database = {
           height: number | null
           id: number
           is_public: boolean | null
+          item_id: number | null
           metadata: Json | null
           mime_type: string | null
           size_bytes: number | null
@@ -128,6 +129,7 @@ export type Database = {
           height?: number | null
           id?: never
           is_public?: boolean | null
+          item_id?: number | null
           metadata?: Json | null
           mime_type?: string | null
           size_bytes?: number | null
@@ -144,6 +146,7 @@ export type Database = {
           height?: number | null
           id?: never
           is_public?: boolean | null
+          item_id?: number | null
           metadata?: Json | null
           mime_type?: string | null
           size_bytes?: number | null
@@ -154,7 +157,15 @@ export type Database = {
           user_id?: string
           width?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "photos_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "Item inventory"
+            referencedColumns: ["Item ID"]
+          },
+        ]
       }
       profiles: {
         Row: {

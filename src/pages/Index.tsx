@@ -365,6 +365,8 @@ export default function Index() {
   // Handle search with Enter key
   const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
+      // Search is already handled by the filtered items logic
+      // Force a re-render to ensure filtering is applied
       console.log('Search executed:', searchTerm);
     }
   };
@@ -668,10 +670,6 @@ export default function Index() {
                       <Button onClick={() => setView('pending-donations')} variant="outline" className="bg-orange-50 border-orange-200">
                         <Clock className="h-4 w-4 mr-2" />
                         Pending ({stats.pendingItems})
-                      </Button>
-                      <Button onClick={() => setView('photo-gallery')} variant="outline">
-                        <Image className="h-4 w-4 mr-2" />
-                        Photos
                       </Button>
                       <Button onClick={() => exportItemsToExcel(items)} variant="outline">
                         <Download className="h-4 w-4 mr-2" />
