@@ -75,7 +75,7 @@ export const SearchAndFilters = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="bedding">Duvet/Blanket</SelectItem>
+                <SelectItem value="bedding">Bedding</SelectItem>
                 <SelectItem value="bathroom">Bathroom</SelectItem>
                 <SelectItem value="decoration">Decoration</SelectItem>
                 <SelectItem value="other_room_inventory">Other Room Inventory</SelectItem>

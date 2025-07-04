@@ -20,7 +20,7 @@ interface ItemFormProps {
 }
 
 const CATEGORY_SUBCATEGORIES = {
-  bedding: ['thick duvet', 'thin duvet', 'pillow', 'duvet cover', 'pillow cover', 'matching duvet+pillow cover', 'matress cover', 'other'],
+  bedding: ['thick duvet', 'regular duvet (blanket)', 'pillow', 'duvet cover', 'pillow cover', 'matching duvet+pillow cover', 'matress cover', 'bedspread', 'other'],
   bathroom: ['mirror', 'container', 'towel', 'other'],
   decoration: ['plant', 'picture', 'light chain', 'lamp', 'other'],
   other_room_inventory: ['hangers', 'curtains', 'other'],
@@ -77,12 +77,14 @@ export const ItemForm = ({ item, userRole, currentUsername, onSubmit, onEdit, on
 
   useEffect(() => {
     if (item && isEditing) {
-      // For editing single item
+      // For editing single item, map old 'thin duvet' to new 'regular duvet (blanket)'
+      const mappedSubcategory = item.subcategory === 'thin duvet' ? 'regular duvet (blanket)' : item.subcategory;
+      
       setItems([{
         name: item.name,
         description: item.description || '',
         category: item.category,
-        subcategory: item.subcategory,
+        subcategory: mappedSubcategory,
         condition: item.condition,
         quantity: item.quantity,
         original_price: item.original_price,

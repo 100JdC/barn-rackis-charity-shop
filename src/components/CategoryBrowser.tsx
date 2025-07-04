@@ -13,7 +13,7 @@ export const CategoryBrowser = ({ items, onCategorySelect }: CategoryBrowserProp
   const categories = [
     { 
       value: "bedding", 
-      label: "Duvet/Blanket", 
+      label: "Bedding", 
       image: "/lovable-uploads/97c57dcc-37a1-4603-9224-829f8035c6f2.png", // Blue bedding
       hasImage: true
     },

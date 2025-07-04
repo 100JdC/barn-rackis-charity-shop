@@ -36,8 +36,7 @@ export const ItemsHeader = ({
   const getTitle = () => {
     if (showCategories) return 'Browse Categories';
     if (categoryFilter !== "all") {
-      const categoryName = categoryFilter === 'bedding' ? 'Duvet/Blanket' : 
-                          categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1).replace('_', ' ');
+      const categoryName = categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1).replace('_', ' ');
       return `${categoryName} Items`;
     }
     if (searchTerm) return `Search Results for "${searchTerm}"`;
