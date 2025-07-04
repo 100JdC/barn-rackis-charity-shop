@@ -200,6 +200,10 @@ export default function Index() {
     setView('donate');
   };
 
+  const handleHome = () => {
+    setView('items');
+  };
+
   const handleItemSave = async (itemsData: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>[]) => {
     try {
       if (selectedItem) {
@@ -449,9 +453,11 @@ export default function Index() {
         <Header 
           userRole={userRole || 'buyer'} 
           username={username}
-          onLogout={handleLogout}
+          onLogout={isAuthenticated ? handleLogout : undefined}
           onNavigate={handleNavigate}
           onDonate={handleDonate}
+          onHome={handleHome}
+          isAuthenticated={isAuthenticated}
         />
         <div className="container mx-auto px-4 py-8">
           <ItemForm
@@ -474,9 +480,11 @@ export default function Index() {
         <Header 
           userRole={userRole || 'buyer'} 
           username={username}
-          onLogout={handleLogout}
+          onLogout={isAuthenticated ? handleLogout : undefined}
           onNavigate={handleNavigate}
           onDonate={handleDonate}
+          onHome={handleHome}
+          isAuthenticated={isAuthenticated}
         />
         <div className="container mx-auto px-4 py-8">
           {selectedItem && (
@@ -504,9 +512,11 @@ export default function Index() {
         <Header 
           userRole={userRole || 'buyer'} 
           username={username}
-          onLogout={handleLogout}
+          onLogout={isAuthenticated ? handleLogout : undefined}
           onNavigate={handleNavigate}
           onDonate={handleDonate}
+          onHome={handleHome}
+          isAuthenticated={isAuthenticated}
         />
         <div className="container mx-auto px-4 py-8">
           <UserManagement userRole={userRole} onBack={() => setView('items')} />
@@ -521,9 +531,11 @@ export default function Index() {
         <Header 
           userRole={userRole || 'buyer'} 
           username={username}
-          onLogout={handleLogout}
+          onLogout={isAuthenticated ? handleLogout : undefined}
           onNavigate={handleNavigate}
           onDonate={handleDonate}
+          onHome={handleHome}
+          isAuthenticated={isAuthenticated}
         />
         <PendingDonations
           userRole={userRole}
@@ -540,9 +552,11 @@ export default function Index() {
         <Header 
           userRole={userRole || 'buyer'} 
           username={username}
-          onLogout={handleLogout}
+          onLogout={isAuthenticated ? handleLogout : undefined}
           onNavigate={handleNavigate}
           onDonate={handleDonate}
+          onHome={handleHome}
+          isAuthenticated={isAuthenticated}
         />
         <PhotoGallery />
         <div className="container mx-auto px-4 pb-8">
@@ -575,6 +589,8 @@ export default function Index() {
           onLogout={isAuthenticated ? handleLogout : undefined}
           onNavigate={handleNavigate}
           onDonate={handleDonate}
+          onHome={handleHome}
+          isAuthenticated={isAuthenticated}
         />
         
         <div className="container mx-auto px-4 py-8">

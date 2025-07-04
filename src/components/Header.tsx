@@ -2,6 +2,7 @@
 import { ArrowLeft, User, LogOut, Home, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 
 interface HeaderProps {
   userRole: string;
@@ -11,9 +12,12 @@ interface HeaderProps {
   onNavigate?: (view: string) => void;
   onHome?: () => void;
   onDonate?: () => void;
+  isAuthenticated?: boolean;
 }
 
-export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHome, onDonate }: HeaderProps) => {
+export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHome, onDonate, isAuthenticated }: HeaderProps) => {
+  const navigate = useNavigate();
+
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'admin': return 'bg-red-100 text-red-800 border-red-200';
@@ -90,7 +94,7 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => window.location.href = '/about'}
+            onClick={() => navigate('/about')}
             className="hover:bg-gray-100"
           >
             About Us
@@ -109,7 +113,8 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
             </div>
           )}
           
-          {onLogout && userRole && userRole !== 'buyer' && (
+          {/* Show logout button only when authenticated */}
+          {isAuthenticated && onLogout && (
             <Button 
               variant="ghost" 
               size="sm" 
@@ -117,6 +122,18 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
               className="hover:bg-red-50 hover:text-red-600"
             >
               <LogOut className="h-4 w-4" />
+            </Button>
+          )}
+          
+          {/* Show home button when not authenticated */}
+          {!isAuthenticated && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onHome}
+              className="hover:bg-blue-50 hover:text-blue-600"
+            >
+              <Home className="h-4 w-4" />
             </Button>
           )}
         </div>
