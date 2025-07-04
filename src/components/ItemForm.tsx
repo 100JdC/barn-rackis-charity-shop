@@ -139,15 +139,13 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
     const updatedItems = [...items];
     updatedItems[index] = { ...updatedItems[index], [field]: value };
     
-    // Auto-assign photos when subcategory changes for bedding items
-    if (field === 'subcategory' && updatedItems[index].category === 'bedding') {
-      const categoryPhotos = SUBCATEGORY_PHOTOS.bedding[value];
+    // Auto-assign photos when subcategory changes for categories that have predefined photos
+    if (field === 'subcategory') {
+      const categoryPhotos = SUBCATEGORY_PHOTOS[updatedItems[index].category]?.[value];
       if (categoryPhotos && categoryPhotos.length > 0) {
         updatedItems[index].photos = [...categoryPhotos];
-      } else {
-        // Clear photos if no matching subcategory photos found
-        updatedItems[index].photos = [];
       }
+      // Don't clear photos if no predefined photos - keep any manually uploaded ones
     }
     
     // Clear subcategory and photos when category changes
@@ -232,6 +230,10 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
   const removePhoto = (itemIndex: number, photoIndex: number) => {
     const updatedPhotos = items[itemIndex].photos.filter((_, i) => i !== photoIndex);
     updateItem(itemIndex, 'photos', updatedPhotos);
+  };
+
+  const hasPredefindedPhotos = (category: string, subcategory: string) => {
+    return SUBCATEGORY_PHOTOS[category]?.[subcategory]?.length > 0;
   };
 
   return (
@@ -546,26 +548,38 @@ export const ItemForm = ({ item, userRole, onSubmit, onCancel }: ItemFormProps) 
                       ))}
                     </div>
                   )}
-                  <div className="flex items-center gap-4">
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={(e) => handlePhotoUpload(index, e)}
-                      className="hidden"
-                      id={`photo-upload-${index}`}
-                    />
-                    <Label
-                      htmlFor={`photo-upload-${index}`}
-                      className="cursor-pointer flex items-center gap-2 px-4 py-2 border border-dashed border-gray-300 rounded-md hover:border-gray-400"
-                    >
-                      <Upload className="h-4 w-4" />
-                      Add Photos
-                    </Label>
-                    <span className="text-sm text-gray-500">
-                      {itemData.photos.length} photo(s) added
-                    </span>
-                  </div>
+                  
+                  {/* Show upload option only if no predefined photos exist for this subcategory */}
+                  {!hasPredefindedPhotos(itemData.category, itemData.subcategory) && (
+                    <div className="flex items-center gap-4">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => handlePhotoUpload(index, e)}
+                        className="hidden"
+                        id={`photo-upload-${index}`}
+                      />
+                      <Label
+                        htmlFor={`photo-upload-${index}`}
+                        className="cursor-pointer flex items-center gap-2 px-4 py-2 border border-dashed border-gray-300 rounded-md hover:border-gray-400"
+                      >
+                        <Upload className="h-4 w-4" />
+                        Add Photos
+                      </Label>
+                      <span className="text-sm text-gray-500">
+                        {itemData.photos.length} photo(s) added
+                      </span>
+                    </div>
+                  )}
+                  
+                  {/* Show message for items with predefined photos */}
+                  {hasPredefindedPhotos(itemData.category, itemData.subcategory) && (
+                    <div className="flex items-center gap-2 text-sm text-green-600">
+                      <Image className="h-4 w-4" />
+                      Photos automatically assigned for this subcategory
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
