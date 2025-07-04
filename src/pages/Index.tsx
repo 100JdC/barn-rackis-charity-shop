@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { LoginForm } from "@/components/LoginForm";
@@ -172,7 +173,7 @@ export default function Index() {
       setView('home');
     } else if (newView === 'items') {
       setView('items');
-      setShowCategories(true);
+      setShowCategories(false); // Go directly to items view
       setCategoryFilter('all');
     } else if (newView === 'donate') {
       setView('donate');
@@ -362,11 +363,20 @@ export default function Index() {
     setView('items'); // Ensure we're in items view
   };
 
-  // Handle search with Enter key
+  // Handle search with Enter key - now takes user to items view
   const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      // Search is already handled by the filtered items logic
-      // Force a re-render to ensure filtering is applied
+    if (e.key === 'Enter' && searchTerm.trim()) {
+      setShowCategories(false);
+      setView('items');
+      console.log('Search executed:', searchTerm);
+    }
+  };
+
+  // Handle search button click
+  const handleSearchClick = () => {
+    if (searchTerm.trim()) {
+      setShowCategories(false);
+      setView('items');
       console.log('Search executed:', searchTerm);
     }
   };
@@ -637,6 +647,7 @@ export default function Index() {
                       onClick={() => {
                         setShowCategories(true);
                         setCategoryFilter('all');
+                        setSearchTerm(''); // Clear search when going back to categories
                       }} 
                       variant="outline"
                       className="bg-white/80"
@@ -648,7 +659,7 @@ export default function Index() {
                     {showCategories ? 'Browse Categories' : 
                      categoryFilter !== "all" ? 
                        `${categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1).replace('_', ' ')} Items` : 
-                       'All Items'
+                       searchTerm ? `Search Results for "${searchTerm}"` : 'All Items'
                     }
                   </CardTitle>
                 </div>
@@ -686,6 +697,7 @@ export default function Index() {
             </CardHeader>
             
             <CardContent className="space-y-4">
+              {/* Search bar - always visible */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -697,14 +709,22 @@ export default function Index() {
                     className="pl-10"
                   />
                 </div>
-                
+                <Button 
+                  onClick={handleSearchClick}
+                  disabled={!searchTerm.trim()}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Search className="h-4 w-4 mr-2" />
+                  Search
+                </Button>
+              </div>
+              
+              {/* Filters - only show when viewing items */}
+              {!showCategories && (
                 <div className="flex flex-wrap gap-2">
                   <Select value={categoryFilter} onValueChange={(value) => {
                     console.log('Category filter changed to:', value);
                     setCategoryFilter(value);
-                    if (value !== "all") {
-                      setShowCategories(false);
-                    }
                   }}>
                     <SelectTrigger className="w-40">
                       <SelectValue placeholder="Category" />
@@ -756,7 +776,7 @@ export default function Index() {
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
+              )}
               
               {!showCategories && (
                 <div className="text-sm text-gray-600">
