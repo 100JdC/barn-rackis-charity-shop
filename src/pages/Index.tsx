@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { LoginForm } from "@/components/LoginForm";
@@ -137,11 +136,12 @@ export default function Index() {
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user && userRole !== 'admin') {
-      // Not authenticated, stay on welcome page
-      setView('home');
+      // Not authenticated, redirect to login page
+      navigate('/login');
       return;
     }
     
+    // Authenticated, go to donate view
     setView('donate');
   };
 

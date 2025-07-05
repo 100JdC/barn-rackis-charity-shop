@@ -3,6 +3,7 @@ import { ArrowLeft, User, LogOut, Home, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 interface HeaderProps {
   userRole: string;
@@ -27,9 +28,21 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
     }
   };
 
-  const handleDonate = () => {
-    if (onDonate) {
-      onDonate();
+  const handleDonate = async () => {
+    // Check if user is authenticated
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user && userRole !== 'admin') {
+      // Not authenticated, redirect to login
+      navigate('/login');
+    } else {
+      // Authenticated, go to donate functionality
+      if (onDonate) {
+        onDonate();
+      } else {
+        // Fallback to direct navigation if onDonate not provided
+        navigate('/donate');
+      }
     }
   };
 
