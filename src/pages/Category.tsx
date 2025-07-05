@@ -166,22 +166,67 @@ const Category = () => {
 
           <Card className="bg-white/90 backdrop-blur-sm mb-6">
             <CardContent className="p-6">
-              <SearchAndFilters
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                categoryFilter={categoryName || "all"}
-                setCategoryFilter={() => {}} // Disabled since we're in category view
-                statusFilter={statusFilter}
-                setStatusFilter={setStatusFilter}
-                conditionFilter={conditionFilter}
-                setConditionFilter={setConditionFilter}
-                onSearchClick={() => {}}
-                onSearchKeyPress={() => {}}
-                showCategories={false}
-                userRole={userRole}
-                filteredItemsCount={filteredItems.length}
-                totalItemsCount={items.length}
-              />
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <label htmlFor="search" className="sr-only">Search items</label>
+                  <input
+                    id="search"
+                    type="text"
+                    placeholder="Search items..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                
+                <div className="flex gap-4">
+                  <div className="min-w-[120px]">
+                    <span className="block text-sm font-medium text-gray-700 mb-1">Category</span>
+                    <div className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-sm font-medium text-gray-700">
+                      {getCategoryDisplayName(categoryName || '')}
+                    </div>
+                  </div>
+                  
+                  {userRole && (
+                    <div className="min-w-[120px]">
+                      <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                      <select
+                        id="status-filter"
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="all">All Status</option>
+                        <option value="available">Available</option>
+                        <option value="reserved">Reserved</option>
+                        <option value="sold">Sold</option>
+                        {userRole === 'admin' && <option value="pending_approval">Pending</option>}
+                      </select>
+                    </div>
+                  )}
+                  
+                  <div className="min-w-[120px]">
+                    <label htmlFor="condition-filter" className="block text-sm font-medium text-gray-700 mb-1">Condition</label>
+                    <select
+                      id="condition-filter"
+                      value={conditionFilter}
+                      onChange={(e) => setConditionFilter(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="all">All Conditions</option>
+                      <option value="new">New</option>
+                      <option value="like_new">Like New</option>
+                      <option value="good">Good</option>
+                      <option value="fair">Fair</option>
+                      <option value="poor">Poor</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-4 text-sm text-gray-600">
+                Showing {filteredItems.length} of {items.length} items
+              </div>
             </CardContent>
           </Card>
 
