@@ -35,7 +35,7 @@ export default function Index() {
       
       if (session?.user) {
         const userUsername = session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
-        const role = session.user.email === 'jacob@admin.com' ? 'admin' : 'donator';
+        const role: UserRole = session.user.email === 'jacob@admin.com' ? 'admin' : 'donator';
         
         setIsAuthenticated(true);
         setUserRole(role);
@@ -48,7 +48,7 @@ export default function Index() {
         const savedSession = storage.getSession();
         if (savedSession) {
           setIsAuthenticated(true);
-          setUserRole(savedSession.userRole);
+          setUserRole(savedSession.userRole as UserRole);
           setUsername(savedSession.username);
         } else {
           setIsAuthenticated(false);
@@ -70,7 +70,7 @@ export default function Index() {
 
       if (session?.user) {
         const userUsername = session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
-        const role = session.user.email === 'jacob@admin.com' ? 'admin' : 'donator';
+        const role: UserRole = session.user.email === 'jacob@admin.com' ? 'admin' : 'donator';
         
         setIsAuthenticated(true);
         setUserRole(role);
@@ -81,7 +81,7 @@ export default function Index() {
         const savedSession = storage.getSession();
         if (savedSession) {
           setIsAuthenticated(true);
-          setUserRole(savedSession.userRole);
+          setUserRole(savedSession.userRole as UserRole);
           setUsername(savedSession.username);
         }
       }
