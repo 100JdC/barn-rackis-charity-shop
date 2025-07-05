@@ -48,7 +48,7 @@ export default function Index() {
         const savedSession = storage.getSession();
         if (savedSession) {
           setIsAuthenticated(true);
-          setUserRole(savedSession.role);
+          setUserRole(savedSession.userRole);
           setUsername(savedSession.username);
         } else {
           setIsAuthenticated(false);
@@ -81,7 +81,7 @@ export default function Index() {
         const savedSession = storage.getSession();
         if (savedSession) {
           setIsAuthenticated(true);
-          setUserRole(savedSession.role);
+          setUserRole(savedSession.userRole);
           setUsername(savedSession.username);
         }
       }
