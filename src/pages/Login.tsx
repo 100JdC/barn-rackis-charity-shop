@@ -1,0 +1,202 @@
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageWrapper } from "@/components/PageWrapper";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+
+const Login = () => {
+  const [emailOrUsername, setEmailOrUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailOrUsername.trim() || !password.trim()) {
+      setError("Both email/username and password are required");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      // Check for admin credentials first - allow admin to login without email verification
+      if (emailOrUsername.toLowerCase() === "jacob@admin.com" || emailOrUsername.toLowerCase() === "jacob") {
+        if (password === "Rackis") {
+          console.log('Admin login successful');
+          toast({
+            title: "Welcome back, Admin!",
+            description: "You have been successfully logged in."
+          });
+          navigate('/');
+          return;
+        } else {
+          setError("Invalid admin password");
+          return;
+        }
+      }
+
+      // Check if input is an email or username
+      const isEmail = emailOrUsername.includes('@');
+      let loginEmail = emailOrUsername;
+
+      // If it's not an email, treat it as a username and find the corresponding email
+      if (!isEmail) {
+        try {
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('username', emailOrUsername.toLowerCase())
+            .single();
+
+          if (profileError || !profile) {
+            setError("Username not found. Please check your username or try using your email instead.");
+            return;
+          }
+
+          // Get the user's email from auth.users table
+          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          if (userError) {
+            // If we can't get current user, we need to use the email from the auth system
+            // For now, we'll show an error and ask them to use email
+            setError("Please use your email address to log in, or contact support if you only remember your username.");
+            return;
+          }
+        } catch (error) {
+          console.error('Error finding user by username:', error);
+          setError("Please use your email address to log in.");
+          return;
+        }
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password,
+      });
+
+      if (error) {
+        if (error.message.includes('Email not confirmed')) {
+          setError("Please check your email and click the confirmation link before logging in.");
+        } else if (error.message.includes('Invalid login credentials')) {
+          setError("Invalid credentials. Please check your email/username and password.");
+        } else {
+          setError(error.message);
+        }
+        return;
+      }
+      
+      console.log('User login successful:', data.user?.email);
+      toast({
+        title: "Welcome back!",
+        description: "You have been successfully logged in."
+      });
+      
+      navigate('/');
+      
+    } catch (error) {
+      console.error('Login error:', error);
+      setError("Login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen" style={{ backgroundColor: '#1733a7' }}>
+      <div className="absolute inset-0 flex items-center justify-center z-0 opacity-30 pointer-events-none">
+        <img
+          src="/lovable-uploads/66828e04-ca12-4680-80e2-f4704d6832eb.png"
+          alt="Rackis for Barn Logo"
+          className="w-[600px] h-auto object-contain"
+          onError={(e) => {
+            console.error('Failed to load bear logo');
+            e.currentTarget.style.display = 'none';
+          }}
+        />
+      </div>
+      
+      <div className="relative z-10">
+        <PageWrapper>
+          <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-center text-2xl" style={{ color: '#1733a7' }}>Login</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                  <Label htmlFor="emailOrUsername">Email or Username</Label>
+                  <Input
+                    id="emailOrUsername"
+                    type="text"
+                    value={emailOrUsername}
+                    onChange={(e) => setEmailOrUsername(e.target.value)}
+                    required
+                    placeholder="Enter your email or username"
+                    disabled={loading}
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="Enter your password"
+                    disabled={loading}
+                  />
+                </div>
+
+                {error && (
+                  <div className="text-red-600 text-sm">{error}</div>
+                )}
+
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  style={{ backgroundColor: '#1733a7' }}
+                  disabled={loading}
+                >
+                  {loading ? 'Logging in...' : 'Login'}
+                </Button>
+              </form>
+              
+              <div className="text-center space-y-2">
+                <Button 
+                  variant="link" 
+                  onClick={() => navigate('/register')}
+                  className="text-gray-600 hover:text-gray-800"
+                  disabled={loading}
+                >
+                  Don't have an account? Register here
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/')}
+                  className="w-full"
+                  style={{ borderColor: '#1733a7', color: '#1733a7' }}
+                  disabled={loading}
+                >
+                  Back to Home
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </PageWrapper>
+      </div>
+    </div>
+  );
+};
+
+export default Login;
