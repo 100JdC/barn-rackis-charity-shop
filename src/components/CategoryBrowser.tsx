@@ -25,13 +25,13 @@ export const CategoryBrowser = ({ items, onCategorySelect }: CategoryBrowserProp
     { 
       value: "decoration", 
       label: "Decoration", 
-      image: "/lovable-uploads/Categories/scandinavian decoration.png", // Blue chair decoration
+      image: "/lovable-uploads/Categories/scandinavian_decoration.png", // Blue chair decoration
       hasImage: true
     },
     { 
       value: "other_room_inventory", 
       label: "Other Room Inventory", 
-      image: "/lovable-uploads/Categories/room inventory.png", // Living room
+      image: "/lovable-uploads/Categories/room_inventory.png", // Living room
       hasImage: true
     },
     { 
@@ -59,12 +59,7 @@ export const CategoryBrowser = ({ items, onCategorySelect }: CategoryBrowserProp
       hasImage: true
     },
 
-    { 
-      value: "mick", 
-      label: "Mick", 
-      image: "/lovable-uploads/Categories/micky.png", // Mick
-      hasImage: true
-    },
+
   ];
   // ...rest of your component...
 
