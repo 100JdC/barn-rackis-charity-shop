@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Package, Image } from "lucide-react";
@@ -63,6 +62,12 @@ export const CategoryBrowser = ({ items, onCategorySelect }: CategoryBrowserProp
       value: "adi", 
       label: "Adi", 
       image: "/lovable-uploads/Categories/adi.jpg", // Adi
+      hasImage: true
+    },
+    { 
+      value: "mick", 
+      label: "Mick", 
+      image: "/lovable-uploads/Categories/micky.png", // Mick
       hasImage: true
     },
   ];
