@@ -58,12 +58,7 @@ export const CategoryBrowser = ({ items, onCategorySelect }: CategoryBrowserProp
       image: "/lovable-uploads/Categories/explore.png", // Nature lake or explore
       hasImage: true
     },
-    { 
-      value: "adi", 
-      label: "Adi", 
-      image: "/lovable-uploads/Categories/adi.jpg", // Adi
-      hasImage: true
-    },
+
     { 
       value: "mick", 
       label: "Mick", 
