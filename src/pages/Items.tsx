@@ -9,6 +9,7 @@ import { ItemSplitModal } from "@/components/ItemSplitModal";
 import { SearchAndFilters } from "@/components/SearchAndFilters";
 import { CategoryBrowser } from "@/components/CategoryBrowser";
 import { StatsDashboard } from "@/components/StatsDashboard";
+import { PendingDonations } from "@/components/PendingDonations";
 import { storage } from "@/utils/storage";
 import { exportItemsToExcel } from "@/utils/exportUtils";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,7 @@ const Items = () => {
   const [userRole, setUserRole] = useState<UserRole>('buyer');
   const [username, setUsername] = useState<string>('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [view, setView] = useState<'items' | 'item-detail' | 'edit-item' | 'add-item'>('items');
+  const [view, setView] = useState<'items' | 'item-detail' | 'edit-item' | 'add-item' | 'pending-donations'>('items');
   const [items, setItems] = useState<Item[]>([]);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -375,6 +376,31 @@ const Items = () => {
     return matchesSearch && matchesCategory && matchesStatus && matchesCondition;
   });
 
+  // Handle pending donations view
+  const handlePendingClick = () => {
+    setView('pending-donations');
+  };
+
+  if (view === 'pending-donations') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header 
+          userRole={userRole} 
+          username={username}
+          onLogout={(isAuthenticated || userRole === 'admin') ? handleLogout : undefined}
+          onDonate={handleDonate}
+          onHome={handleHome}
+          isAuthenticated={isAuthenticated}
+        />
+        <PendingDonations
+          userRole={userRole}
+          username={username}
+          onBack={() => setView('items')}
+        />
+      </div>
+    );
+  }
+
   if (view === 'item-detail' && selectedItem) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -472,7 +498,11 @@ const Items = () => {
         />
         
         <div className="container mx-auto px-4 py-8">
-          <StatsDashboard items={items} userRole={userRole} />
+          <StatsDashboard 
+            items={items} 
+            userRole={userRole}
+            onPendingClick={handlePendingClick}
+          />
 
           <Card className="bg-white/90 backdrop-blur-sm mb-6">
             <CardContent className="p-6">

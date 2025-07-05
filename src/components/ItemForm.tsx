@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,8 +87,6 @@ export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemF
     donor_name: username || ''
   }]);
   
-  const [showBulkAdd, setShowBulkAdd] = useState(false);
-  const [bulkQuantity, setBulkQuantity] = useState(1);
   const isEditing = !!item;
   const { toast } = useToast();
 
@@ -178,32 +177,6 @@ export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemF
     setItems(updatedItems);
   };
 
-  const handleBulkAdd = () => {
-    const newItems = [];
-    for (let i = 0; i < bulkQuantity; i++) {
-      newItems.push({
-        name: '',
-        description: '',
-        category: 'bedding' as Item['category'],
-        subcategory: '',
-        condition: 'lightly_used' as Item['condition'],
-        quantity: 1,
-        original_price: '' as number | '',
-        suggested_price: '' as number | '',
-        final_price: undefined,
-        status: 'available' as Item['status'],
-        reserved_by: '',
-        location: '',
-        photos: [],
-        internal_notes: '',
-        donor_name: username || ''
-      });
-    }
-    setItems([...items, ...newItems]);
-    setShowBulkAdd(false);
-    setBulkQuantity(1);
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -248,54 +221,7 @@ export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemF
         <h1 className="text-2xl font-bold">
           {isEditing ? 'Edit Item' : 'Add New Item(s)'}
         </h1>
-        {!isEditing && (
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowBulkAdd(!showBulkAdd)}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Bulk Add
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={addNewItem}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Another Item
-            </Button>
-          </div>
-        )}
       </div>
-
-      {showBulkAdd && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Bulk Add Items</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="bulkQuantity">Number of items to add</Label>
-              <Input
-                id="bulkQuantity"
-                type="number"
-                min="1"
-                max="50"
-                value={bulkQuantity}
-                onChange={(e) => setBulkQuantity(parseInt(e.target.value) || 1)}
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={handleBulkAdd}>Add {bulkQuantity} Items</Button>
-              <Button variant="outline" onClick={() => setShowBulkAdd(false)}>
-                Cancel
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {items.map((itemData, index) => (
@@ -543,6 +469,19 @@ export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemF
             </CardContent>
           </Card>
         ))}
+
+        {!isEditing && (
+          <div className="text-center">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={addNewItem}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Another Item
+            </Button>
+          </div>
+        )}
 
         <div className="flex justify-end gap-4">
           <Button type="button" variant="outline" onClick={onCancel}>
