@@ -419,7 +419,8 @@ const Items = () => {
           <ItemForm
             item={selectedItem}
             userRole={userRole}
-            onSave={handleItemSave}
+            username={username}
+            onSubmit={handleItemSave}
             onCancel={() => setView('items')}
           />
         </div>
@@ -441,7 +442,8 @@ const Items = () => {
         <div className="container mx-auto px-4 py-8">
           <ItemForm
             userRole={userRole}
-            onSave={handleItemSave}
+            username={username}
+            onSubmit={handleItemSave}
             onCancel={() => setView('items')}
           />
         </div>
@@ -495,6 +497,18 @@ const Items = () => {
 
           {shouldShowItems ? (
             <>
+              {(isAuthenticated || userRole === 'admin') && (
+                <div className="mb-6">
+                  <Button
+                    onClick={() => setView('add-item')}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add New Item
+                  </Button>
+                </div>
+              )}
+
               {filteredItems.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredItems.map((item) => (
