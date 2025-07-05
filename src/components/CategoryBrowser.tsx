@@ -59,6 +59,13 @@ export const CategoryBrowser = ({ items, onCategorySelect }: CategoryBrowserProp
       image: "/lovable-uploads/d12293c7-20a6-4048-9e25-9404ac21e90e.png", // Nature lake
       hasImage: true
     }
+    ,{ 
+      value: "adi", 
+      label: "Adi", 
+      image: "/lovable-uploads/adi.jpg", // Adi
+      hasImage: true
+    },
+// ...existing code...
   ];
 
   const getCategoryCount = (category: string) => {
