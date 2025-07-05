@@ -44,7 +44,7 @@ export const CategoryBrowser = ({ items, onCategorySelect }: CategoryBrowserProp
     { 
       value: "bike_sports", 
       label: "Bike & Sports", 
-      image: "/lovable-uploads/7a066ada-3fc3-4d45-8fbb-7b3a15064c1a.png", // Kayaking
+      image: "/lovable-uploads/kanu.png", // Kayaking
       hasImage: true
     },
     { 

@@ -1,0 +1,9 @@
+# Query: /lovable-uploads/7a066ada-3fc3-4d45-8fbb-7b3a15064c1a.png
+# ContextLines: 1
+
+1 result - 1 file
+
+src\components\CategoryBrowser.tsx:
+  46        label: "Bike & Sports", 
+  47:       image: "/lovable-uploads/kanu.png", // Kayaking
+  48        hasImage: true
