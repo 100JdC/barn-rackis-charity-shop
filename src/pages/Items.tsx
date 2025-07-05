@@ -41,25 +41,18 @@ const Items = () => {
   // Check if we should show individual items (when there's a search or category filter)
   const shouldShowItems = searchTerm.trim() !== "" || categoryFilter !== "all";
 
-  // Check for admin session first, then set up Supabase auth listener
+  // Set up authentication state management
   useEffect(() => {
     let mounted = true;
 
-    // First check for admin session in localStorage
-    const checkAdminSession = () => {
-      const savedSession = storage.getSession();
-      if (savedSession && savedSession.userRole === 'admin' && savedSession.username) {
-        console.log('Found admin session in localStorage:', savedSession);
-        setIsAuthenticated(true);
-        setUserRole('admin');
-        setUsername(savedSession.username);
-        return true;
-      }
-      return false;
-    };
-
-    // Check admin session immediately
-    const hasAdminSession = checkAdminSession();
+    // Check for admin session in localStorage first
+    const savedSession = storage.getSession();
+    if (savedSession && savedSession.userRole === 'admin') {
+      console.log('Found admin session in localStorage:', savedSession);
+      setIsAuthenticated(true);
+      setUserRole('admin');
+      setUsername(savedSession.username);
+    }
 
     // Set up Supabase auth listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -77,17 +70,20 @@ const Items = () => {
         
         // Save session to localStorage for compatibility
         storage.saveSession(role, userUsername);
-      } else if (!hasAdminSession) {
+      } else {
         // Only reset if we don't have an admin session
-        setIsAuthenticated(false);
-        setUserRole('buyer');
-        setUsername('');
-        storage.clearSession();
+        const currentSession = storage.getSession();
+        if (!currentSession || currentSession.userRole !== 'admin') {
+          setIsAuthenticated(false);
+          setUserRole('buyer');
+          setUsername('');
+          storage.clearSession();
+        }
       }
     });
 
-    // Check for existing Supabase session only if no admin session
-    if (!hasAdminSession) {
+    // Check for existing Supabase session if no admin session
+    if (!savedSession || savedSession.userRole !== 'admin') {
       supabase.auth.getSession().then(({ data: { session }, error }) => {
         if (!mounted) return;
         
@@ -242,10 +238,8 @@ const Items = () => {
   const handleItemDelete = async (item: Item) => {
     console.log('Delete requested for item:', item.name, 'Current user role:', userRole, 'Is authenticated:', isAuthenticated);
     
-    // Check admin permissions more thoroughly
-    const isAdmin = userRole === 'admin';
-    
-    if (!isAdmin) {
+    // Check admin permissions
+    if (userRole !== 'admin') {
       console.log('Access denied - user is not admin');
       toast({
         title: "Access Denied",

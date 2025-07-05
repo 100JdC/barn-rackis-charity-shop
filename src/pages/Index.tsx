@@ -22,12 +22,23 @@ export default function Index() {
   const [items, setItems] = useState<Item[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false);
   const { toast } = useToast();
 
-  // Set up Supabase auth listener with better error handling
+  // Set up authentication state management
   useEffect(() => {
     let mounted = true;
 
+    // Check for admin session in localStorage first
+    const savedSession = storage.getSession();
+    if (savedSession && savedSession.userRole === 'admin') {
+      console.log('Found admin session in localStorage:', savedSession);
+      setIsAuthenticated(true);
+      setUserRole(savedSession.userRole as UserRole);
+      setUsername(savedSession.username);
+    }
+
+    // Set up Supabase auth listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
       
@@ -40,17 +51,11 @@ export default function Index() {
         setIsAuthenticated(true);
         setUserRole(role);
         setUsername(userUsername);
-        
-        // Save session to localStorage for compatibility
         storage.saveSession(role, userUsername);
       } else {
-        // Check for local storage session (for admin)
-        const savedSession = storage.getSession();
-        if (savedSession) {
-          setIsAuthenticated(true);
-          setUserRole(savedSession.userRole as UserRole);
-          setUsername(savedSession.username);
-        } else {
+        // Only reset if we don't have an admin session
+        const currentSession = storage.getSession();
+        if (!currentSession || currentSession.userRole !== 'admin') {
           setIsAuthenticated(false);
           setUserRole('buyer');
           setUsername('');
@@ -59,33 +64,27 @@ export default function Index() {
       }
     });
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (!mounted) return;
-      
-      if (error) {
-        console.error('Error getting session:', error);
-        return;
-      }
-
-      if (session?.user) {
-        const userUsername = session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
-        const role: UserRole = session.user.email === 'jacob@admin.com' ? 'admin' : 'donator';
+    // Check for existing Supabase session if no admin session
+    if (!savedSession || savedSession.userRole !== 'admin') {
+      supabase.auth.getSession().then(({ data: { session }, error }) => {
+        if (!mounted) return;
         
-        setIsAuthenticated(true);
-        setUserRole(role);
-        setUsername(userUsername);
-        storage.saveSession(role, userUsername);
-      } else {
-        // Check for local storage session (for admin)
-        const savedSession = storage.getSession();
-        if (savedSession) {
-          setIsAuthenticated(true);
-          setUserRole(savedSession.userRole as UserRole);
-          setUsername(savedSession.username);
+        if (error) {
+          console.error('Error getting session:', error);
+          return;
         }
-      }
-    });
+
+        if (session?.user) {
+          const userUsername = session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
+          const role: UserRole = session.user.email === 'jacob@admin.com' ? 'admin' : 'donator';
+          
+          setIsAuthenticated(true);
+          setUserRole(role);
+          setUsername(userUsername);
+          storage.saveSession(role, userUsername);
+        }
+      });
+    }
 
     return () => {
       mounted = false;
@@ -118,6 +117,7 @@ export default function Index() {
     setUserRole(role);
     setUsername(loginUsername || '');
     setIsAuthenticated(true);
+    setShowLoginForm(false);
     
     // If registering as donator, go to donate page
     if (role === 'donator') {
@@ -140,6 +140,7 @@ export default function Index() {
       setUsername('');
       setIsAuthenticated(false);
       setView('home');
+      setShowLoginForm(false);
       storage.clearSession();
       toast({
         title: "Logged out",
@@ -178,6 +179,11 @@ export default function Index() {
     }
   };
 
+  const handleBrowseItems = () => {
+    setUserRole('buyer');
+    navigate('/items');
+  };
+
   if (view === 'donate') {
     return (
       <DonatePage
@@ -190,8 +196,8 @@ export default function Index() {
     );
   }
 
-  // Show login form only when explicitly requested or when trying to donate without auth
-  if (view === 'home' && !isAuthenticated && userRole !== 'admin' && searchTerm === '') {
+  // Show login form when explicitly requested
+  if (showLoginForm && !isAuthenticated && userRole !== 'admin') {
     return <LoginForm onLogin={handleLogin} />;
   }
 
@@ -243,6 +249,53 @@ export default function Index() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Show welcome options when not authenticated */}
+            {!isAuthenticated && userRole === 'buyer' && (
+              <div className="w-full max-w-4xl mx-auto text-white space-y-6 mb-8">
+                <div className="text-lg text-white/90 space-y-3 leading-relaxed text-center">
+                  <p>A platform for students in Uppsala to exchange second-hand items during move-ins and move-outs.</p>
+                  <p>We collect useful items from outgoing students and sell them at fair prices to new tenants.</p>
+                  <p>All profits go to Barncancerfonden, supporting children with cancer and their families.</p>
+                  <p>It's simple: buy and donate things you only need in Uppsala (duvets, curtains, bikes and much more) — sustainably and for a good cause.</p>
+                  <p className="font-semibold text-white">🌍 Good for students. Good for the planet.</p>
+                </div>
+                <div className="text-center mt-6">
+                  <Button
+                    variant="link"
+                    onClick={() => window.open('/about', '_blank')}
+                    className="text-white/90 hover:text-white text-lg underline"
+                  >
+                    👉 Find out more about the concept, who we are, and how you can contribute.
+                  </Button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Button
+                    onClick={handleBrowseItems}
+                    className="w-full bg-white/20 hover:bg-white/30 text-white h-12 text-lg border-white/30"
+                    variant="outline"
+                  >
+                    Browse our items
+                  </Button>
+                  <Button
+                    onClick={() => navigate('/register')}
+                    className="w-full bg-white/20 hover:bg-white/30 text-white h-12 text-lg border-white/30"
+                    variant="outline"
+                  >
+                    Register to donate
+                  </Button>
+                </div>
+                <div className="text-center">
+                  <Button
+                    onClick={() => navigate('/login')}
+                    className="text-white/80 hover:text-white text-lg underline"
+                    variant="link"
+                  >
+                    Already have an account? Login here
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           <CategoryBrowser 
