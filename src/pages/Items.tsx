@@ -67,8 +67,6 @@ const Items = () => {
         setIsAuthenticated(true);
         setUserRole(role);
         setUsername(userUsername);
-        
-        // Save session to localStorage for compatibility
         storage.saveSession(role, userUsername);
       } else {
         // Only reset if we don't have an admin session
@@ -158,8 +156,7 @@ const Items = () => {
   };
 
   const handleDonate = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user && userRole !== 'admin') {
+    if (!isAuthenticated && userRole !== 'admin') {
       navigate('/');
       return;
     }
@@ -402,6 +399,51 @@ const Items = () => {
               Back to Items
             </Button>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (view === 'edit-item' && selectedItem) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header 
+          userRole={userRole} 
+          username={username}
+          onLogout={(isAuthenticated || userRole === 'admin') ? handleLogout : undefined}
+          onDonate={handleDonate}
+          onHome={handleHome}
+          isAuthenticated={isAuthenticated}
+        />
+        <div className="container mx-auto px-4 py-8">
+          <ItemForm
+            item={selectedItem}
+            userRole={userRole}
+            onSave={handleItemSave}
+            onCancel={() => setView('items')}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (view === 'add-item') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header 
+          userRole={userRole} 
+          username={username}
+          onLogout={(isAuthenticated || userRole === 'admin') ? handleLogout : undefined}
+          onDonate={handleDonate}
+          onHome={handleHome}
+          isAuthenticated={isAuthenticated}
+        />
+        <div className="container mx-auto px-4 py-8">
+          <ItemForm
+            userRole={userRole}
+            onSave={handleItemSave}
+            onCancel={() => setView('items')}
+          />
         </div>
       </div>
     );
