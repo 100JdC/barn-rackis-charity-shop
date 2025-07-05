@@ -23,7 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 const Items = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [userRole, setUserRole] = useState<UserRole>(null);
+  const [userRole, setUserRole] = useState<UserRole>('buyer');
   const [username, setUsername] = useState<string>('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [view, setView] = useState<'items' | 'item-detail' | 'edit-item' | 'add-item'>('items');
@@ -41,40 +41,73 @@ const Items = () => {
   // Check if we should show individual items (when there's a search or category filter)
   const shouldShowItems = searchTerm.trim() !== "" || categoryFilter !== "all";
 
-  // Set up Supabase auth listener
+  // Set up Supabase auth listener with better error handling
   useEffect(() => {
+    let mounted = true;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
+      
+      console.log('Auth state changed in Items:', event, session?.user?.email);
+      
       if (session?.user) {
         const userUsername = session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
-        const role = session.user.email === 'jacob@admin.com' ? 'admin' : 'donator';
+        const role: UserRole = session.user.email === 'jacob@admin.com' ? 'admin' : 'donator';
         
         setIsAuthenticated(true);
         setUserRole(role);
         setUsername(userUsername);
+        
+        // Save session to localStorage for compatibility
+        storage.saveSession(role, userUsername);
       } else {
-        setIsAuthenticated(false);
-        setUserRole('buyer');
-        setUsername('');
+        // Check for local storage session (for admin)
+        const savedSession = storage.getSession();
+        if (savedSession) {
+          setIsAuthenticated(true);
+          setUserRole(savedSession.userRole as UserRole);
+          setUsername(savedSession.username);
+        } else {
+          setIsAuthenticated(false);
+          setUserRole('buyer');
+          setUsername('');
+          storage.clearSession();
+        }
       }
     });
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (!mounted) return;
+      
+      if (error) {
+        console.error('Error getting session:', error);
+        return;
+      }
+
       if (session?.user) {
         const userUsername = session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
-        const role = session.user.email === 'jacob@admin.com' ? 'admin' : 'donator';
+        const role: UserRole = session.user.email === 'jacob@admin.com' ? 'admin' : 'donator';
         
         setIsAuthenticated(true);
         setUserRole(role);
         setUsername(userUsername);
+        storage.saveSession(role, userUsername);
       } else {
-        setIsAuthenticated(false);
-        setUserRole('buyer');
-        setUsername('');
+        // Check for local storage session (for admin)
+        const savedSession = storage.getSession();
+        if (savedSession) {
+          setIsAuthenticated(true);
+          setUserRole(savedSession.userRole as UserRole);
+          setUsername(savedSession.username);
+        }
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Handle URL search parameters
@@ -108,8 +141,16 @@ const Items = () => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/');
+    try {
+      await supabase.auth.signOut();
+      setUserRole('buyer');
+      setUsername('');
+      setIsAuthenticated(false);
+      storage.clearSession();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   const handleHome = () => {
@@ -195,6 +236,18 @@ const Items = () => {
   };
 
   const handleItemDelete = async (item: Item) => {
+    console.log('Delete requested for item:', item.name, 'User role:', userRole, 'Is authenticated:', isAuthenticated);
+    
+    // Check if user is admin (either via Supabase auth or local storage)
+    if (userRole !== 'admin') {
+      toast({
+        title: "Error",
+        description: "Only administrators can delete items",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (window.confirm(`Are you sure you want to delete "${item.name}"?`)) {
       try {
         const success = await storage.deleteItem(item.id);
@@ -204,6 +257,12 @@ const Items = () => {
           toast({
             title: "Success",
             description: "Item deleted successfully"
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to delete item",
+            variant: "destructive"
           });
         }
       } catch (error) {
@@ -320,9 +379,9 @@ const Items = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          userRole={userRole || 'buyer'} 
+          userRole={userRole} 
           username={username}
-          onLogout={isAuthenticated ? handleLogout : undefined}
+          onLogout={(isAuthenticated || userRole === 'admin') ? handleLogout : undefined}
           onDonate={handleDonate}
           onHome={handleHome}
           isAuthenticated={isAuthenticated}
@@ -357,9 +416,9 @@ const Items = () => {
       
       <div className="relative z-10">
         <Header 
-          userRole={userRole || 'buyer'} 
+          userRole={userRole} 
           username={username}
-          onLogout={isAuthenticated ? handleLogout : undefined}
+          onLogout={(isAuthenticated || userRole === 'admin') ? handleLogout : undefined}
           onDonate={handleDonate}
           onHome={handleHome}
           isAuthenticated={isAuthenticated}
@@ -397,7 +456,7 @@ const Items = () => {
                     <ItemCard
                       key={item.id}
                       item={item}
-                      userRole={userRole || 'buyer'} 
+                      userRole={userRole} 
                       onView={() => {
                         setSelectedItem(item);
                         setView('item-detail');
