@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { ItemCard } from "@/components/ItemCard";
 import { ItemDetail } from "@/components/ItemDetail";
@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Items = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [userRole, setUserRole] = useState<UserRole>(null);
   const [username, setUsername] = useState<string>('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -35,8 +36,10 @@ const Items = () => {
   const [showQRModal, setShowQRModal] = useState(false);
   const [showSplitModal, setShowSplitModal] = useState(false);
   const [soldQuantityInput, setSoldQuantityInput] = useState<{ [key: string]: number }>({});
-  const [showCategories, setShowCategories] = useState(false);
   const { toast } = useToast();
+
+  // Check if we should show individual items (when there's a search or category filter)
+  const shouldShowItems = searchTerm.trim() !== "" || categoryFilter !== "all";
 
   // Set up Supabase auth listener
   useEffect(() => {
@@ -73,6 +76,14 @@ const Items = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Handle URL search parameters
+  useEffect(() => {
+    const urlSearchTerm = searchParams.get('search');
+    if (urlSearchTerm) {
+      setSearchTerm(urlSearchTerm);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     loadItems();
@@ -116,6 +127,16 @@ const Items = () => {
 
   const handleCategorySelect = (category: string) => {
     navigate(`/category/${category}`);
+  };
+
+  const handleSearchClick = () => {
+    // Search functionality is handled by the search term state
+  };
+
+  const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      // Search functionality is handled by the search term state
+    }
   };
 
   const handleItemSave = async (itemsData: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>[]) => {
@@ -358,9 +379,9 @@ const Items = () => {
                 setStatusFilter={setStatusFilter}
                 conditionFilter={conditionFilter}
                 setConditionFilter={setConditionFilter}
-                onSearchClick={() => {}}
-                onSearchKeyPress={() => {}}
-                showCategories={showCategories}
+                onSearchClick={handleSearchClick}
+                onSearchKeyPress={handleSearchKeyPress}
+                showCategories={!shouldShowItems}
                 userRole={userRole}
                 filteredItemsCount={filteredItems.length}
                 totalItemsCount={items.length}
@@ -368,44 +389,46 @@ const Items = () => {
             </CardContent>
           </Card>
 
-          {showCategories ? (
+          {shouldShowItems ? (
+            <>
+              {filteredItems.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredItems.map((item) => (
+                    <ItemCard
+                      key={item.id}
+                      item={item}
+                      userRole={userRole || 'buyer'} 
+                      onView={() => {
+                        setSelectedItem(item);
+                        setView('item-detail');
+                      }}
+                      onEdit={() => {
+                        setSelectedItem(item);
+                        setView('edit-item');
+                      }}
+                      onDelete={() => handleItemDelete(item)}
+                      onShowQRCode={() => {
+                        setSelectedItem(item);
+                        setShowQRModal(true);
+                      }}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <Card className="bg-white/90 backdrop-blur-sm">
+                  <CardContent className="py-12 text-center">
+                    <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No items found</h3>
+                    <p className="text-gray-600 mb-4">Try adjusting your search criteria</p>
+                  </CardContent>
+                </Card>
+              )}
+            </>
+          ) : (
             <CategoryBrowser 
               items={items} 
               onCategorySelect={handleCategorySelect}
             />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredItems.map((item) => (
-                <ItemCard
-                  key={item.id}
-                  item={item}
-                  userRole={userRole || 'buyer'} 
-                  onView={() => {
-                    setSelectedItem(item);
-                    setView('item-detail');
-                  }}
-                  onEdit={() => {
-                    setSelectedItem(item);
-                    setView('edit-item');
-                  }}
-                  onDelete={() => handleItemDelete(item)}
-                  onShowQRCode={() => {
-                    setSelectedItem(item);
-                    setShowQRModal(true);
-                  }}
-                />
-              ))}
-            </div>
-          )}
-
-          {!showCategories && filteredItems.length === 0 && (
-            <Card className="bg-white/90 backdrop-blur-sm">
-              <CardContent className="py-12 text-center">
-                <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No items found</h3>
-                <p className="text-gray-600 mb-4">Try adjusting your search criteria</p>
-              </CardContent>
-            </Card>
           )}
         </div>
       </div>
