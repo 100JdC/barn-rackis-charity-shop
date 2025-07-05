@@ -129,7 +129,7 @@ const Category = () => {
     <div className="min-h-screen" style={{ backgroundColor: '#1733a7' }}>
       <div className="absolute inset-0 flex items-center justify-center z-0 opacity-30 pointer-events-none">
         <img
-          src="/lovable-uploads/66828e04-ca12-4680-80e2-f4704d6832eb.png"
+          src="/lovable-uploads/logos/standard_logo.png"
           alt="Rackis for Barn Logo"
           className="w-[600px] h-auto object-contain"
         />
