@@ -41,10 +41,27 @@ const Items = () => {
   // Check if we should show individual items (when there's a search or category filter)
   const shouldShowItems = searchTerm.trim() !== "" || categoryFilter !== "all";
 
-  // Set up Supabase auth listener with better error handling
+  // Check for admin session first, then set up Supabase auth listener
   useEffect(() => {
     let mounted = true;
 
+    // First check for admin session in localStorage
+    const checkAdminSession = () => {
+      const savedSession = storage.getSession();
+      if (savedSession && savedSession.userRole === 'admin' && savedSession.username) {
+        console.log('Found admin session in localStorage:', savedSession);
+        setIsAuthenticated(true);
+        setUserRole('admin');
+        setUsername(savedSession.username);
+        return true;
+      }
+      return false;
+    };
+
+    // Check admin session immediately
+    const hasAdminSession = checkAdminSession();
+
+    // Set up Supabase auth listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
       
@@ -60,49 +77,36 @@ const Items = () => {
         
         // Save session to localStorage for compatibility
         storage.saveSession(role, userUsername);
-      } else {
-        // Check for local storage session (for admin)
-        const savedSession = storage.getSession();
-        if (savedSession) {
-          setIsAuthenticated(true);
-          setUserRole(savedSession.userRole as UserRole);
-          setUsername(savedSession.username);
-        } else {
-          setIsAuthenticated(false);
-          setUserRole('buyer');
-          setUsername('');
-          storage.clearSession();
-        }
+      } else if (!hasAdminSession) {
+        // Only reset if we don't have an admin session
+        setIsAuthenticated(false);
+        setUserRole('buyer');
+        setUsername('');
+        storage.clearSession();
       }
     });
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (!mounted) return;
-      
-      if (error) {
-        console.error('Error getting session:', error);
-        return;
-      }
-
-      if (session?.user) {
-        const userUsername = session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
-        const role: UserRole = session.user.email === 'jacob@admin.com' ? 'admin' : 'donator';
+    // Check for existing Supabase session only if no admin session
+    if (!hasAdminSession) {
+      supabase.auth.getSession().then(({ data: { session }, error }) => {
+        if (!mounted) return;
         
-        setIsAuthenticated(true);
-        setUserRole(role);
-        setUsername(userUsername);
-        storage.saveSession(role, userUsername);
-      } else {
-        // Check for local storage session (for admin)
-        const savedSession = storage.getSession();
-        if (savedSession) {
-          setIsAuthenticated(true);
-          setUserRole(savedSession.userRole as UserRole);
-          setUsername(savedSession.username);
+        if (error) {
+          console.error('Error getting session:', error);
+          return;
         }
-      }
-    });
+
+        if (session?.user) {
+          const userUsername = session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
+          const role: UserRole = session.user.email === 'jacob@admin.com' ? 'admin' : 'donator';
+          
+          setIsAuthenticated(true);
+          setUserRole(role);
+          setUsername(userUsername);
+          storage.saveSession(role, userUsername);
+        }
+      });
+    }
 
     return () => {
       mounted = false;
@@ -236,17 +240,22 @@ const Items = () => {
   };
 
   const handleItemDelete = async (item: Item) => {
-    console.log('Delete requested for item:', item.name, 'User role:', userRole, 'Is authenticated:', isAuthenticated);
+    console.log('Delete requested for item:', item.name, 'Current user role:', userRole, 'Is authenticated:', isAuthenticated);
     
-    // Check if user is admin (either via Supabase auth or local storage)
-    if (userRole !== 'admin') {
+    // Check admin permissions more thoroughly
+    const isAdmin = userRole === 'admin';
+    
+    if (!isAdmin) {
+      console.log('Access denied - user is not admin');
       toast({
-        title: "Error",
+        title: "Access Denied",
         description: "Only administrators can delete items",
         variant: "destructive"
       });
       return;
     }
+
+    console.log('Admin permission confirmed, proceeding with delete');
 
     if (window.confirm(`Are you sure you want to delete "${item.name}"?`)) {
       try {
