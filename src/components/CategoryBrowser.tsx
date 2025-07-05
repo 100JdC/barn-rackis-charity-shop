@@ -24,7 +24,7 @@ export const CategoryBrowser = ({ items, onCategorySelect }: CategoryBrowserProp
     },
     { 
       value: "decoration", 
-      label: "Decoration", 
+      label: "Scandinavian decoration", 
       image: "/lovable-uploads/Categories/scandinavian_decoration.png", // Blue chair decoration
       hasImage: true
     },
