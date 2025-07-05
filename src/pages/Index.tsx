@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { LoginForm } from "@/components/LoginForm";
@@ -43,10 +44,18 @@ export default function Index() {
         // Save session to localStorage for compatibility
         storage.saveSession(role, userUsername);
       } else {
-        setIsAuthenticated(false);
-        setUserRole('buyer');
-        setUsername('');
-        storage.clearSession();
+        // Check for local storage session (for admin)
+        const savedSession = storage.getSession();
+        if (savedSession) {
+          setIsAuthenticated(true);
+          setUserRole(savedSession.role);
+          setUsername(savedSession.username);
+        } else {
+          setIsAuthenticated(false);
+          setUserRole('buyer');
+          setUsername('');
+          storage.clearSession();
+        }
       }
     });
 
@@ -67,6 +76,14 @@ export default function Index() {
         setUserRole(role);
         setUsername(userUsername);
         storage.saveSession(role, userUsername);
+      } else {
+        // Check for local storage session (for admin)
+        const savedSession = storage.getSession();
+        if (savedSession) {
+          setIsAuthenticated(true);
+          setUserRole(savedSession.role);
+          setUsername(savedSession.username);
+        }
       }
     });
 
@@ -123,6 +140,7 @@ export default function Index() {
       setUsername('');
       setIsAuthenticated(false);
       setView('home');
+      storage.clearSession();
       toast({
         title: "Logged out",
         description: "You have been successfully logged out."
@@ -132,10 +150,9 @@ export default function Index() {
     }
   };
 
-  const handleDonate = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user && userRole !== 'admin') {
+  const handleDonate = () => {
+    // Check if user is authenticated (either via Supabase or as admin)
+    if (!isAuthenticated && userRole !== 'admin') {
       // Not authenticated, redirect to login page
       navigate('/login');
       return;
@@ -174,7 +191,7 @@ export default function Index() {
   }
 
   // Show login form only when explicitly requested or when trying to donate without auth
-  if (view === 'home' && !isAuthenticated && searchTerm === '') {
+  if (view === 'home' && !isAuthenticated && userRole !== 'admin' && searchTerm === '') {
     return <LoginForm onLogin={handleLogin} />;
   }
 
@@ -196,7 +213,7 @@ export default function Index() {
         <Header 
           userRole={userRole} 
           username={username}
-          onLogout={isAuthenticated ? handleLogout : undefined}
+          onLogout={(isAuthenticated || userRole === 'admin') ? handleLogout : undefined}
           onDonate={handleDonate}
           onHome={() => setView('home')}
           isAuthenticated={isAuthenticated}

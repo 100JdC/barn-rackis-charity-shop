@@ -3,7 +3,6 @@ import { ArrowLeft, User, LogOut, Home, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 
 interface HeaderProps {
   userRole: string;
@@ -28,11 +27,9 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
     }
   };
 
-  const handleDonate = async () => {
-    // Check if user is authenticated
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user && userRole !== 'admin') {
+  const handleDonate = () => {
+    // Check if user is authenticated (either via Supabase or as admin)
+    if (!isAuthenticated && userRole !== 'admin') {
       // Not authenticated, redirect to login
       navigate('/login');
     } else {
@@ -114,7 +111,7 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
             About Us
           </Button>
           
-          {isAuthenticated && userRole && userRole !== 'buyer' && (
+          {(isAuthenticated || userRole === 'admin') && userRole && userRole !== 'buyer' && (
             <div className="flex items-center gap-3 bg-gray-50 px-3 py-2 rounded-lg">
               <Badge className={`${getRoleColor(userRole)} text-xs font-medium`}>
                 {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
@@ -127,8 +124,8 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
             </div>
           )}
           
-          {/* Show logout button only when authenticated */}
-          {isAuthenticated && onLogout && (
+          {/* Show logout button when authenticated or admin */}
+          {(isAuthenticated || userRole === 'admin') && onLogout && (
             <Button 
               variant="ghost" 
               size="sm" 
@@ -140,7 +137,7 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
           )}
           
           {/* Show home button when not authenticated */}
-          {!isAuthenticated && (
+          {!isAuthenticated && userRole !== 'admin' && (
             <Button 
               variant="ghost" 
               size="sm" 

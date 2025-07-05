@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PageWrapper } from "@/components/PageWrapper";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { storage } from "@/utils/storage";
 
 const Login = () => {
   const [emailOrUsername, setEmailOrUsername] = useState("");
@@ -29,22 +29,18 @@ const Login = () => {
 
     try {
       // Check for admin credentials first - allow admin to login without email verification
-      if (emailOrUsername.toLowerCase() === "jacob@admin.com" || emailOrUsername.toLowerCase() === "jacob") {
-        if (password === "Rackis") {
-          console.log('Admin login successful');
-          toast({
-            title: "Welcome back, Admin!",
-            description: "You have been successfully logged in."
-          });
-          navigate('/');
-          return;
-        } else {
-          setError("Invalid admin password");
-          return;
-        }
+      if ((emailOrUsername.toLowerCase() === "jacob@admin.com" || emailOrUsername.toLowerCase() === "jacob") && password === "Rackis") {
+        console.log('Admin login successful');
+        storage.saveSession('admin', 'Jacob');
+        toast({
+          title: "Welcome back, Admin!",
+          description: "You have been successfully logged in."
+        });
+        navigate('/');
+        return;
       }
 
-      // Check if input is an email or username
+      // Check if input is an email or username for regular users
       const isEmail = emailOrUsername.includes('@');
       let loginEmail = emailOrUsername;
 
@@ -110,91 +106,75 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#1733a7' }}>
-      <div className="absolute inset-0 flex items-center justify-center z-0 opacity-30 pointer-events-none">
-        <img
-          src="/lovable-uploads/66828e04-ca12-4680-80e2-f4704d6832eb.png"
-          alt="Rackis for Barn Logo"
-          className="w-[600px] h-auto object-contain"
-          onError={(e) => {
-            console.error('Failed to load bear logo');
-            e.currentTarget.style.display = 'none';
-          }}
-        />
-      </div>
-      
-      <div className="relative z-10">
-        <PageWrapper>
-          <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-center text-2xl" style={{ color: '#1733a7' }}>Login</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <Label htmlFor="emailOrUsername">Email or Username</Label>
-                  <Input
-                    id="emailOrUsername"
-                    type="text"
-                    value={emailOrUsername}
-                    onChange={(e) => setEmailOrUsername(e.target.value)}
-                    required
-                    placeholder="Enter your email or username"
-                    disabled={loading}
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    placeholder="Enter your password"
-                    disabled={loading}
-                  />
-                </div>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#1733a7' }}>
+      <Card className="w-full max-w-md bg-white shadow-xl">
+        <CardHeader>
+          <CardTitle className="text-center text-2xl" style={{ color: '#1733a7' }}>Login</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <Label htmlFor="emailOrUsername">Email or Username</Label>
+              <Input
+                id="emailOrUsername"
+                type="text"
+                value={emailOrUsername}
+                onChange={(e) => setEmailOrUsername(e.target.value)}
+                required
+                placeholder="Enter your email or username"
+                disabled={loading}
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder="Enter your password"
+                disabled={loading}
+              />
+            </div>
 
-                {error && (
-                  <div className="text-red-600 text-sm">{error}</div>
-                )}
+            {error && (
+              <div className="text-red-600 text-sm">{error}</div>
+            )}
 
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  style={{ backgroundColor: '#1733a7' }}
-                  disabled={loading}
-                >
-                  {loading ? 'Logging in...' : 'Login'}
-                </Button>
-              </form>
-              
-              <div className="text-center space-y-2">
-                <Button 
-                  variant="link" 
-                  onClick={() => navigate('/register')}
-                  className="text-gray-600 hover:text-gray-800"
-                  disabled={loading}
-                >
-                  Don't have an account? Register here
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  onClick={() => navigate('/')}
-                  className="w-full"
-                  style={{ borderColor: '#1733a7', color: '#1733a7' }}
-                  disabled={loading}
-                >
-                  Back to Home
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </PageWrapper>
-      </div>
+            <Button 
+              type="submit" 
+              className="w-full" 
+              style={{ backgroundColor: '#1733a7' }}
+              disabled={loading}
+            >
+              {loading ? 'Logging in...' : 'Login'}
+            </Button>
+          </form>
+          
+          <div className="text-center space-y-2">
+            <Button 
+              variant="link" 
+              onClick={() => navigate('/register')}
+              className="text-gray-600 hover:text-gray-800"
+              disabled={loading}
+            >
+              Don't have an account? Register here
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/')}
+              className="w-full"
+              style={{ borderColor: '#1733a7', color: '#1733a7' }}
+              disabled={loading}
+            >
+              Back to Home
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
