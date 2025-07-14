@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { LoginForm } from "@/components/LoginForm";
 import { DonatePage } from "@/pages/DonatePage";
 import { Header } from "@/components/Header";
 import { CategoryBrowser } from "@/components/CategoryBrowser";
+import { Footer } from "@/components/Footer";
 import { storage } from "@/utils/storage";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,11 +25,9 @@ export default function Index() {
   const [showLoginForm, setShowLoginForm] = useState(false);
   const { toast } = useToast();
 
-  // Set up authentication state management
   useEffect(() => {
     let mounted = true;
 
-    // Check for admin session in localStorage first
     const savedSession = storage.getSession();
     if (savedSession && savedSession.userRole === 'admin') {
       console.log('Found admin session in localStorage:', savedSession);
@@ -38,7 +36,6 @@ export default function Index() {
       setUsername(savedSession.username);
     }
 
-    // Set up Supabase auth listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
       
@@ -53,7 +50,6 @@ export default function Index() {
         setUsername(userUsername);
         storage.saveSession(role, userUsername);
       } else {
-        // Only reset if we don't have an admin session
         const currentSession = storage.getSession();
         if (!currentSession || currentSession.userRole !== 'admin') {
           setIsAuthenticated(false);
@@ -64,7 +60,6 @@ export default function Index() {
       }
     });
 
-    // Check for existing Supabase session if no admin session
     if (!savedSession || savedSession.userRole !== 'admin') {
       supabase.auth.getSession().then(({ data: { session }, error }) => {
         if (!mounted) return;
@@ -92,7 +87,6 @@ export default function Index() {
     };
   }, []);
 
-  // Load items when the component mounts
   useEffect(() => {
     loadItems();
   }, []);
@@ -119,7 +113,6 @@ export default function Index() {
     setIsAuthenticated(true);
     setShowLoginForm(false);
     
-    // If registering as donator, go to donate page
     if (role === 'donator') {
       supabase.auth.getUser().then(({ data: { user } }) => {
         if (user && new Date(user.created_at).getTime() > Date.now() - 10000) {
@@ -152,14 +145,11 @@ export default function Index() {
   };
 
   const handleDonate = () => {
-    // Check if user is authenticated (either via Supabase or as admin)
     if (!isAuthenticated && userRole !== 'admin') {
-      // Not authenticated, redirect to login page
       navigate('/login');
       return;
     }
     
-    // Authenticated, go to donate view
     setView('donate');
   };
 
@@ -196,26 +186,21 @@ export default function Index() {
     );
   }
 
-  // Show login form when explicitly requested
   if (showLoginForm && !isAuthenticated && userRole !== 'admin') {
     return <LoginForm onLogin={handleLogin} />;
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#1733a7' }}>
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#1733a7' }}>
       <div className="absolute inset-0 flex items-center justify-center z-0 opacity-30 pointer-events-none">
         <img
           src="/lovable-uploads/66828e04-ca12-4680-80e2-f4704d6832eb.png"
           alt="Rackis for Barn Logo"
           className="w-[600px] h-auto object-contain"
-          onError={(e) => {
-            console.error('Failed to load bear logo');
-            e.currentTarget.style.display = 'none';
-          }}
         />
       </div>
       
-      <div className="relative z-10">
+      <div className="relative z-10 flex-1">
         <Header 
           userRole={userRole} 
           username={username}
@@ -250,7 +235,6 @@ export default function Index() {
               </CardContent>
             </Card>
 
-            {/* Show welcome options when not authenticated */}
             {!isAuthenticated && userRole === 'buyer' && (
               <div className="w-full max-w-4xl mx-auto text-white space-y-6 mb-8">
                 <div className="text-lg text-white/90 space-y-3 leading-relaxed text-center">
@@ -304,6 +288,7 @@ export default function Index() {
           />
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

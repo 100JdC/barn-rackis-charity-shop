@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { ItemForm } from "@/components/ItemForm";
 import { ThankYouAnimation } from "@/components/ThankYouAnimation";
+import { Footer } from "@/components/Footer";
 import { storage } from "@/utils/storage";
 import { useToast } from "@/hooks/use-toast";
 import type { Item, UserRole } from "@/types/item";
@@ -23,13 +23,11 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is authenticated
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
       setLoading(false);
       
-      // If user is not authenticated and not admin, redirect to login
       if (!user && userRole !== 'admin') {
         toast({
           title: "Authentication Required",
@@ -45,7 +43,6 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
   }, [onNavigate, toast, userRole]);
 
   const handleItemsSave = async (itemsData: Partial<Item>[]) => {
-    // Double-check authentication before saving
     if (!user && userRole !== 'admin') {
       toast({
         title: "Authentication Required",
@@ -59,7 +56,6 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
     try {
       const donorUsername = username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Anonymous Donor';
       
-      // Process and save all items
       for (const itemData of itemsData) {
         const newItem: Item = {
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -76,7 +72,6 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
         await storage.addItem(newItem);
       }
       
-      // Show thank you animation
       setShowThankYou(true);
       toast({
         title: "Success",
@@ -111,7 +106,7 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header 
         userRole={userRole}
         username={username}
@@ -120,7 +115,7 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
         onBack={onBack}
       />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Donate Items</h1>
@@ -135,6 +130,7 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
             userRole={userRole}
             onSubmit={handleItemsSave}
             onCancel={onBack}
+            username={username}
           />
         </div>
       </div>
@@ -143,6 +139,8 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
         isVisible={showThankYou}
         onComplete={handleThankYouComplete}
       />
+      
+      <Footer />
     </div>
   );
 };
