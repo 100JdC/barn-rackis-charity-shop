@@ -10,6 +10,7 @@ import { StatsDashboard } from "@/components/StatsDashboard";
 import { UserManagement } from "@/components/UserManagement";
 import { ItemsHeader } from "@/components/ItemsHeader";
 import { Footer } from "@/components/Footer";
+import { CategoryBrowser } from "@/components/CategoryBrowser";
 import { storage } from "@/utils/storage";
 import { Card, CardContent } from "@/components/ui/card";
 import { Package } from "lucide-react";
@@ -250,7 +251,14 @@ const Items = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex flex-col relative">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <img 
+          src="/lovable-uploads/logos/standard_logo.png" 
+          alt="Background Logo" 
+          className="absolute bottom-20 right-10 w-96 h-96 opacity-[0.03] object-contain"
+        />
+      </div>
       <Header 
         userRole={userRole} 
         username={username}
@@ -260,7 +268,7 @@ const Items = () => {
         isAuthenticated={isAuthenticated}
       />
       
-      <div className="container mx-auto px-4 py-8 flex-1">
+      <div className="container mx-auto px-4 py-8 flex-1 relative z-10">
         <ItemsHeader 
           userRole={userRole}
           view={view}
@@ -270,58 +278,78 @@ const Items = () => {
 
         {view === 'items' && (
           <>
-            <SearchAndFilters
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              categoryFilter={categoryFilter}
-              onCategoryChange={setCategoryFilter}
-              statusFilter={statusFilter}
-              onStatusChange={setStatusFilter}
-              conditionFilter={conditionFilter}
-              onConditionChange={setConditionFilter}
-              userRole={userRole}
-            />
-            
-            <div className="mt-6 text-sm text-gray-600">
-              Showing {filteredItems.length} of {items.length} items
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold mb-6 text-center">Browse by Category</h2>
+              <CategoryBrowser 
+                items={items} 
+                onCategorySelect={(category) => {
+                  setCategoryFilter(category);
+                  // Scroll to items section after category selection
+                  setTimeout(() => {
+                    const itemsSection = document.getElementById('items-section');
+                    if (itemsSection) {
+                      itemsSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }, 100);
+                }}
+              />
             </div>
-
-            {filteredItems.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-                {filteredItems.map((item) => (
-                  <ItemCard
-                    key={item.id}
-                    item={item}
-                    userRole={userRole} 
-                    onView={() => {
-                      setSelectedItem(item);
-                      setView('item-detail');
-                    }}
-                    onEdit={() => {
-                      setSelectedItem(item);
-                      setView('edit-item');
-                    }}
-                    onDelete={() => handleItemDelete(item)}
-                    onShowQRCode={() => {
-                      setSelectedItem(item);
-                      setShowQRModal(true);
-                    }}
-                  />
-                ))}
+            
+            <div id="items-section">
+              <h2 className="text-2xl font-bold mb-6 text-center">Individual Items</h2>
+              <SearchAndFilters
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                categoryFilter={categoryFilter}
+                onCategoryChange={setCategoryFilter}
+                statusFilter={statusFilter}
+                onStatusChange={setStatusFilter}
+                conditionFilter={conditionFilter}
+                onConditionChange={setConditionFilter}
+                userRole={userRole}
+              />
+              
+              <div className="mt-6 text-sm text-gray-600">
+                Showing {filteredItems.length} of {items.length} items
               </div>
-            ) : (
-              <Card className="mt-6">
-                <CardContent className="py-12 text-center">
-                  <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No items found</h3>
-                  <p className="text-gray-600 mb-4">
-                    {searchTerm || categoryFilter !== "all" || statusFilter !== "all" || conditionFilter !== "all"
-                      ? "No items match your search criteria"
-                      : "No items available at the moment"}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+
+              {filteredItems.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+                  {filteredItems.map((item) => (
+                    <ItemCard
+                      key={item.id}
+                      item={item}
+                      userRole={userRole} 
+                      onView={() => {
+                        setSelectedItem(item);
+                        setView('item-detail');
+                      }}
+                      onEdit={() => {
+                        setSelectedItem(item);
+                        setView('edit-item');
+                      }}
+                      onDelete={() => handleItemDelete(item)}
+                      onShowQRCode={() => {
+                        setSelectedItem(item);
+                        setShowQRModal(true);
+                      }}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <Card className="mt-6">
+                  <CardContent className="py-12 text-center">
+                    <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No items found</h3>
+                    <p className="text-gray-600 mb-4">
+                      {searchTerm || categoryFilter !== "all" || statusFilter !== "all" || conditionFilter !== "all"
+                        ? "No items match your search criteria"
+                        : "No items available at the moment"}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </>
         )}
 

@@ -42,7 +42,7 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
     checkAuth();
   }, [onNavigate, toast, userRole]);
 
-  const handleItemsSave = async (itemsData: Partial<Item>[]) => {
+  const handleItemsSave = async (items: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>[]) => {
     if (!user && userRole !== 'admin') {
       toast({
         title: "Authentication Required",

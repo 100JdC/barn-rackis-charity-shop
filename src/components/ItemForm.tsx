@@ -200,17 +200,17 @@ export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemF
       return;
     }
 
-    // Convert to the expected format
-    const formattedItems = items.map(item => ({
-      ...item,
-      original_price: parseFloat(item.original_price.toString()) || 0,
-      suggested_price: parseFloat(item.suggested_price.toString()) || 0,
-      final_price: item.final_price || undefined,
-      reserved_by: item.reserved_by || undefined,
-      location: item.location || undefined,
-      internal_notes: item.internal_notes || undefined,
-      donor_name: item.donor_name || undefined
-    }));
+    // Convert to the expected format - only handle single item for edit mode
+    const formattedItem = {
+      ...items[0],  // Take first item for editing
+      original_price: parseFloat(items[0].original_price.toString()) || 0,
+      suggested_price: parseFloat(items[0].suggested_price.toString()) || 0,
+      final_price: items[0].final_price || undefined,
+      reserved_by: items[0].reserved_by || undefined,
+      location: items[0].location || undefined,
+      internal_notes: items[0].internal_notes || undefined,
+      donor_name: items[0].donor_name || undefined
+    };
 
     onSubmit(formattedItems);
   };
