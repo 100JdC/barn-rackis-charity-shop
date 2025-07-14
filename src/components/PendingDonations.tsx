@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { storage } from '@/utils/storage';
 import { useToast } from '@/hooks/use-toast';
@@ -49,7 +48,7 @@ export const PendingDonations = ({ onItemsUpdate }: PendingDonationsProps) => {
         updated_at: new Date().toISOString()
       };
       
-      const success = await storage.updateItem(updatedItem);
+      const success = await storage.updateItem(updatedItem.id, updatedItem);
       if (success) {
         toast({
           title: "Success",

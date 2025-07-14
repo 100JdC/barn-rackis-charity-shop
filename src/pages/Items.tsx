@@ -199,7 +199,7 @@ const Items = () => {
         updated_by: username,
       };
       
-      const success = await storage.updateItem(updatedItem);
+      const success = await storage.updateItem(updatedItem.id, updatedItem);
       if (success) {
         loadItems();
         setSelectedItem(updatedItem);
@@ -272,13 +272,13 @@ const Items = () => {
           <>
             <SearchAndFilters
               searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
+              onSearchChange={setSearchTerm}
               categoryFilter={categoryFilter}
-              setCategoryFilter={setCategoryFilter}
+              onCategoryChange={setCategoryFilter}
               statusFilter={statusFilter}
-              setStatusFilter={setStatusFilter}
+              onStatusChange={setStatusFilter}
               conditionFilter={conditionFilter}
-              setConditionFilter={setConditionFilter}
+              onConditionChange={setConditionFilter}
               userRole={userRole}
             />
             
