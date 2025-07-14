@@ -10,6 +10,9 @@ import Items from "./pages/Items";
 import Category from "./pages/Category";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Impressum from "./pages/Impressum";
+import LegalNotice from "./pages/Legalnotice";
+import TermsAndConditions from "./pages/Terms_and_conditions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +30,9 @@ const App = () => (
           <Route path="/category/:categoryName" element={<Category />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/impressum" element={<Impressum />} />
+          <Route path="/legal-notice" element={<LegalNotice />} />
+          <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

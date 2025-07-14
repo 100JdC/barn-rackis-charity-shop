@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { Footer } from "@/components/Footer";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -84,105 +84,108 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#1733a7' }}>
-      <Card className="w-full max-w-md bg-white shadow-xl">
-        <CardHeader>
-          <CardTitle className="text-center text-2xl" style={{ color: '#1733a7' }}>Register as Donor</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <form onSubmit={handleRegister} className="space-y-4">
-            <div>
-              <Label htmlFor="register-email">Email</Label>
-              <Input
-                id="register-email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="Enter your email"
-                disabled={loading}
-              />
-            </div>
+    <div className="min-h-screen flex flex-col">
+      <div className="flex-1 flex items-center justify-center p-4" style={{ backgroundColor: '#1733a7' }}>
+        <Card className="w-full max-w-md bg-white shadow-xl">
+          <CardHeader>
+            <CardTitle className="text-center text-2xl" style={{ color: '#1733a7' }}>Register as Donor</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <form onSubmit={handleRegister} className="space-y-4">
+              <div>
+                <Label htmlFor="register-email">Email</Label>
+                <Input
+                  id="register-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="Enter your email"
+                  disabled={loading}
+                />
+              </div>
 
-            <div>
-              <Label htmlFor="register-username">Username</Label>
-              <Input
-                id="register-username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                placeholder="Choose a username"
+              <div>
+                <Label htmlFor="register-username">Username</Label>
+                <Input
+                  id="register-username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  placeholder="Choose a username"
+                  disabled={loading}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="register-password">Password</Label>
+                <Input
+                  id="register-password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="Choose a password (min 6 characters)"
+                  disabled={loading}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  placeholder="Confirm your password"
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="text-sm text-orange-600 bg-orange-50 p-3 rounded-lg border border-orange-200">
+                <strong>⚠️ Security Notice:</strong> For safety reasons, please use a unique password that you don't use for other important accounts.
+              </div>
+
+              {error && (
+                <div className="text-red-600 text-sm">{error}</div>
+              )}
+
+              <Button 
+                type="submit" 
+                className="w-full" 
+                style={{ backgroundColor: '#1733a7' }}
                 disabled={loading}
-              />
-            </div>
+              >
+                {loading ? 'Registering...' : 'Register as Donor'}
+              </Button>
+            </form>
             
-            <div>
-              <Label htmlFor="register-password">Password</Label>
-              <Input
-                id="register-password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="Choose a password (min 6 characters)"
+            <div className="text-center space-y-2">
+              <Button 
+                variant="link" 
+                onClick={() => navigate('/login')}
+                className="text-gray-600 hover:text-gray-800"
                 disabled={loading}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="confirm-password">Confirm Password</Label>
-              <Input
-                id="confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                placeholder="Confirm your password"
+              >
+                Already have an account? Login here
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/')}
+                className="w-full"
+                style={{ borderColor: '#1733a7', color: '#1733a7' }}
                 disabled={loading}
-              />
+              >
+                Back to Home
+              </Button>
             </div>
-
-            <div className="text-sm text-orange-600 bg-orange-50 p-3 rounded-lg border border-orange-200">
-              <strong>⚠️ Security Notice:</strong> For safety reasons, please use a unique password that you don't use for other important accounts.
-            </div>
-
-            {error && (
-              <div className="text-red-600 text-sm">{error}</div>
-            )}
-
-            <Button 
-              type="submit" 
-              className="w-full" 
-              style={{ backgroundColor: '#1733a7' }}
-              disabled={loading}
-            >
-              {loading ? 'Registering...' : 'Register as Donor'}
-            </Button>
-          </form>
-          
-          <div className="text-center space-y-2">
-            <Button 
-              variant="link" 
-              onClick={() => navigate('/login')}
-              className="text-gray-600 hover:text-gray-800"
-              disabled={loading}
-            >
-              Already have an account? Login here
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              onClick={() => navigate('/')}
-              className="w-full"
-              style={{ borderColor: '#1733a7', color: '#1733a7' }}
-              disabled={loading}
-            >
-              Back to Home
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
+      <Footer />
     </div>
   );
 };
