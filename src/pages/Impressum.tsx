@@ -1,4 +1,3 @@
-
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,32 +27,20 @@ const Impressum = () => {
                 Impressum
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6 text-lg">
-              <section>
-                <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Contact Information</h2>
-                <div className="text-gray-700 space-y-2">
-                  <p><strong>Organization:</strong> Rackis for Barn</p>
-                  <p><strong>Address:</strong> Uppsala, Sweden</p>
-                  <p><strong>Email:</strong> contact@rackisforbarn.se</p>
-                </div>
-              </section>
+            <CardContent className="space-y-6 text-lg text-gray-700">
+              <p><strong>Website Operator:</strong></p>
+              <p>Jacob Lehmann<br />Rackarbergsgatan 32<br />752 32 Uppsala<br />Sweden</p>
 
-              <section>
-                <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Legal Information</h2>
-                <p className="text-gray-700">
-                  This platform operates as a charitable initiative supporting Barncancerfonden. 
-                  All proceeds from item sales are donated to support children with cancer and their families.
-                </p>
-              </section>
+              <p className="mt-4"><strong>Email:</strong> info@rackisforbarn.com</p>
 
-              <section>
-                <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Disclaimer</h2>
-                <p className="text-gray-700">
-                  The information on this website is provided on an "as is" basis. We make no 
-                  representations or warranties of any kind, express or implied, about the completeness, 
-                  accuracy, reliability, suitability or availability of the information.
-                </p>
-              </section>
+              <p className="mt-4">
+                Rackis for Barn is a student-run platform designed to support circular sharing among students in Uppsala.
+                The platform enables the donation and purchase of second-hand items, with all proceeds going to Barncancerfonden Mellansverige (The Middle Sweden Childhood Cancer Fund).
+              </p>
+
+              <p className="mt-4 text-sm text-gray-500">
+                This website is operated voluntarily by students. For legal or copyright concerns, please contact us via email.
+              </p>
             </CardContent>
           </Card>
         </div>

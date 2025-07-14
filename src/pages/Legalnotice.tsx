@@ -1,4 +1,3 @@
-
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { PageWrapper } from "@/components/PageWrapper";
 import { Footer } from "@/components/Footer";
 
-const LegalNotice = () => {
+const PrivacyPolicy = () => {
   const navigate = useNavigate();
 
   return (
@@ -25,43 +24,52 @@ const LegalNotice = () => {
           <Card className="bg-white/90 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-3xl text-center" style={{ color: '#1733a7' }}>
-                Legal Notice
+                Privacy Policy
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6 text-lg">
+            <CardContent className="space-y-6 text-lg text-gray-700">
+              <p><strong>Last updated:</strong> July 2025</p>
+
+              <p>
+                Rackis for Barn respects your privacy and is committed to protecting your personal data. This policy outlines how we handle your information.
+              </p>
+
               <section>
-                <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Website Usage</h2>
-                <p className="text-gray-700">
-                  By accessing and using this website, you accept and agree to be bound by the terms 
-                  and provision of this agreement. If you do not agree to these terms, please do not 
-                  use this service.
+                <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>What We Collect</h2>
+                <ul className="list-disc list-inside space-y-2">
+                  <li>Email address (for user registration)</li>
+                  <li>Purchase and donation history</li>
+                  <li>Device and browser data (via analytics)</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Why We Collect It</h2>
+                <ul className="list-disc list-inside space-y-2">
+                  <li>To manage user accounts and inventory</li>
+                  <li>To improve our service</li>
+                  <li>To support donation tracking for transparency</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Cookies</h2>
+                <p>
+                  We may use cookies for analytics and user experience. You can disable cookies in your browser settings.
                 </p>
               </section>
 
               <section>
-                <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Intellectual Property</h2>
-                <p className="text-gray-700">
-                  The content of this website is protected by copyright and other intellectual property 
-                  rights. All rights are reserved. You may not reproduce, distribute, or create 
-                  derivative works from our content without explicit permission.
+                <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Data Sharing</h2>
+                <p>
+                  We do not sell your data. Data may be processed by third-party services (e.g., payment providers or hosting platforms) only for functional purposes.
                 </p>
               </section>
 
               <section>
-                <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Limitation of Liability</h2>
-                <p className="text-gray-700">
-                  Rackis for Barn shall not be liable for any direct, indirect, incidental, special, 
-                  or consequential damages arising from the use of this website or the purchase of 
-                  items through our platform.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Privacy</h2>
-                <p className="text-gray-700">
-                  We respect your privacy and are committed to protecting your personal data. 
-                  Any information collected is used solely for the purpose of facilitating 
-                  transactions and supporting our charitable mission.
+                <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Your Rights</h2>
+                <p>
+                  You have the right to access, correct, or delete your personal data. Contact us at contact@rackisforbarn.com for any requests.
                 </p>
               </section>
             </CardContent>
@@ -73,4 +81,4 @@ const LegalNotice = () => {
   );
 };
 
-export default LegalNotice;
+export default PrivacyPolicy;

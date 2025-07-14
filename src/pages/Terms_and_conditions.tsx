@@ -1,4 +1,3 @@
-
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,49 +27,53 @@ const TermsAndConditions = () => {
                 Terms and Conditions
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6 text-lg">
+            <CardContent className="space-y-6 text-lg text-gray-700">
               <section>
                 <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Acceptance of Terms</h2>
-                <p className="text-gray-700">
-                  By using Rackis for Barn, you agree to comply with and be bound by these terms 
+                <p>
+                  By using Rackis for Barn, you agree to comply with and be bound by these terms
                   and conditions. These terms apply to all users of the website.
                 </p>
               </section>
 
               <section>
                 <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Item Donations</h2>
-                <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li>Donated items must be in good, usable condition</li>
-                  <li>Items deemed unsuitable may be rejected at our discretion</li>
-                  <li>Donors transfer ownership of items upon donation</li>
-                  <li>We reserve the right to set pricing for donated items</li>
+                <ul className="list-disc list-inside space-y-2">
+                  <li>Donated items must be in good, usable condition.</li>
+                  <li>We reserve the right to reject items deemed unsuitable.</li>
+                  <li>Ownership of items transfers to Rackis for Barn upon donation.</li>
+                  <li>We may determine pricing at our discretion.</li>
                 </ul>
               </section>
 
               <section>
                 <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Purchases</h2>
-                <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li>All sales are final - no returns or exchanges</li>
-                  <li>Items are sold "as is" without warranty</li>
-                  <li>Payment must be completed before item collection</li>
-                  <li>Buyers are responsible for item collection arrangements</li>
+                <ul className="list-disc list-inside space-y-2">
+                  <li>Items are sold "as is" without warranty.</li>
+                  <li>Sales are generally final. However, we may accept returns voluntarily on a case-by-case basis. This does not imply a future right to return.</li>
+                  <li>Payment must be completed before item collection.</li>
+                  <li>Buyers are responsible for collecting items.</li>
                 </ul>
               </section>
 
               <section>
-                <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Charitable Purpose</h2>
-                <p className="text-gray-700">
-                  All proceeds from item sales are donated to Barncancerfonden. By participating 
-                  in our platform, you contribute to supporting children with cancer and their families.
+                <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Payments and Donations</h2>
+                <p>
+                  All payments are processed securely via approved providers. Proceeds, after minor operational costs, are donated to Barncancerfonden Mellansverige. Donations and purchases are generally non-refundable unless stated otherwise.
                 </p>
               </section>
 
               <section>
                 <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>User Conduct</h2>
-                <p className="text-gray-700">
-                  Users must not engage in fraudulent activities, misrepresent items, or use the 
-                  platform for commercial gain. We reserve the right to terminate access for 
-                  violations of these terms.
+                <p>
+                  Users must not engage in fraud, misrepresentation, or misuse of the platform. We reserve the right to restrict access for any violations.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Charitable Purpose</h2>
+                <p>
+                  By using this platform, you help fund the work of Barncancerfonden Mellansverige, which supports children with cancer and their families.
                 </p>
               </section>
             </CardContent>
