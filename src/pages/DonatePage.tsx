@@ -56,7 +56,7 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
     try {
       const donorUsername = username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Anonymous Donor';
       
-      for (const itemData of itemsData) {
+      for (const itemData of items) {
         const newItem: Item = {
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
           ...itemData as Item,
@@ -76,8 +76,8 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
       toast({
         title: "Success",
         description: userRole === 'admin' 
-          ? `${itemsData.length} item${itemsData.length > 1 ? 's' : ''} added successfully!`
-          : `Thank you for your donation! ${itemsData.length} item${itemsData.length > 1 ? 's have' : ' has'} been submitted for admin approval.`
+          ? `${items.length} item${items.length > 1 ? 's' : ''} added successfully!`
+          : `Thank you for your donation! ${items.length} item${items.length > 1 ? 's have' : ' has'} been submitted for admin approval.`
       });
     } catch (error) {
       console.error('Error saving donations:', error);

@@ -381,7 +381,7 @@ const Items = () => {
             <ItemForm
               item={selectedItem}
               userRole={userRole}
-              onSubmit={handleItemUpdate}
+              onSubmit={(items) => handleItemUpdate(items[0] as Item)}
               onCancel={() => setView('items')}
               username={username}
             />
