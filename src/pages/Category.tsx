@@ -215,7 +215,7 @@ const Category = () => {
 
   if (view === 'item-detail' && selectedItem) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 flex flex-col">
         <Header 
           userRole={userRole} 
           username={username}
@@ -224,7 +224,7 @@ const Category = () => {
           onHome={handleHome}
           isAuthenticated={isAuthenticated}
         />
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 flex-1">
           <ItemDetail
             item={selectedItem}
             userRole={userRole}
@@ -245,13 +245,15 @@ const Category = () => {
             onClose={() => setShowQRModal(false)}
           />
         )}
+        
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#1733a7' }}>
-      <div className="absolute inset-0 flex items-center justify-center z-0 opacity-30 pointer-events-none">
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#1733a7' }}>
+      <div className="absolute inset-0 flex items-center justify-center z-0 opacity-30 pointer-events-none pt-20">
         <img
           src="/lovable-uploads/logos/standard_logo.png"
           alt="Rackis for Barn Logo"
@@ -259,7 +261,7 @@ const Category = () => {
         />
       </div>
       
-      <div className="relative z-10">
+      <div className="relative z-10 flex-1">
         <Header 
           userRole={userRole} 
           username={username}
@@ -387,6 +389,8 @@ const Category = () => {
           )}
         </div>
       </div>
+      
+      <Footer />
     </div>
   );
 };
