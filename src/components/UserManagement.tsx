@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { UserPlus, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { storage } from "@/utils/storage";
 import { useToast } from "@/hooks/use-toast";
 import type { UserRole } from "@/types/item";
@@ -67,62 +67,38 @@ export const UserManagement = ({ userRole, onBack }: UserManagementProps) => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-600 mt-2">Manage registered users and their access</p>
-        </div>
-        <Button onClick={onBack} variant="outline">
-          Back to Items
-        </Button>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Registered Users ({users.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <p className="text-center py-4">Loading users...</p>
-          ) : users.length === 0 ? (
-            <p className="text-center py-4 text-gray-600">No registered users found</p>
-          ) : (
-            <div className="space-y-3">
-              {users.map((user) => (
-                <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium">{user.username}</p>
-                    <p className="text-sm text-gray-600">
-                      Registered: {new Date(user.registeredAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="default">
-                      {user.role}
-                    </Badge>
-                  </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Users className="h-5 w-5" />
+          Registered Users ({users.length})
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <p className="text-center py-4">Loading users...</p>
+        ) : users.length === 0 ? (
+          <p className="text-center py-4 text-gray-600">No registered users found</p>
+        ) : (
+          <div className="space-y-3">
+            {users.map((user) => (
+              <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div>
+                  <p className="font-medium">{user.username}</p>
+                  <p className="text-sm text-gray-600">
+                    Registered: {new Date(user.registeredAt).toLocaleDateString()}
+                  </p>
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="bg-yellow-50 border-yellow-200">
-        <CardHeader>
-          <CardTitle className="text-yellow-800">Authentication Notice</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-yellow-700">
-            User authentication is currently handled by localStorage. 
-            For production use, consider implementing a more secure authentication system.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="default">
+                    {user.role}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };

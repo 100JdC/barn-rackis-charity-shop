@@ -272,13 +272,13 @@ const Items = () => {
           <>
             <SearchAndFilters
               searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
+              setSearchTerm={setSearchTerm}
               categoryFilter={categoryFilter}
-              onCategoryChange={setCategoryFilter}
+              setCategoryFilter={setCategoryFilter}
               statusFilter={statusFilter}
-              onStatusChange={setStatusFilter}
+              setStatusFilter={setStatusFilter}
               conditionFilter={conditionFilter}
-              onConditionChange={setConditionFilter}
+              setConditionFilter={setConditionFilter}
               userRole={userRole}
             />
             
@@ -330,11 +330,11 @@ const Items = () => {
         )}
 
         {view === 'stats' && userRole === 'admin' && (
-          <StatsDashboard items={items} />
+          <StatsDashboard items={items} userRole={userRole} />
         )}
 
         {view === 'users' && userRole === 'admin' && (
-          <UserManagement />
+          <UserManagement userRole={userRole} onBack={() => setView('items')} />
         )}
 
         {view === 'item-detail' && selectedItem && (

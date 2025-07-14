@@ -1,90 +1,79 @@
 
 import { Button } from "@/components/ui/button";
 import { CardTitle } from "@/components/ui/card";
-import { Download, Plus, Clock, Users } from "lucide-react";
+import { Download, Plus, Clock, Users, BarChart3 } from "lucide-react";
 import type { UserRole } from "@/types/item";
 
 interface ItemsHeaderProps {
-  showCategories: boolean;
-  categoryFilter: string;
-  searchTerm: string;
-  isAuthenticated: boolean;
   userRole: UserRole;
-  pendingItemsCount: number;
-  onBackToCategories: () => void;
-  onLoginClick: () => void;
-  onAddItem: () => void;
-  onPendingDonations: () => void;
-  onExport: () => void;
-  onUserManagement: () => void;
+  view: 'items' | 'pending' | 'stats' | 'users' | 'item-detail' | 'edit-item';
+  onViewChange: (view: 'items' | 'pending' | 'stats' | 'users' | 'item-detail' | 'edit-item') => void;
+  onExportData: () => void;
 }
 
 export const ItemsHeader = ({
-  showCategories,
-  categoryFilter,
-  searchTerm,
-  isAuthenticated,
   userRole,
-  pendingItemsCount,
-  onBackToCategories,
-  onLoginClick,
-  onAddItem,
-  onPendingDonations,
-  onExport,
-  onUserManagement
+  view,
+  onViewChange,
+  onExportData
 }: ItemsHeaderProps) => {
   const getTitle = () => {
-    if (showCategories) return 'Browse Categories';
-    if (categoryFilter !== "all") {
-      const categoryName = categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1).replace('_', ' ');
-      return `${categoryName} Items`;
+    switch (view) {
+      case 'pending':
+        return 'Pending Donations';
+      case 'stats':
+        return 'Statistics Dashboard';
+      case 'users':
+        return 'User Management';
+      case 'item-detail':
+        return 'Item Details';
+      case 'edit-item':
+        return 'Edit Item';
+      default:
+        return 'All Items';
     }
-    if (searchTerm) return `Search Results for "${searchTerm}"`;
-    return 'All Items';
   };
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
       <div className="flex items-center gap-3">
-        {!showCategories && (
-          <Button 
-            onClick={onBackToCategories} 
-            variant="outline"
-            className="bg-white/80"
-          >
-            ← Back to Categories
-          </Button>
-        )}
-        <CardTitle className="text-white" style={{ color: '#1733a7' }}>
+        <CardTitle className="text-2xl font-bold text-gray-900">
           {getTitle()}
         </CardTitle>
       </div>
       <div className="flex flex-wrap gap-2">
-        {!isAuthenticated && (
-          <Button 
-            onClick={onLoginClick}
-            className="bg-green-600 hover:bg-green-700"
-          >
-            Login / Register
-          </Button>
-        )}
         {userRole === 'admin' && (
           <>
-            <Button onClick={onAddItem} className="bg-green-600 hover:bg-green-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Item
+            <Button 
+              onClick={() => onViewChange('items')} 
+              variant={view === 'items' ? 'default' : 'outline'}
+            >
+              Items
             </Button>
-            <Button onClick={onPendingDonations} variant="outline" className="bg-orange-50 border-orange-200">
+            <Button 
+              onClick={() => onViewChange('pending')} 
+              variant={view === 'pending' ? 'default' : 'outline'}
+            >
               <Clock className="h-4 w-4 mr-2" />
-              Pending ({pendingItemsCount})
+              Pending
             </Button>
-            <Button onClick={onExport} variant="outline">
-              <Download className="h-4 w-4 mr-2" />
-              Export
+            <Button 
+              onClick={() => onViewChange('stats')} 
+              variant={view === 'stats' ? 'default' : 'outline'}
+            >
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Stats
             </Button>
-            <Button onClick={onUserManagement} variant="outline">
+            <Button 
+              onClick={() => onViewChange('users')} 
+              variant={view === 'users' ? 'default' : 'outline'}
+            >
               <Users className="h-4 w-4 mr-2" />
               Users
+            </Button>
+            <Button onClick={onExportData} variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              Export
             </Button>
           </>
         )}

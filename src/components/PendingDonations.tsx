@@ -10,12 +10,10 @@ import { ItemDetail } from './ItemDetail';
 import type { Item, UserRole } from '@/types/item';
 
 interface PendingDonationsProps {
-  userRole: UserRole;
-  username?: string;
-  onBack: () => void;
+  onItemsUpdate: () => Promise<void>;
 }
 
-export const PendingDonations = ({ userRole, username, onBack }: PendingDonationsProps) => {
+export const PendingDonations = ({ onItemsUpdate }: PendingDonationsProps) => {
   const [pendingItems, setPendingItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
@@ -45,18 +43,21 @@ export const PendingDonations = ({ userRole, username, onBack }: PendingDonation
 
   const handleApprove = async (item: Item) => {
     try {
-      await storage.updateItem(item.id, {
-        status: 'available',
-        updated_by: username || 'Admin',
+      const updatedItem = {
+        ...item,
+        status: 'available' as const,
         updated_at: new Date().toISOString()
-      });
+      };
       
-      toast({
-        title: "Success",
-        description: `"${item.name}" has been approved and is now available.`
-      });
-      
-      loadPendingItems();
+      const success = await storage.updateItem(updatedItem);
+      if (success) {
+        toast({
+          title: "Success",
+          description: `"${item.name}" has been approved and is now available.`
+        });
+        await loadPendingItems();
+        await onItemsUpdate();
+      }
     } catch (error) {
       console.error('Error approving item:', error);
       toast({
@@ -70,14 +71,15 @@ export const PendingDonations = ({ userRole, username, onBack }: PendingDonation
   const handleReject = async (item: Item) => {
     if (window.confirm(`Are you sure you want to reject "${item.name}"? This action cannot be undone.`)) {
       try {
-        await storage.deleteItem(item.id);
-        
-        toast({
-          title: "Success",
-          description: `"${item.name}" has been rejected and removed.`
-        });
-        
-        loadPendingItems();
+        const success = await storage.deleteItem(item.id);
+        if (success) {
+          toast({
+            title: "Success",
+            description: `"${item.name}" has been rejected and removed.`
+          });
+          await loadPendingItems();
+          await onItemsUpdate();
+        }
       } catch (error) {
         console.error('Error rejecting item:', error);
         toast({
@@ -94,22 +96,6 @@ export const PendingDonations = ({ userRole, username, onBack }: PendingDonation
     setShowDetail(true);
   };
 
-  if (userRole !== 'admin') {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardContent className="py-12 text-center">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Access Denied</h3>
-            <p className="text-gray-600">Only administrators can access pending donations.</p>
-            <Button onClick={onBack} className="mt-4">
-              Go Back
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   if (showDetail && selectedItem) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -121,7 +107,7 @@ export const PendingDonations = ({ userRole, username, onBack }: PendingDonation
           </div>
           <ItemDetail
             item={selectedItem}
-            userRole={userRole}
+            userRole="admin"
             onEdit={() => {}}
             onDelete={() => {}}
             onShowQRCode={() => {}}
@@ -148,79 +134,71 @@ export const PendingDonations = ({ userRole, username, onBack }: PendingDonation
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <Button onClick={onBack} variant="outline">
-          ← Back
-        </Button>
-      </div>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            Pending Donations
-            <Badge variant="secondary">{pendingItems.length}</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p>Loading pending donations...</p>
-            </div>
-          ) : pendingItems.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500">No pending donations to review.</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {pendingItems.map((item) => (
-                <div key={item.id} className="border rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 className="font-semibold text-lg">{item.name}</h3>
-                      <p className="text-gray-600">{item.description}</p>
-                      <p className="text-sm text-gray-500">
-                        Donated by: {item.donor_name} • {new Date(item.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <Badge variant="outline" className="bg-orange-50 text-orange-600">
-                      Pending
-                    </Badge>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          Pending Donations
+          <Badge variant="secondary">{pendingItems.length}</Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p>Loading pending donations...</p>
+          </div>
+        ) : pendingItems.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No pending donations to review.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {pendingItems.map((item) => (
+              <div key={item.id} className="border rounded-lg p-4">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="font-semibold text-lg">{item.name}</h3>
+                    <p className="text-gray-600">{item.description}</p>
+                    <p className="text-sm text-gray-500">
+                      Donated by: {item.donor_name} • {new Date(item.created_at).toLocaleDateString()}
+                    </p>
                   </div>
-                  
-                  <div className="flex gap-2 mt-4">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleViewDetail(item)}
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      View Details
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => handleApprove(item)}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      <Check className="h-4 w-4 mr-2" />
-                      Approve
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleReject(item)}
-                    >
-                      <X className="h-4 w-4 mr-2" />
-                      Reject
-                    </Button>
-                  </div>
+                  <Badge variant="outline" className="bg-orange-50 text-orange-600">
+                    Pending
+                  </Badge>
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                
+                <div className="flex gap-2 mt-4">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleViewDetail(item)}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Details
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => handleApprove(item)}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <Check className="h-4 w-4 mr-2" />
+                    Approve
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => handleReject(item)}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Reject
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };

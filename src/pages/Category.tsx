@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { ItemCard } from "@/components/ItemCard";
 import { ItemDetail } from "@/components/ItemDetail";
 import { QRCodeModal } from "@/components/QRCodeModal";
+import { Footer } from "@/components/Footer";
 import { storage } from "@/utils/storage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
