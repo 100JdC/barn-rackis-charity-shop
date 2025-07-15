@@ -193,7 +193,7 @@ export default function Index() {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#001faa' }}>
       {/* Background with bear holding sign */}
-      <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none pt-24">
+      <div className="absolute inset-0 flex items-center justify-center z-0 pt-24">
         <div className="relative">
           <img
             src="/lovable-uploads/08412347-e9d0-402d-a43c-8c3d1d381714.png"
