@@ -214,7 +214,6 @@ export default function Items() {
       <ItemDetail
         item={selectedItem}
         userRole={userRole}
-        username={username}
         onBack={() => setSelectedItem(null)}
         onEdit={userRole === 'admin' ? () => handleItemEdit(selectedItem) : undefined}
         onDelete={userRole === 'admin' ? () => handleItemDelete(selectedItem.id) : undefined}
