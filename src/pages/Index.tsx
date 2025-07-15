@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { LoginForm } from "@/components/LoginForm";
@@ -160,13 +159,13 @@ export default function Index() {
 
   const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchTerm.trim()) {
-      navigate(`/items?search=${encodeURIComponent(searchTerm)}`);
+      navigate(`/items?search=${encodeURIComponent(searchTerm.trim())}`);
     }
   };
 
   const handleSearchClick = () => {
     if (searchTerm.trim()) {
-      navigate(`/items?search=${encodeURIComponent(searchTerm)}`);
+      navigate(`/items?search=${encodeURIComponent(searchTerm.trim())}`);
     }
   };
 

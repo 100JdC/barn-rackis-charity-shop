@@ -9,7 +9,10 @@ import { Footer } from "@/components/Footer";
 import { storage } from "@/utils/storage";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import type { Item, UserRole } from "@/types/item";
+
+const ITEMS_PER_PAGE = 20;
 
 export default function Items() {
   const navigate = useNavigate();
@@ -18,6 +21,8 @@ export default function Items() {
   const [username, setUsername] = useState<string>('');
   const [items, setItems] = useState<Item[]>([]);
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
+  const [displayedItems, setDisplayedItems] = useState<Item[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -96,6 +101,10 @@ export default function Items() {
     applyFilters();
   }, [items, searchTerm, categoryFilter, statusFilter, conditionFilter]);
 
+  useEffect(() => {
+    updateDisplayedItems();
+  }, [filteredItems, currentPage]);
+
   const loadItems = async () => {
     try {
       const loadedItems = await storage.getItems();
@@ -134,6 +143,17 @@ export default function Items() {
     }
 
     setFilteredItems(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  const updateDisplayedItems = () => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setDisplayedItems(filteredItems.slice(startIndex, endIndex));
+  };
+
+  const handleLoadMore = () => {
+    setCurrentPage(prev => prev + 1);
   };
 
   const handleCategorySelect = (category: string) => {
@@ -210,6 +230,9 @@ export default function Items() {
     console.log('Show QR code for item:', item);
   };
 
+  const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+  const hasMore = currentPage < totalPages;
+
   if (selectedItem) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
@@ -246,6 +269,41 @@ export default function Items() {
     );
   }
 
+  const renderItemGrid = (items: Item[], title: string) => (
+    <div>
+      <h2 className="text-2xl font-bold text-gray-900 mb-4">{title}</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {items.map((item) => (
+          <ItemCard
+            key={item.id}
+            item={item}
+            userRole={userRole}
+            onView={() => setSelectedItem(item)}
+            onEdit={() => handleItemEdit(item)}
+            onDelete={() => handleItemDelete(item.id)}
+            onShowQRCode={() => handleShowQRCode(item)}
+          />
+        ))}
+      </div>
+      {hasMore && (
+        <div className="text-center mt-8">
+          <Button 
+            onClick={handleLoadMore}
+            variant="outline"
+            className="px-8 py-2"
+          >
+            Load More ({filteredItems.length - displayedItems.length} remaining)
+          </Button>
+        </div>
+      )}
+      {displayedItems.length === 0 && (
+        <p className="text-gray-500 text-center py-8">
+          No items found matching your search criteria.
+        </p>
+      )}
+    </div>
+  );
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header 
@@ -281,26 +339,9 @@ export default function Items() {
           {/* Show search results first if there's a search term */}
           {searchTerm && (
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Search Results for "{searchTerm}" ({filteredItems.length} items found)
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredItems.map((item) => (
-                  <ItemCard
-                    key={item.id}
-                    item={item}
-                    userRole={userRole}
-                    onView={() => setSelectedItem(item)}
-                    onEdit={() => handleItemEdit(item)}
-                    onDelete={() => handleItemDelete(item.id)}
-                    onShowQRCode={() => handleShowQRCode(item)}
-                  />
-                ))}
-              </div>
-              {filteredItems.length === 0 && (
-                <p className="text-gray-500 text-center py-8">
-                  No items found matching your search criteria.
-                </p>
+              {renderItemGrid(
+                displayedItems, 
+                `Search Results for "${searchTerm}" (${filteredItems.length} items found)`
               )}
             </div>
           )}
@@ -319,42 +360,17 @@ export default function Items() {
           {/* Show all items if no search term and no category filter */}
           {!searchTerm && categoryFilter === 'all' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">All Items</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredItems.map((item) => (
-                  <ItemCard
-                    key={item.id}
-                    item={item}
-                    userRole={userRole}
-                    onView={() => setSelectedItem(item)}
-                    onEdit={() => handleItemEdit(item)}
-                    onDelete={() => handleItemDelete(item.id)}
-                    onShowQRCode={() => handleShowQRCode(item)}
-                  />
-                ))}
-              </div>
+              {renderItemGrid(displayedItems, "All Items")}
             </div>
           )}
 
           {/* Show category-specific items */}
           {!searchTerm && categoryFilter !== 'all' && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                {categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1)} Items
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredItems.map((item) => (
-                  <ItemCard
-                    key={item.id}
-                    item={item}
-                    userRole={userRole}
-                    onView={() => setSelectedItem(item)}
-                    onEdit={() => handleItemEdit(item)}
-                    onDelete={() => handleItemDelete(item.id)}
-                    onShowQRCode={() => handleShowQRCode(item)}
-                  />
-                ))}
-              </div>
+              {renderItemGrid(
+                displayedItems, 
+                `${categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1)} Items`
+              )}
             </div>
           )}
         </div>
