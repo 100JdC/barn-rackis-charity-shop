@@ -192,20 +192,20 @@ export default function Index() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#1733a7' }}>
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#001faa' }}>
       {/* Background with bear holding sign */}
       <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none pt-24">
         <div className="relative">
           <img
-            src="/lovable-uploads/0e49fcec-72a9-4258-994e-830bc8fe5cb5.png"
+            src="/lovable-uploads/00020511-d4e0-4ec2-ae6d-19c573046adf.png"
             alt="Rackis for Barn Logo"
             className="w-[600px] h-auto object-contain opacity-90"
           />
           
-          {/* Search bar positioned in the bear's sign */}
-          <div className="absolute top-[45%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[65%] pointer-events-auto">
+          {/* Search bar positioned perfectly in the bear's sign */}
+          <div className="absolute top-[52%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[55%] pointer-events-auto">
             <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-none">
-              <CardContent className="p-4">
+              <CardContent className="p-3">
                 <div className="flex gap-2">
                   <Input
                     type="text"
@@ -213,9 +213,9 @@ export default function Index() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyPress={handleSearchKeyPress}
-                    className="flex-1 border-gray-300 text-gray-800 placeholder-gray-500"
+                    className="flex-1 border-gray-300 text-gray-800 placeholder-gray-500 text-sm"
                   />
-                  <Button onClick={handleSearchClick} size="icon" className="bg-blue-600 hover:bg-blue-700">
+                  <Button onClick={handleSearchClick} size="sm" className="bg-blue-600 hover:bg-blue-700 px-3">
                     <Search className="h-4 w-4 text-white" />
                   </Button>
                 </div>

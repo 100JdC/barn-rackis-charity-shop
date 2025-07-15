@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Header } from "@/components/Header";
@@ -217,7 +216,7 @@ export default function Items() {
         userRole={userRole}
         username={username}
         onBack={() => setSelectedItem(null)}
-        onEdit={userRole === 'admin' ? handleItemEdit : undefined}
+        onEdit={userRole === 'admin' ? () => handleItemEdit(selectedItem) : undefined}
         onDelete={userRole === 'admin' ? () => handleItemDelete(selectedItem.id) : undefined}
         onLogout={handleLogout}
         isAuthenticated={isAuthenticated}
