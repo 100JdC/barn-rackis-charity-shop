@@ -198,7 +198,7 @@ export default function Index() {
           <img
             src="/lovable-uploads/08412347-e9d0-402d-a43c-8c3d1d381714.png"
             alt="Rackis for Barn Logo"
-            className="w-[600px] h-auto object-contain opacity-90"
+            className="w-[600px] h-auto object-contain opacity-90 pointer-events-none"
           />
           
           {/* Search bar positioned perfectly in the bear's sign */}
