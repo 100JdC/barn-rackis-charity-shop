@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { LoginForm } from "@/components/LoginForm";
@@ -5,9 +6,8 @@ import { DonatePage } from "@/pages/DonatePage";
 import { Header } from "@/components/Header";
 import { CategoryBrowser } from "@/components/CategoryBrowser";
 import { Footer } from "@/components/Footer";
-import { BackgroundLogo } from "@/components/BackgroundLogo";
 import { storage } from "@/utils/storage";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -193,7 +193,37 @@ export default function Index() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#1733a7' }}>
-      <BackgroundLogo />
+      {/* Background with bear holding sign */}
+      <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none pt-24">
+        <div className="relative">
+          <img
+            src="/lovable-uploads/0e49fcec-72a9-4258-994e-830bc8fe5cb5.png"
+            alt="Rackis for Barn Logo"
+            className="w-[600px] h-auto object-contain opacity-90"
+          />
+          
+          {/* Search bar positioned in the bear's sign */}
+          <div className="absolute top-[45%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[65%] pointer-events-auto">
+            <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-none">
+              <CardContent className="p-4">
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    placeholder="Search for items..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyPress={handleSearchKeyPress}
+                    className="flex-1 border-gray-300 text-gray-800 placeholder-gray-500"
+                  />
+                  <Button onClick={handleSearchClick} size="icon" className="bg-blue-600 hover:bg-blue-700">
+                    <Search className="h-4 w-4 text-white" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
       
       <div className="relative z-10 flex-1">
         <Header 
@@ -212,23 +242,8 @@ export default function Index() {
               Find quality second-hand items for your student life in Uppsala
             </p>
             
-            <Card className="bg-white/90 backdrop-blur-sm max-w-md mx-auto mb-8">
-              <CardContent className="p-6">
-                <div className="flex gap-2">
-                  <Input
-                    type="text"
-                    placeholder="Search for items..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyPress={handleSearchKeyPress}
-                    className="flex-1"
-                  />
-                  <Button onClick={handleSearchClick} size="icon">
-                    <Search className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Spacer to account for the search bar in the bear's sign */}
+            <div className="h-32 mb-8"></div>
 
             {!isAuthenticated && userRole === 'buyer' && (
               <div className="w-full max-w-4xl mx-auto text-white space-y-6 mb-8">
