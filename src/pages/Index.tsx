@@ -202,7 +202,10 @@ export default function Index() {
           />
           
           {/* Search bar positioned perfectly in the bear's sign */}
-          <div className="absolute top-[47%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[52%] pointer-events-auto z-20">
+          <div 
+            className="absolute top-[47%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[52%] pointer-events-auto z-50"
+            onClick={() => console.log('Search container clicked')}
+          >
             <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-none">
               <CardContent className="p-2">
                 <div className="flex gap-2">
@@ -212,9 +215,18 @@ export default function Index() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyPress={handleSearchKeyPress}
+                    onClick={() => console.log('Input clicked')}
+                    onFocus={() => console.log('Input focused')}
                     className="flex-1 border-gray-300 text-gray-800 placeholder-gray-500 text-sm h-8"
                   />
-                  <Button onClick={handleSearchClick} size="sm" className="bg-blue-600 hover:bg-blue-700 px-3 h-8">
+                  <Button 
+                    onClick={() => {
+                      console.log('Search button clicked');
+                      handleSearchClick();
+                    }} 
+                    size="sm" 
+                    className="bg-blue-600 hover:bg-blue-700 px-3 h-8"
+                  >
                     <Search className="h-4 w-4 text-white" />
                   </Button>
                 </div>
