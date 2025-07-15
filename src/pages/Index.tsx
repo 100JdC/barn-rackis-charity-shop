@@ -5,6 +5,7 @@ import { DonatePage } from "@/pages/DonatePage";
 import { Header } from "@/components/Header";
 import { CategoryBrowser } from "@/components/CategoryBrowser";
 import { Footer } from "@/components/Footer";
+import { BackgroundLogo } from "@/components/BackgroundLogo";
 import { storage } from "@/utils/storage";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -192,13 +193,7 @@ export default function Index() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#1733a7' }}>
-      <div className="absolute inset-0 flex items-center justify-center z-0 opacity-30 pointer-events-none pt-32">
-        <img
-          src="/lovable-uploads/66828e04-ca12-4680-80e2-f4704d6832eb.png"
-          alt="Rackis for Barn Logo"
-          className="w-[600px] h-auto object-contain"
-        />
-      </div>
+      <BackgroundLogo />
       
       <div className="relative z-10 flex-1">
         <Header 
