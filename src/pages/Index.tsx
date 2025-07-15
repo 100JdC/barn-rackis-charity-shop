@@ -192,7 +192,7 @@ export default function Index() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#001faa' }}>
-      {/* Background bear image */}
+      {/* Background bear image with search bar */}
       <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none pt-24">
         <div className="relative">
           <img
@@ -200,41 +200,41 @@ export default function Index() {
             alt="Rackis for Barn Logo"
             className="w-[600px] h-auto object-contain opacity-90 pointer-events-none"
           />
+          
+          {/* Search bar positioned perfectly in the bear's sign */}
+          <div 
+            className="absolute top-[47%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[52%] pointer-events-auto"
+            style={{ zIndex: 1000 }}
+            onClick={() => console.log('Search container clicked')}
+          >
+            <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-none">
+              <CardContent className="p-2">
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    placeholder="Search for items..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyPress={handleSearchKeyPress}
+                    onClick={() => console.log('Input clicked')}
+                    onFocus={() => console.log('Input focused')}
+                    className="flex-1 border-gray-300 text-gray-800 placeholder-gray-500 text-sm h-8"
+                  />
+                  <Button 
+                    onClick={() => {
+                      console.log('Search button clicked');
+                      handleSearchClick();
+                    }} 
+                    size="sm" 
+                    className="bg-blue-600 hover:bg-blue-700 px-3 h-8"
+                  >
+                    <Search className="h-4 w-4 text-white" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
-      
-      {/* Search bar positioned perfectly in the bear's sign */}
-      <div 
-        className="absolute top-[47%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[52%] z-50 pointer-events-auto"
-        style={{ top: 'calc(50% - 12px)' }}
-        onClick={() => console.log('Search container clicked')}
-      >
-        <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-none">
-          <CardContent className="p-2">
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                placeholder="Search for items..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyPress={handleSearchKeyPress}
-                onClick={() => console.log('Input clicked')}
-                onFocus={() => console.log('Input focused')}
-                className="flex-1 border-gray-300 text-gray-800 placeholder-gray-500 text-sm h-8"
-              />
-              <Button 
-                onClick={() => {
-                  console.log('Search button clicked');
-                  handleSearchClick();
-                }} 
-                size="sm" 
-                className="bg-blue-600 hover:bg-blue-700 px-3 h-8"
-              >
-                <Search className="h-4 w-4 text-white" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
       </div>
       
       <div className="relative z-10 flex-1">
