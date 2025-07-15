@@ -185,6 +185,7 @@ export default function Items() {
       setItems(newItems);
       setFilteredItems(newItems);
       await storage.deleteItem(itemId);
+      setSelectedItem(null); // Close detail view after deletion
       toast({
         title: "Item Deleted",
         description: "The item has been successfully deleted."
@@ -211,15 +212,37 @@ export default function Items() {
 
   if (selectedItem) {
     return (
-      <ItemDetail
-        item={selectedItem}
-        userRole={userRole}
-        onBack={() => setSelectedItem(null)}
-        onEdit={userRole === 'admin' ? () => handleItemEdit(selectedItem) : undefined}
-        onDelete={userRole === 'admin' ? () => handleItemDelete(selectedItem.id) : undefined}
-        onLogout={handleLogout}
-        isAuthenticated={isAuthenticated}
-      />
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <Header 
+          userRole={userRole} 
+          username={username}
+          onLogout={(isAuthenticated || userRole === 'admin') ? handleLogout : undefined}
+          onDonate={() => navigate('/donate')}
+          onHome={() => navigate('/')}
+          isAuthenticated={isAuthenticated}
+        />
+        
+        <div className="flex-1 container mx-auto px-4 py-8">
+          <div className="mb-4">
+            <button
+              onClick={() => setSelectedItem(null)}
+              className="text-blue-600 hover:text-blue-800 mb-4"
+            >
+              ← Back to Items
+            </button>
+          </div>
+          
+          <ItemDetail
+            item={selectedItem}
+            userRole={userRole}
+            onEdit={() => handleItemEdit(selectedItem)}
+            onDelete={() => handleItemDelete(selectedItem.id)}
+            onShowQRCode={() => handleShowQRCode(selectedItem)}
+          />
+        </div>
+        
+        <Footer />
+      </div>
     );
   }
 
