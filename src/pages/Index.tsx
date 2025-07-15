@@ -202,7 +202,7 @@ export default function Index() {
           />
           
           {/* Search bar positioned perfectly in the bear's sign */}
-          <div className="absolute top-[47%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[52%] pointer-events-auto">
+          <div className="absolute top-[47%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[52%] pointer-events-auto z-20">
             <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-none">
               <CardContent className="p-2">
                 <div className="flex gap-2">
