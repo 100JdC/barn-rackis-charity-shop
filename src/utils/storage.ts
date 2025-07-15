@@ -110,6 +110,12 @@ export const storage = {
     }
   },
 
+  async saveItems(items: Item[]): Promise<void> {
+    // This method is used for backward compatibility
+    // In the new implementation, we save items individually through addItem/updateItem
+    console.log('saveItems called with', items.length, 'items');
+  },
+
   async addItem(item: Item): Promise<void> {
     try {
       const { error } = await supabase

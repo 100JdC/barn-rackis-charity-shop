@@ -1,9 +1,9 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { ItemCard } from "@/components/ItemCard";
 import { ItemDetail } from "@/components/ItemDetail";
-import { ItemsHeader } from "@/components/ItemsHeader";
 import { SearchAndFilters } from "@/components/SearchAndFilters";
 import { CategoryBrowser } from "@/components/CategoryBrowser";
 import { Footer } from "@/components/Footer";
@@ -165,7 +165,7 @@ export default function Items() {
       );
       setItems(updatedItems);
       setFilteredItems(updatedItems);
-      await storage.saveItems(updatedItems);
+      await storage.updateItem(itemData.id, itemData);
       toast({
         title: "Item Updated",
         description: "The item has been successfully updated."
@@ -180,12 +180,12 @@ export default function Items() {
     }
   };
 
-  const handleItemDelete = async (itemId: number) => {
+  const handleItemDelete = async (itemId: string) => {
     try {
       const newItems = items.filter(item => item.id !== itemId);
       setItems(newItems);
       setFilteredItems(newItems);
-      await storage.saveItems(newItems);
+      await storage.deleteItem(itemId);
       toast({
         title: "Item Deleted",
         description: "The item has been successfully deleted."
@@ -200,6 +200,16 @@ export default function Items() {
     }
   };
 
+  const handleItemEdit = (item: Item) => {
+    // Navigate to edit page or open edit modal
+    console.log('Edit item:', item);
+  };
+
+  const handleShowQRCode = (item: Item) => {
+    // Show QR code modal
+    console.log('Show QR code for item:', item);
+  };
+
   if (selectedItem) {
     return (
       <ItemDetail
@@ -207,8 +217,8 @@ export default function Items() {
         userRole={userRole}
         username={username}
         onBack={() => setSelectedItem(null)}
-        onEdit={userRole === 'admin' ? (item) => console.log('Edit item:', item) : undefined}
-        onDelete={userRole === 'admin' ? handleItemDelete : undefined}
+        onEdit={userRole === 'admin' ? handleItemEdit : undefined}
+        onDelete={userRole === 'admin' ? () => handleItemDelete(selectedItem.id) : undefined}
         onLogout={handleLogout}
         isAuthenticated={isAuthenticated}
       />
@@ -228,7 +238,10 @@ export default function Items() {
       
       <div className="flex-1">
         <div className="container mx-auto px-4 py-8">
-          <ItemsHeader />
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Items</h1>
+            <p className="text-gray-600">Browse available items</p>
+          </div>
           
           <div className="mb-8">
             <SearchAndFilters
@@ -255,8 +268,11 @@ export default function Items() {
                   <ItemCard
                     key={item.id}
                     item={item}
-                    onClick={() => setSelectedItem(item)}
                     userRole={userRole}
+                    onView={() => setSelectedItem(item)}
+                    onEdit={() => handleItemEdit(item)}
+                    onDelete={() => handleItemDelete(item.id)}
+                    onShowQRCode={() => handleShowQRCode(item)}
                   />
                 ))}
               </div>
@@ -288,8 +304,11 @@ export default function Items() {
                   <ItemCard
                     key={item.id}
                     item={item}
-                    onClick={() => setSelectedItem(item)}
                     userRole={userRole}
+                    onView={() => setSelectedItem(item)}
+                    onEdit={() => handleItemEdit(item)}
+                    onDelete={() => handleItemDelete(item.id)}
+                    onShowQRCode={() => handleShowQRCode(item)}
                   />
                 ))}
               </div>
@@ -307,8 +326,11 @@ export default function Items() {
                   <ItemCard
                     key={item.id}
                     item={item}
-                    onClick={() => setSelectedItem(item)}
                     userRole={userRole}
+                    onView={() => setSelectedItem(item)}
+                    onEdit={() => handleItemEdit(item)}
+                    onDelete={() => handleItemDelete(item.id)}
+                    onShowQRCode={() => handleShowQRCode(item)}
                   />
                 ))}
               </div>
