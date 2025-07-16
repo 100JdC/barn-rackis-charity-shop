@@ -212,7 +212,7 @@ export default function Index() {
 
           {/* Centered bear image with search bar */}
           <div className="flex flex-col items-center justify-center mb-4">
-            <div className="relative">
+            <div className="relative mt-0 mb-4">
               <img
                 src="/lovable-uploads/50d0870c-a6a5-46a2-99ad-d9bbf533e576.png"
                 alt="Rackis for Barn Logo"
@@ -220,15 +220,15 @@ export default function Index() {
               />
               
               {/* Search bar positioned in the bear's sign */}
-              <div className="absolute top-[40%] left-[47%] transform -translate-x-1/2 -translate-y-1/2 w-[48%] z-50 pointer-events-auto">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#f7f8f1' }}>
+              <div className="absolute top-[67%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 w-[90%] z-50 pointer-events-auto">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ backgroundColor: '' }}>
                   <Input
                     type="text"
                     placeholder="Search for items..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyPress={handleSearchKeyPress}
-                    className="flex-1 border-0 bg-transparent text-gray-800 placeholder-gray-500 text-sm h-6 p-0 focus:ring-0 focus:outline-none"
+                    className="flex-1 border-0 bg-transparent text-gray-800 placeholder-gray-500 text-sm h-7 p-0 focus:ring-0 focus:outline-none"
                   />
                   <Button 
                     onClick={handleSearchClick}
