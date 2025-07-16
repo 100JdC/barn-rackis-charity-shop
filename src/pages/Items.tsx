@@ -224,10 +224,6 @@ export default function Items() {
     console.log('Edit item:', item);
   };
 
-  const handleShowQRCode = (item: Item) => {
-    // Show QR code modal
-    console.log('Show QR code for item:', item);
-  };
 
   const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
   const hasMore = currentPage < totalPages;
@@ -259,7 +255,7 @@ export default function Items() {
             userRole={userRole}
             onEdit={() => handleItemEdit(selectedItem)}
             onDelete={() => handleItemDelete(selectedItem.id)}
-            onShowQRCode={() => handleShowQRCode(selectedItem)}
+            
           />
         </div>
         
@@ -280,7 +276,7 @@ export default function Items() {
             onView={() => setSelectedItem(item)}
             onEdit={() => handleItemEdit(item)}
             onDelete={() => handleItemDelete(item.id)}
-            onShowQRCode={() => handleShowQRCode(item)}
+            
           />
         ))}
       </div>

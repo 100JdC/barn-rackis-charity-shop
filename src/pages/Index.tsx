@@ -210,93 +210,84 @@ export default function Index() {
             </p>
           </div>
 
-          {/* Two-column layout: Image + Search on left, Text on right */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            {/* Left column: Bear image with search bar */}
-            <div className="flex flex-col items-center justify-center">
-              <div className="relative">
-                <img
-                  src="/lovable-uploads/08412347-e9d0-402d-a43c-8c3d1d381714.png"
-                  alt="Rackis for Barn Logo"
-                  className="w-full max-w-[500px] h-auto object-contain opacity-90"
-                />
-                
-                {/* Search bar positioned in the bear's sign */}
-                <div className="absolute top-[47%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[52%]">
-                  <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-lg">
-                    <CardContent className="p-2">
-                      <div className="flex gap-2">
-                        <Input
-                          type="text"
-                          placeholder="Search for items..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          onKeyPress={handleSearchKeyPress}
-                          className="flex-1 border-gray-300 text-gray-800 placeholder-gray-500 text-sm h-8"
-                        />
-                        <Button 
-                          onClick={handleSearchClick}
-                          size="sm" 
-                          className="bg-blue-600 hover:bg-blue-700 px-3 h-8"
-                        >
-                          <Search className="h-4 w-4 text-white" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+          {/* Centered bear image with search bar */}
+          <div className="flex flex-col items-center justify-center mb-8">
+            <div className="relative">
+              <img
+                src="/lovable-uploads/08412347-e9d0-402d-a43c-8c3d1d381714.png"
+                alt="Rackis for Barn Logo"
+                className="w-full max-w-[500px] h-auto object-contain opacity-90"
+              />
+              
+              {/* Search bar positioned in the bear's sign */}
+              <div className="absolute top-[47%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[52%] z-50 pointer-events-auto">
+                <div className="flex items-center gap-2 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2">
+                  <Input
+                    type="text"
+                    placeholder="Search for items..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyPress={handleSearchKeyPress}
+                    className="flex-1 border-0 bg-transparent text-gray-800 placeholder-gray-500 text-sm h-6 p-0 focus:ring-0 focus:outline-none"
+                  />
+                  <Button 
+                    onClick={handleSearchClick}
+                    size="sm" 
+                    className="bg-transparent hover:bg-transparent p-0 h-6"
+                  >
+                    <Search className="h-4 w-4 text-gray-600" />
+                  </Button>
                 </div>
               </div>
             </div>
-
-            {/* Right column: Text content */}
-            <div className="flex flex-col justify-center">
-              {!isAuthenticated && userRole === 'buyer' && (
-                <div className="text-white space-y-6">
-                  <div className="text-lg text-white/90 space-y-3 leading-relaxed">
-                    <p>A platform for students in Uppsala to exchange second-hand items during move-ins and move-outs.</p>
-                    <p>We collect useful items from outgoing students and sell them at fair prices to new tenants.</p>
-                    <p>All profits go to Barncancerfonden, supporting children with cancer and their families.</p>
-                    <p>It's simple: buy and donate things you only need in Uppsala (duvets, curtains, bikes and much more) — sustainably and for a good cause.</p>
-                    <p className="font-semibold text-white">🌍 Good for students. Good for the planet.</p>
-                  </div>
-                  <div className="text-center mt-6">
-                    <Button
-                      variant="link"
-                      onClick={() => window.open('/about', '_blank')}
-                      className="text-white/90 hover:text-white text-lg underline"
-                    >
-                      👉 Find out more about the concept, who we are, and how you can contribute.
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Button
-                      onClick={handleBrowseItems}
-                      className="w-full bg-white/20 hover:bg-white/30 text-white h-12 text-lg border-white/30"
-                      variant="outline"
-                    >
-                      Browse our items
-                    </Button>
-                    <Button
-                      onClick={() => navigate('/register')}
-                      className="w-full bg-white/20 hover:bg-white/30 text-white h-12 text-lg border-white/30"
-                      variant="outline"
-                    >
-                      Register to donate
-                    </Button>
-                  </div>
-                  <div className="text-center">
-                    <Button
-                      onClick={() => navigate('/login')}
-                      className="text-white/80 hover:text-white text-lg underline"
-                      variant="link"
-                    >
-                      Already have an account? Login here
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
+
+          {/* Text content below the bear */}
+          {!isAuthenticated && userRole === 'buyer' && (
+            <div className="text-white space-y-6 text-center max-w-4xl mx-auto">
+              <div className="text-lg text-white/90 space-y-3 leading-relaxed">
+                <p>A platform for students in Uppsala to exchange second-hand items during move-ins and move-outs.</p>
+                <p>We collect useful items from outgoing students and sell them at fair prices to new tenants.</p>
+                <p>All profits go to Barncancerfonden, supporting children with cancer and their families.</p>
+                <p>It's simple: buy and donate things you only need in Uppsala (duvets, curtains, bikes and much more) — sustainably and for a good cause.</p>
+                <p className="font-semibold text-white">🌍 Good for students. Good for the planet.</p>
+              </div>
+              <div className="text-center mt-6">
+                <Button
+                  variant="link"
+                  onClick={() => window.open('/about', '_blank')}
+                  className="text-white/90 hover:text-white text-lg underline"
+                >
+                  👉 Find out more about the concept, who we are, and how you can contribute.
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md mx-auto">
+                <Button
+                  onClick={handleBrowseItems}
+                  className="w-full bg-white/20 hover:bg-white/30 text-white h-12 text-lg border-white/30"
+                  variant="outline"
+                >
+                  Browse our items
+                </Button>
+                <Button
+                  onClick={() => navigate('/register')}
+                  className="w-full bg-white/20 hover:bg-white/30 text-white h-12 text-lg border-white/30"
+                  variant="outline"
+                >
+                  Register to donate
+                </Button>
+              </div>
+              <div className="text-center">
+                <Button
+                  onClick={() => navigate('/login')}
+                  className="text-white/80 hover:text-white text-lg underline"
+                  variant="link"
+                >
+                  Already have an account? Login here
+                </Button>
+              </div>
+            </div>
+          )}
 
           <CategoryBrowser 
             items={items} 

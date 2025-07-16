@@ -1,4 +1,4 @@
-import { Eye, Edit, Trash2, QrCode, MapPin, Image, ShoppingCart } from "lucide-react";
+import { Eye, Edit, Trash2, MapPin, Image, ShoppingCart } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ interface ItemCardProps {
   onView: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onShowQRCode: () => void;
+  
 }
 
 // Photo mapping for bedding and bathroom subcategories - same as in ItemForm
@@ -29,7 +29,7 @@ const SUBCATEGORY_PHOTOS: Record<string, string[]> = {
   'towel': ['/lovable-uploads/116e0341-a0a5-41c2-9bbd-015bb33ce398.png']
 };
 
-export const ItemCard = ({ item, userRole, onView, onEdit, onDelete, onShowQRCode }: ItemCardProps) => {
+export const ItemCard = ({ item, userRole, onView, onEdit, onDelete }: ItemCardProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'available': return 'bg-green-100 text-green-800';
@@ -190,10 +190,6 @@ export const ItemCard = ({ item, userRole, onView, onEdit, onDelete, onShowQRCod
         <Button variant="outline" size="sm" onClick={onView} className="flex-1">
           <Eye className="h-3 w-3 mr-1" />
           View
-        </Button>
-        
-        <Button variant="outline" size="sm" onClick={onShowQRCode}>
-          <QrCode className="h-3 w-3" />
         </Button>
         
         {userRole === 'admin' && (

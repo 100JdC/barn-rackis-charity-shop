@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { ItemCard } from "@/components/ItemCard";
 import { ItemDetail } from "@/components/ItemDetail";
-import { QRCodeModal } from "@/components/QRCodeModal";
+
 import { Footer } from "@/components/Footer";
 import { storage } from "@/utils/storage";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,7 @@ const Category = () => {
   const [conditionFilter, setConditionFilter] = useState("all");
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [view, setView] = useState<'items' | 'item-detail'>('items');
-  const [showQRModal, setShowQRModal] = useState(false);
+  
   const { toast } = useToast();
 
   // Set up authentication state management
@@ -231,7 +231,7 @@ const Category = () => {
             userRole={userRole}
             onEdit={() => navigate('/items')}
             onDelete={() => handleItemDelete(selectedItem)}
-            onShowQRCode={() => setShowQRModal(true)}
+            
           />
           <div className="mt-6">
             <Button onClick={() => setView('items')} variant="outline">
@@ -240,12 +240,6 @@ const Category = () => {
           </div>
         </div>
         
-        {selectedItem && showQRModal && (
-          <QRCodeModal
-            item={selectedItem}
-            onClose={() => setShowQRModal(false)}
-          />
-        )}
         
         <Footer />
       </div>
@@ -370,10 +364,6 @@ const Category = () => {
                   }}
                   onEdit={() => navigate('/items')}
                   onDelete={() => handleItemDelete(item)}
-                  onShowQRCode={() => {
-                    setSelectedItem(item);
-                    setShowQRModal(true);
-                  }}
                 />
               ))}
             </div>

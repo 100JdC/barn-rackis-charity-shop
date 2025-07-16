@@ -109,7 +109,7 @@ export const PendingDonations = ({ onItemsUpdate }: PendingDonationsProps) => {
             userRole="admin"
             onEdit={() => {}}
             onDelete={() => {}}
-            onShowQRCode={() => {}}
+            
           />
           <div className="mt-6 flex gap-4">
             <Button 

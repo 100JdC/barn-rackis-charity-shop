@@ -1,4 +1,4 @@
-import { Edit, Trash2, QrCode, MapPin, User, Calendar, Image, Images } from "lucide-react";
+import { Edit, Trash2, MapPin, User, Calendar, Image, Images } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,10 +11,10 @@ interface ItemDetailProps {
   userRole: UserRole;
   onEdit: () => void;
   onDelete: () => void;
-  onShowQRCode: () => void;
+  
 }
 
-export const ItemDetail = ({ item, userRole, onEdit, onDelete, onShowQRCode }: ItemDetailProps) => {
+export const ItemDetail = ({ item, userRole, onEdit, onDelete }: ItemDetailProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'available': return 'bg-green-100 text-green-800';
@@ -87,10 +87,6 @@ export const ItemDetail = ({ item, userRole, onEdit, onDelete, onShowQRCode }: I
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={onShowQRCode}>
-                <QrCode className="h-4 w-4 mr-2" />
-                QR Code
-              </Button>
               {userRole === 'admin' && (
                 <>
                   <Button variant="outline" onClick={onEdit}>
