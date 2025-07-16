@@ -214,7 +214,7 @@ export default function Index() {
           <div className="flex flex-col items-center justify-center mb-8">
             <div className="relative">
               <img
-                src="/lovable-uploads/08412347-e9d0-402d-a43c-8c3d1d381714.png"
+                src="/lovable-uploads/50d0870c-a6a5-46a2-99ad-d9bbf533e576.png"
                 alt="Rackis for Barn Logo"
                 className="w-full max-w-[500px] h-auto object-contain opacity-90"
               />
