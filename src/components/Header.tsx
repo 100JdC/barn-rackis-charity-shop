@@ -1,5 +1,5 @@
 
-import { ArrowLeft, User, LogOut, Home, Heart } from "lucide-react";
+import { ArrowLeft, User, LogOut, Search, Heart, Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -56,7 +56,7 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+    <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-2">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-4">
           {onBack && (
@@ -68,27 +68,27 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
             <img
               src="/lovable-uploads/66828e04-ca12-4680-80e2-f4704d6832eb.png"
               alt="Rackis for Barn Logo"
-              className="w-10 h-10 object-contain"
+              className="w-8 h-8 object-contain"
               onError={(e) => {
                 console.error('Failed to load bear logo in header');
                 e.currentTarget.style.display = 'none';
               }}
             />
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Rackis för Barn</h1>
-              <p className="text-sm text-gray-600">Inventory Management System</p>
+              <h1 className="text-lg font-bold text-gray-900">Rackis för Barn</h1>
+              <p className="text-xs text-gray-600">Inventory Management System</p>
             </div>
           </div>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Button 
             variant="ghost" 
             size="sm" 
             onClick={handleBrowseItems}
             className="hover:bg-gray-100"
           >
-            <Home className="h-4 w-4 mr-2" />
+            <Search className="h-4 w-4 mr-2" />
             Browse Items
           </Button>
 
@@ -110,9 +110,18 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
           >
             About Us
           </Button>
+
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => window.open('https://www.instagram.com/rackis_for_barn/', '_blank')}
+            className="hover:bg-pink-50 hover:text-pink-600"
+          >
+            <Instagram className="h-4 w-4" />
+          </Button>
           
           {(isAuthenticated || userRole === 'admin') && userRole && userRole !== 'buyer' && (
-            <div className="flex items-center gap-3 bg-gray-50 px-3 py-2 rounded-lg">
+            <div className="flex items-center gap-3 bg-gray-50 px-3 py-1.5 rounded-lg">
               <Badge className={`${getRoleColor(userRole)} text-xs font-medium`}>
                 {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
               </Badge>
@@ -144,7 +153,7 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
               onClick={handleHome}
               className="hover:bg-blue-50 hover:text-blue-600"
             >
-              <Home className="h-4 w-4" />
+              <Search className="h-4 w-4" />
             </Button>
           )}
         </div>

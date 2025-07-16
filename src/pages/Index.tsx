@@ -202,16 +202,16 @@ export default function Index() {
           isAuthenticated={isAuthenticated}
         />
         
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center mb-8">
+        <div className="container mx-auto px-4 py-4">
+          <div className="text-center mb-2">
             <h1 className="text-4xl font-bold text-white mb-4">Welcome to Rackis för Barn</h1>
-            <p className="text-xl text-white/90 mb-8">
+            <p className="text-xl text-white/90 mb-4">
               Find quality second-hand items for your student life in Uppsala
             </p>
           </div>
 
           {/* Centered bear image with search bar */}
-          <div className="flex flex-col items-center justify-center mb-6">
+          <div className="flex flex-col items-center justify-center mb-4">
             <div className="relative">
               <img
                 src="/lovable-uploads/50d0870c-a6a5-46a2-99ad-d9bbf533e576.png"
@@ -220,8 +220,8 @@ export default function Index() {
               />
               
               {/* Search bar positioned in the bear's sign */}
-              <div className="absolute top-[47%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[52%] z-50 pointer-events-auto">
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: '#f7f8f1' }}>
+              <div className="absolute top-[42%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[45%] z-50 pointer-events-auto">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#f7f8f1' }}>
                   <Input
                     type="text"
                     placeholder="Search for items..."
