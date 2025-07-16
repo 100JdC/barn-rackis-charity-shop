@@ -157,8 +157,7 @@ export default function Items() {
   };
 
   const handleCategorySelect = (category: string) => {
-    setCategoryFilter(category);
-    setSearchTerm('');
+    navigate(`/category/${category}`);
   };
 
   const handleLogout = async () => {

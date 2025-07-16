@@ -193,7 +193,7 @@ export default function Index() {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#001faa' }}>
       {/* Background bear image with search bar */}
-      <div className="absolute inset-0 flex items-center justify-center z-20 pt-24">
+      <div className="absolute inset-0 flex items-center justify-center z-20 pt-24 pointer-events-none">
         <div className="relative">
           <img
             src="/lovable-uploads/08412347-e9d0-402d-a43c-8c3d1d381714.png"
@@ -203,8 +203,7 @@ export default function Index() {
           
           {/* Search bar positioned perfectly in the bear's sign */}
           <div 
-            className="absolute top-[47%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[52%] pointer-events-auto"
-            style={{ zIndex: 1000 }}
+            className="absolute top-[47%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[52%] pointer-events-auto z-50"
             onClick={() => console.log('Search container clicked')}
           >
             <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-none">
