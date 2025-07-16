@@ -211,17 +211,17 @@ export default function Index() {
           </div>
 
           {/* Centered bear image with search bar */}
-          <div className="flex flex-col items-center justify-center mb-8">
+          <div className="flex flex-col items-center justify-center mb-6">
             <div className="relative">
               <img
                 src="/lovable-uploads/50d0870c-a6a5-46a2-99ad-d9bbf533e576.png"
                 alt="Rackis for Barn Logo"
-                className="w-full max-w-[500px] h-auto object-contain opacity-90"
+                className="w-full max-w-[350px] h-auto object-contain opacity-90"
               />
               
               {/* Search bar positioned in the bear's sign */}
               <div className="absolute top-[47%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[52%] z-50 pointer-events-auto">
-                <div className="flex items-center gap-2 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: '#f7f8f1' }}>
                   <Input
                     type="text"
                     placeholder="Search for items..."
