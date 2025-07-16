@@ -220,7 +220,7 @@ export default function Index() {
               />
               
               {/* Search bar positioned in the bear's sign */}
-              <div className="absolute top-[45%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[50%] z-50 pointer-events-auto">
+              <div className="absolute top-[38%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[55%] z-50 pointer-events-auto">
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#f7f8f1' }}>
                   <Input
                     type="text"
