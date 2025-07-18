@@ -56,77 +56,63 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-2">
+    <header className="bg-white shadow-sm border-b border-gray-200 px-3 md:px-6 py-2">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           {onBack && (
             <Button variant="ghost" size="sm" onClick={onBack} className="hover:bg-gray-100">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           )}
-          <div className="flex items-center gap-3">
-            <img
-              src="/lovable-uploads/66828e04-ca12-4680-80e2-f4704d6832eb.png"
-              alt="Rackis for Barn Logo"
-              className="w-8 h-8 object-contain"
-              onError={(e) => {
-                console.error('Failed to load bear logo in header');
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-            <div>
-              <h1 className="text-lg font-bold text-gray-900">Rackis för Barn</h1>
-              <p className="text-xs text-gray-600">Inventory Management System</p>
-            </div>
-          </div>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1 md:gap-3 flex-wrap">
           <Button 
             variant="ghost" 
             size="sm" 
             onClick={handleBrowseItems}
-            className="hover:bg-gray-100"
+            className="hover:bg-gray-100 text-xs md:text-sm px-2 md:px-3"
           >
-            <Search className="h-4 w-4 mr-2" />
-            Browse Items
+            <Search className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
+            <span className="hidden md:inline">Browse Items</span>
           </Button>
 
           <Button 
             variant="ghost" 
             size="sm" 
             onClick={handleDonate}
-            className="hover:bg-green-50 hover:text-green-600"
+            className="hover:bg-green-50 hover:text-green-600 text-xs md:text-sm px-2 md:px-3"
           >
-            <Heart className="h-4 w-4 mr-2" />
-            Donate
+            <Heart className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
+            <span className="hidden md:inline">Donate</span>
           </Button>
           
           <Button 
             variant="ghost" 
             size="sm" 
             onClick={() => navigate('/about')}
-            className="hover:bg-gray-100"
+            className="hover:bg-gray-100 text-xs md:text-sm px-2 md:px-3 hidden sm:flex"
           >
-            About Us
+            <span className="hidden md:inline">About Us</span>
+            <span className="md:hidden">About</span>
           </Button>
 
           <Button 
             variant="ghost" 
             size="sm" 
             onClick={() => window.open('https://www.instagram.com/rackis_for_barn/', '_blank')}
-            className="hover:bg-pink-50 hover:text-pink-600"
+            className="hover:bg-pink-50 hover:text-pink-600 px-2 md:px-3"
           >
-            <Instagram className="h-4 w-4" />
+            <Instagram className="h-3 w-3 md:h-4 md:w-4" />
           </Button>
           
           {(isAuthenticated || userRole === 'admin') && userRole && userRole !== 'buyer' && (
-            <div className="flex items-center gap-3 bg-gray-50 px-3 py-1.5 rounded-lg">
+            <div className="flex items-center gap-1 md:gap-3 bg-gray-50 px-2 md:px-3 py-1.5 rounded-lg">
               <Badge className={`${getRoleColor(userRole)} text-xs font-medium`}>
                 {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
               </Badge>
               
-              <div className="flex items-center gap-2 text-sm text-gray-700">
+              <div className="hidden md:flex items-center gap-2 text-sm text-gray-700">
                 <User className="h-4 w-4" />
                 <span>{username || 'Demo User'}</span>
               </div>
@@ -139,9 +125,9 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
               variant="ghost" 
               size="sm" 
               onClick={onLogout}
-              className="hover:bg-red-50 hover:text-red-600"
+              className="hover:bg-red-50 hover:text-red-600 px-2 md:px-3"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-3 w-3 md:h-4 md:w-4" />
             </Button>
           )}
           
@@ -151,9 +137,9 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
               variant="ghost" 
               size="sm" 
               onClick={handleHome}
-              className="hover:bg-blue-50 hover:text-blue-600"
+              className="hover:bg-blue-50 hover:text-blue-600 px-2 md:px-3"
             >
-              <Home className="h-4 w-4" />
+              <Home className="h-3 w-3 md:h-4 md:w-4" />
             </Button>
           )}
         </div>
