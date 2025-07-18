@@ -220,28 +220,24 @@ export default function Index() {
                 onLoad={() => console.log('Bear image loaded')}
               />
               
-              {/* Search bar positioned in the bear's sign - using fixed positioning to avoid layout shifts */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="relative w-full max-w-[350px] h-auto">
-                  <div className="absolute top-[67%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 w-[90%] z-50 pointer-events-auto">
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/80 backdrop-blur-sm">
-                      <Input
-                        type="text"
-                        placeholder="Search for items..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        onKeyPress={handleSearchKeyPress}
-                        className="flex-1 border-0 bg-transparent text-gray-800 placeholder-gray-500 text-sm h-7 p-0 focus:ring-0 focus:outline-none"
-                      />
-                      <Button 
-                        onClick={handleSearchClick}
-                        size="sm" 
-                        className="bg-transparent hover:bg-transparent p-0 h-6"
-                      >
-                        <Search className="h-4 w-4 text-gray-600" />
-                      </Button>
-                    </div>
-                  </div>
+              {/* Search bar positioned in the bear's sign */}
+              <div className="absolute top-[67%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 w-[90%] z-50 pointer-events-auto">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/80 backdrop-blur-sm">
+                  <Input
+                    type="text"
+                    placeholder="Search for items..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyPress={handleSearchKeyPress}
+                    className="flex-1 border-0 bg-transparent text-gray-800 placeholder-gray-500 text-sm h-7 p-0 focus:ring-0 focus:outline-none"
+                  />
+                  <Button 
+                    onClick={handleSearchClick}
+                    size="sm" 
+                    className="bg-transparent hover:bg-transparent p-0 h-6"
+                  >
+                    <Search className="h-4 w-4 text-gray-600" />
+                  </Button>
                 </div>
               </div>
             </div>
