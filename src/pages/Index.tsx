@@ -204,8 +204,8 @@ export default function Index() {
         
         <div className="container mx-auto px-4 py-4">
           <div className="text-center mb-2">
-            <h1 className="text-4xl font-bold text-white mb-4">Welcome to Rackis för Barn</h1>
-            <p className="text-xl text-white/90 mb-4">
+            <h1 className="text-2xl md:text-4xl font-bold text-white mb-2 md:mb-4">Welcome to Rackis för Barn</h1>
+            <p className="text-lg md:text-xl text-white/90 mb-2 md:mb-4 px-2">
               Find quality second-hand items for your student life in Uppsala
             </p>
           </div>
@@ -216,27 +216,27 @@ export default function Index() {
               <img
                 src="/lovable-uploads/50d0870c-a6a5-46a2-99ad-d9bbf533e576.png"
                 alt="Rackis for Barn Logo"
-                className="w-full max-w-[350px] h-auto object-contain opacity-90"
+                className="w-full max-w-[280px] md:max-w-[350px] h-auto object-contain opacity-90"
                 onLoad={() => console.log('Bear image loaded')}
               />
               
               {/* Search bar positioned in the bear's sign */}
-              <div className="absolute top-[67%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 w-[90%] z-50 pointer-events-auto">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg">
+              <div className="absolute top-[67%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 w-[85%] md:w-[90%] z-50 pointer-events-auto">
+                <div className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-lg">
                   <Input
                     type="text"
                     placeholder="Search for items..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyPress={handleSearchKeyPress}
-                    className="flex-1 border-0 bg-transparent text-gray-800 placeholder-gray-500 text-sm h-7 p-0 focus:ring-0 focus:outline-none"
+                    className="flex-1 border-0 bg-transparent text-gray-800 placeholder-gray-500 text-xs md:text-sm h-6 md:h-7 p-0 focus:ring-0 focus:outline-none"
                   />
                   <Button 
                     onClick={handleSearchClick}
                     size="sm" 
-                    className="bg-transparent hover:bg-transparent p-0 h-6"
+                    className="bg-transparent hover:bg-transparent p-0 h-5 md:h-6"
                   >
-                    <Search className="h-4 w-4 text-gray-600" />
+                    <Search className="h-3 w-3 md:h-4 md:w-4 text-gray-600" />
                   </Button>
                 </div>
               </div>
@@ -245,34 +245,35 @@ export default function Index() {
 
           {/* Text content below the bear */}
           {!isAuthenticated && userRole === 'buyer' && (
-            <div className="text-white space-y-6 text-center max-w-4xl mx-auto">
-              <div className="text-lg text-white/90 space-y-3 leading-relaxed">
+            <div className="text-white space-y-4 md:space-y-6 text-center max-w-4xl mx-auto px-2">
+              <div className="text-sm md:text-lg text-white/90 space-y-2 md:space-y-3 leading-relaxed">
                 <p>A platform for students in Uppsala to exchange second-hand items during move-ins and move-outs.</p>
-                <p>We collect useful items from outgoing students and sell them at fair prices to new tenants.</p>
-                <p>All profits go to Barncancerfonden, supporting children with cancer and their families.</p>
-                <p>It's simple: buy and donate things you only need in Uppsala (duvets, curtains, bikes and much more) — sustainably and for a good cause.</p>
+                <p className="hidden md:block">We collect useful items from outgoing students and sell them at fair prices to new tenants.</p>
+                <p className="hidden md:block">All profits go to Barncancerfonden, supporting children with cancer and their families.</p>
+                <p className="md:hidden">We collect items from outgoing students and sell them at fair prices. All profits support Barncancerfonden.</p>
+                <p>It's simple: buy and donate things you only need in Uppsala — sustainably and for a good cause.</p>
                 <p className="font-semibold text-white">🌍 Good for students. Good for the planet.</p>
               </div>
-              <div className="text-center mt-6">
+              <div className="text-center mt-4 md:mt-6">
                 <Button
                   variant="link"
                   onClick={() => window.open('/about', '_blank')}
-                  className="text-white/90 hover:text-white text-lg underline"
+                  className="text-white/90 hover:text-white text-sm md:text-lg underline px-2"
                 >
                   👉 Find out more about the concept, who we are, and how you can contribute.
                 </Button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 max-w-md mx-auto px-4">
                 <Button
                   onClick={handleBrowseItems}
-                  className="w-full bg-white/20 hover:bg-white/30 text-white h-12 text-lg border-white/30"
+                  className="w-full bg-white/20 hover:bg-white/30 text-white h-10 md:h-12 text-sm md:text-lg border-white/30"
                   variant="outline"
                 >
                   Browse our items
                 </Button>
                 <Button
                   onClick={() => navigate('/register')}
-                  className="w-full bg-white/20 hover:bg-white/30 text-white h-12 text-lg border-white/30"
+                  className="w-full bg-white/20 hover:bg-white/30 text-white h-10 md:h-12 text-sm md:text-lg border-white/30"
                   variant="outline"
                 >
                   Register to donate
@@ -281,7 +282,7 @@ export default function Index() {
               <div className="text-center">
                 <Button
                   onClick={() => navigate('/login')}
-                  className="text-white/80 hover:text-white text-lg underline"
+                  className="text-white/80 hover:text-white text-sm md:text-lg underline"
                   variant="link"
                 >
                   Already have an account? Login here
