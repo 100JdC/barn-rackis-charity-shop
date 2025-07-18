@@ -1,5 +1,5 @@
 
-import { ArrowLeft, User, LogOut, Search, Heart, Instagram } from "lucide-react";
+import { ArrowLeft, User, LogOut, Search, Heart, Instagram, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -153,7 +153,7 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
               onClick={handleHome}
               className="hover:bg-blue-50 hover:text-blue-600"
             >
-              <Search className="h-4 w-4" />
+              <Home className="h-4 w-4" />
             </Button>
           )}
         </div>

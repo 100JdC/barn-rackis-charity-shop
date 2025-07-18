@@ -222,7 +222,7 @@ export default function Index() {
               
               {/* Search bar positioned in the bear's sign */}
               <div className="absolute top-[67%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 w-[90%] z-50 pointer-events-auto">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/80 backdrop-blur-sm">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg">
                   <Input
                     type="text"
                     placeholder="Search for items..."
