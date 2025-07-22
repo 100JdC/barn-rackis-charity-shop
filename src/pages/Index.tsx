@@ -252,7 +252,7 @@ export default function Index() {
                 <p className="hidden md:block">All profits go to Barncancerfonden, supporting children with cancer and their families.</p>
                 <p className="md:hidden">We collect items from outgoing students and sell them at fair prices. All profits support Barncancerfonden.</p>
                 <p>It's simple: buy and donate things you only need in Uppsala — sustainably and for a good cause.</p>
-                <p className="font-semibold text-white">🌍 Good for students. Good for the planet.</p>
+                <p className="font-semibold text-white">🌍 För barn. För studenterna. För miljön.</p>
               </div>
               <div className="text-center mt-4 md:mt-6">
                 <Button
