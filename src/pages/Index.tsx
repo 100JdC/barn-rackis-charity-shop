@@ -204,7 +204,7 @@ export default function Index() {
         
         <div className="container mx-auto px-4 py-4">
           <div className="text-center mb-2">
-            <h1 className="text-2xl md:text-4xl font-bold text-white mb-2 md:mb-4">Welcome to Rackis för Barn</h1>
+            <h1 className="text-2xl md:text-4xl font-bold text-white mb-2 md:mb-4">Welcome to Rackis for Barn</h1>
             <p className="text-lg md:text-xl text-white/90 mb-2 md:mb-4 px-2">
               Find quality second-hand items for your student life in Uppsala
             </p>
