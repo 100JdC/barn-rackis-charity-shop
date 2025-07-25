@@ -42,51 +42,55 @@ export const SearchAndFilters = ({
         </div>
       </div>
       
-      <div className="flex flex-wrap gap-2">
-        <Select value={categoryFilter} onValueChange={onCategoryChange}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="bedding">Bedding</SelectItem>
-            <SelectItem value="bathroom">Bathroom</SelectItem>
-            <SelectItem value="decoration">Decoration</SelectItem>
-            <SelectItem value="other_room_inventory">Other Room Inventory</SelectItem>
-            <SelectItem value="kitchen">Kitchen</SelectItem>
-            <SelectItem value="bike_sports">Bike & Sports</SelectItem>
-            <SelectItem value="electronics">Electronics</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="space-y-2">
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Select value={categoryFilter} onValueChange={onCategoryChange}>
+            <SelectTrigger className="w-full sm:w-40">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="bedding">Bedding</SelectItem>
+              <SelectItem value="bathroom">Bathroom</SelectItem>
+              <SelectItem value="decoration">Decoration</SelectItem>
+              <SelectItem value="other_room_inventory">Other Room Inventory</SelectItem>
+              <SelectItem value="kitchen">Kitchen</SelectItem>
+              <SelectItem value="bike_sports">Bike & Sports</SelectItem>
+              <SelectItem value="electronics">Electronics</SelectItem>
+              <SelectItem value="other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <Select value={statusFilter} onValueChange={onStatusChange}>
+            <SelectTrigger className="w-full sm:w-32">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="available">Available</SelectItem>
+              <SelectItem value="reserved">Reserved</SelectItem>
+              <SelectItem value="sold">Sold</SelectItem>
+              <SelectItem value="donated">Donated</SelectItem>
+              {userRole === 'admin' && (
+                <SelectItem value="pending_approval">Pending</SelectItem>
+              )}
+            </SelectContent>
+          </Select>
+        </div>
         
-        <Select value={statusFilter} onValueChange={onStatusChange}>
-          <SelectTrigger className="w-32">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="available">Available</SelectItem>
-            <SelectItem value="reserved">Reserved</SelectItem>
-            <SelectItem value="sold">Sold</SelectItem>
-            <SelectItem value="donated">Donated</SelectItem>
-            {userRole === 'admin' && (
-              <SelectItem value="pending_approval">Pending</SelectItem>
-            )}
-          </SelectContent>
-        </Select>
-        
-        <Select value={conditionFilter} onValueChange={onConditionChange}>
-          <SelectTrigger className="w-36">
-            <SelectValue placeholder="Condition" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Conditions</SelectItem>
-            <SelectItem value="new">New</SelectItem>
-            <SelectItem value="lightly_used">Lightly Used</SelectItem>
-            <SelectItem value="worn">Worn</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex">
+          <Select value={conditionFilter} onValueChange={onConditionChange}>
+            <SelectTrigger className="w-full sm:w-36">
+              <SelectValue placeholder="Condition" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Conditions</SelectItem>
+              <SelectItem value="new">New</SelectItem>
+              <SelectItem value="lightly_used">Lightly Used</SelectItem>
+              <SelectItem value="worn">Worn</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
     </div>
   );
