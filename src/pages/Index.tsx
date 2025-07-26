@@ -258,7 +258,7 @@ export default function Index() {
                 <Button
                   variant="link"
                   onClick={() => window.open('/about', '_blank')}
-                  className="text-white/90 hover:text-white text-sm md:text-lg underline px-2"
+                  className="text-white/90 hover:text-white text-sm md:text-lg underline px-2 h-auto whitespace-normal leading-relaxed"
                 >
                    Find out more about the concept, the swedish words we use, who we are, and how you can contribute.
                 </Button>
