@@ -102,7 +102,7 @@ export const SearchAndFilters = ({
             <SelectTrigger className="w-32 sm:w-36">
               <SelectValue placeholder="Condition" />
             </SelectTrigger>
-            <SelectContent align="start" side="bottom" className="w-40">
+            <SelectContent align="start" side="bottom">
               <SelectItem value="all">All Conditions</SelectItem>
               <SelectItem value="new">New</SelectItem>
               <SelectItem value="lightly_used">Lightly Used</SelectItem>
