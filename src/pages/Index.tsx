@@ -225,7 +225,7 @@ export default function Index() {
                 <div className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-lg">
                   <Input
                     type="text"
-                    placeholder="What are you looking for"
+                    placeholder="What do you need in Uppsala?"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyPress={handleSearchKeyPress}
