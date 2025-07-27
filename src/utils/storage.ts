@@ -225,10 +225,16 @@ export const storage = {
 
   async deleteItem(id: string): Promise<boolean> {
     try {
+      console.log('Storage deleteItem called with ID:', id, 'Type:', typeof id);
+      console.log('Current session:', await supabase.auth.getSession());
+      
       const { error } = await supabase
         .from('Item inventory')
         .delete()
         .eq('Item ID', parseInt(id));
+
+      console.log('Delete operation error:', error);
+      console.log('Delete operation completed');
 
       if (error) {
         console.error('Supabase error:', error);

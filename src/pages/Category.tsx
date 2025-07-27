@@ -82,10 +82,17 @@ const Category = () => {
           const userUsername = session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
           const role: UserRole = session.user.email === 'jacob@admin.com' ? 'admin' : 'donator';
           
+          console.log('User session loaded:', { userUsername, role, email: session.user.email });
+          
           setIsAuthenticated(true);
           setUserRole(role);
           setUsername(userUsername);
           storage.saveSession(role, userUsername);
+        } else {
+          console.log('No user session found');
+          setIsAuthenticated(false);
+          setUserRole(null);
+          setUsername('');
         }
       });
     }
@@ -97,6 +104,7 @@ const Category = () => {
   }, []);
 
   useEffect(() => {
+    console.log('Loading category items for:', categoryName, 'with role:', userRole);
     loadCategoryItems();
   }, [categoryName, userRole]);
 
