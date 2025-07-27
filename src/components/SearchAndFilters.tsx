@@ -97,12 +97,12 @@ export const SearchAndFilters = ({
           </Select>
         </div>
         
-        <div className="flex">
+        <div className="flex justify-start">
           <Select value={conditionFilter} onValueChange={onConditionChange}>
-            <SelectTrigger className="w-full sm:w-36">
+            <SelectTrigger className="w-full max-w-36">
               <SelectValue placeholder="Condition" />
             </SelectTrigger>
-            <SelectContent align="start" side="bottom">
+            <SelectContent align="start" side="bottom" sideOffset={4} avoidCollisions={true}>
               <SelectItem value="all">All Conditions</SelectItem>
               <SelectItem value="new">New</SelectItem>
               <SelectItem value="lightly_used">Lightly Used</SelectItem>
