@@ -109,7 +109,7 @@ export const ItemCard = ({ item, userRole, onView, onEdit, onDelete }: ItemCardP
               src={photoUrl} 
               alt={item.name}
               className={`w-full h-40 object-cover rounded-md ${
-                item.subcategory === 'bike' ? 'object-top' : ''
+                item.subcategory === 'bike' ? 'object-bottom' : ''
               }`}
               onError={(e) => {
                 console.error('Failed to load image:', photoUrl);
