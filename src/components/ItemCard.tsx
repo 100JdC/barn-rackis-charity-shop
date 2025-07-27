@@ -108,7 +108,9 @@ export const ItemCard = ({ item, userRole, onView, onEdit, onDelete }: ItemCardP
             <img 
               src={photoUrl} 
               alt={item.name}
-              className="w-full h-40 object-cover rounded-md"
+              className={`w-full h-40 object-cover rounded-md ${
+                item.subcategory === 'bike' ? 'object-top' : ''
+              }`}
               onError={(e) => {
                 console.error('Failed to load image:', photoUrl);
                 e.currentTarget.style.display = 'none';
