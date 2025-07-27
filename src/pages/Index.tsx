@@ -225,7 +225,7 @@ export default function Index() {
                 <div className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-lg">
                   <Input
                     type="text"
-                    placeholder="Search for items..."
+                    placeholder="What are you looking for"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyPress={handleSearchKeyPress}
@@ -258,7 +258,7 @@ export default function Index() {
                 <Button
                   variant="link"
                   onClick={() => window.open('/about', '_blank')}
-                  className="text-white/90 hover:text-white text-sm md:text-lg underline px-2 h-auto whitespace-normal leading-relaxed"
+                  className="text-white/90 hover:text-white text-sm md:text-lg underline px-2"
                 >
                    Find out more about the concept, the swedish words we use, who we are, and how you can contribute.
                 </Button>
