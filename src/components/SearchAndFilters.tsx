@@ -99,7 +99,7 @@ export const SearchAndFilters = ({
         
         <div className="flex">
           <Select value={conditionFilter} onValueChange={onConditionChange}>
-            <SelectTrigger className="w-32 sm:w-36">
+            <SelectTrigger className="w-full sm:w-36">
               <SelectValue placeholder="Condition" />
             </SelectTrigger>
             <SelectContent align="start" side="bottom">
