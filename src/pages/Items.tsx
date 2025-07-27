@@ -23,7 +23,8 @@ export default function Items() {
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [displayedItems, setDisplayedItems] = useState<Item[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [confirmedSearchTerm, setConfirmedSearchTerm] = useState(searchParams.get('search') || '');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [conditionFilter, setConditionFilter] = useState('all');
@@ -95,11 +96,15 @@ export default function Items() {
 
   useEffect(() => {
     loadItems();
+    // Initialize search term from URL
+    const urlSearchTerm = searchParams.get('search') || '';
+    setSearchTerm(urlSearchTerm);
+    setConfirmedSearchTerm(urlSearchTerm);
   }, []);
 
   useEffect(() => {
     applyFilters();
-  }, [items, searchTerm, categoryFilter, statusFilter, conditionFilter]);
+  }, [items, confirmedSearchTerm, categoryFilter, statusFilter, conditionFilter]);
 
   useEffect(() => {
     updateDisplayedItems();
@@ -123,10 +128,10 @@ export default function Items() {
   const applyFilters = () => {
     let filtered = [...items];
 
-    if (searchTerm) {
+    if (confirmedSearchTerm) {
       filtered = filtered.filter(item =>
-        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchTerm.toLowerCase())
+        item.name.toLowerCase().includes(confirmedSearchTerm.toLowerCase()) ||
+        item.description.toLowerCase().includes(confirmedSearchTerm.toLowerCase())
       );
     }
 
@@ -154,6 +159,10 @@ export default function Items() {
 
   const handleLoadMore = () => {
     setCurrentPage(prev => prev + 1);
+  };
+
+  const handleSearchSubmit = (term: string) => {
+    setConfirmedSearchTerm(term);
   };
 
   const handleCategorySelect = (category: string) => {
@@ -321,6 +330,7 @@ export default function Items() {
             <SearchAndFilters
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
+              onSearchSubmit={handleSearchSubmit}
               categoryFilter={categoryFilter}
               onCategoryChange={setCategoryFilter}
               statusFilter={statusFilter}
@@ -332,17 +342,17 @@ export default function Items() {
           </div>
 
           {/* Show search results first if there's a search term */}
-          {searchTerm && (
+          {confirmedSearchTerm && (
             <div className="mb-8">
               {renderItemGrid(
                 displayedItems, 
-                `Search Results for "${searchTerm}" (${filteredItems.length} items found)`
+                `Search Results for "${confirmedSearchTerm}" (${filteredItems.length} items found)`
               )}
             </div>
           )}
 
           {/* Show categories only if no search term */}
-          {!searchTerm && (
+          {!confirmedSearchTerm && (
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-4">Browse by Category</h2>
               <CategoryBrowser 
@@ -353,14 +363,14 @@ export default function Items() {
           )}
 
           {/* Show all items if no search term and no category filter */}
-          {!searchTerm && categoryFilter === 'all' && (
+          {!confirmedSearchTerm && categoryFilter === 'all' && (
             <div>
               {renderItemGrid(displayedItems, "All Items")}
             </div>
           )}
 
           {/* Show category-specific items */}
-          {!searchTerm && categoryFilter !== 'all' && (
+          {!confirmedSearchTerm && categoryFilter !== 'all' && (
             <div>
               {renderItemGrid(
                 displayedItems, 

@@ -8,6 +8,7 @@ import type { UserRole } from "@/types/item";
 interface SearchAndFiltersProps {
   searchTerm: string;
   onSearchChange: (term: string) => void;
+  onSearchSubmit: (term: string) => void;
   categoryFilter: string;
   onCategoryChange: (category: string) => void;
   statusFilter: string;
@@ -20,6 +21,7 @@ interface SearchAndFiltersProps {
 export const SearchAndFilters = ({
   searchTerm,
   onSearchChange,
+  onSearchSubmit,
   categoryFilter,
   onCategoryChange,
   statusFilter,
@@ -28,6 +30,15 @@ export const SearchAndFilters = ({
   onConditionChange,
   userRole
 }: SearchAndFiltersProps) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      onSearchSubmit(searchTerm);
+    }
+  };
+
+  const handleSearchClick = () => {
+    onSearchSubmit(searchTerm);
+  };
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4">
@@ -37,8 +48,16 @@ export const SearchAndFilters = ({
             placeholder="What do you need in Uppsala?"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10"
+            onKeyPress={handleKeyPress}
+            className="pl-10 pr-12"
           />
+          <Button 
+            onClick={handleSearchClick}
+            size="sm" 
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 px-2"
+          >
+            <Search className="h-3 w-3" />
+          </Button>
         </div>
       </div>
       
