@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { ItemCard } from "@/components/ItemCard";
 import { ItemDetail } from "@/components/ItemDetail";
+import { ItemForm } from "@/components/ItemForm";
 
 import { Footer } from "@/components/Footer";
 import { storage } from "@/utils/storage";
@@ -24,7 +25,7 @@ const Category = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [conditionFilter, setConditionFilter] = useState("all");
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
-  const [view, setView] = useState<'items' | 'item-detail'>('items');
+  const [view, setView] = useState<'items' | 'item-detail' | 'item-edit'>('items');
   
   const { toast } = useToast();
 
@@ -162,14 +163,19 @@ const Category = () => {
 
     if (window.confirm(`Are you sure you want to delete "${item.name}"?`)) {
       try {
+        console.log('Calling storage.deleteItem with ID:', item.id);
         const success = await storage.deleteItem(item.id);
+        console.log('Delete result:', success);
+        
         if (success) {
-          loadCategoryItems();
+          console.log('Delete successful, reloading items');
+          await loadCategoryItems();
           toast({
             title: "Success",
             description: "Item deleted successfully"
           });
         } else {
+          console.log('Delete failed');
           toast({
             title: "Error",
             description: "Failed to delete item",
@@ -229,9 +235,8 @@ const Category = () => {
           <ItemDetail
             item={selectedItem}
             userRole={userRole}
-            onEdit={() => navigate('/items')}
+            onEdit={() => setView('item-edit')}
             onDelete={() => handleItemDelete(selectedItem)}
-            
           />
           <div className="mt-6">
             <Button onClick={() => setView('items')} variant="outline">
@@ -239,8 +244,50 @@ const Category = () => {
             </Button>
           </div>
         </div>
-        
-        
+        <Footer />
+      </div>
+    );
+  }
+
+  if (view === 'item-edit' && selectedItem) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Header 
+          userRole={userRole} 
+          username={username}
+          onLogout={(isAuthenticated || userRole === 'admin') ? handleLogout : undefined}
+          onDonate={handleDonate}
+          onHome={handleHome}
+          isAuthenticated={isAuthenticated}
+        />
+        <div className="container mx-auto px-4 py-8 flex-1">
+          <ItemForm
+            item={selectedItem}
+            userRole={userRole}
+            onSubmit={async (items) => {
+              try {
+                if (items.length > 0) {
+                  const updatedItem = items[0];
+                  await storage.updateItem(selectedItem.id, updatedItem);
+                  await loadCategoryItems();
+                  setView('items');
+                  toast({
+                    title: "Success",
+                    description: "Item updated successfully"
+                  });
+                }
+              } catch (error) {
+                console.error('Error updating item:', error);
+                toast({
+                  title: "Error",
+                  description: "Failed to update item",
+                  variant: "destructive"
+                });
+              }
+            }}
+            onCancel={() => setView('items')}
+          />
+        </div>
         <Footer />
       </div>
     );
@@ -366,7 +413,10 @@ const Category = () => {
                     setSelectedItem(item);
                     setView('item-detail');
                   }}
-                  onEdit={() => navigate('/items')}
+                  onEdit={() => {
+                    setSelectedItem(item);
+                    setView('item-edit');
+                  }}
                   onDelete={() => handleItemDelete(item)}
                 />
               ))}
