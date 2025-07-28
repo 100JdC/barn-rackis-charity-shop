@@ -72,13 +72,15 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
         await storage.addItem(newItem);
       }
       
-      setShowThankYou(true);
       toast({
         title: "Success",
         description: userRole === 'admin' 
           ? `${items.length} item${items.length > 1 ? 's' : ''} added successfully!`
           : `Thank you for your donation! ${items.length} item${items.length > 1 ? 's have' : ' has'} been submitted for admin approval.`
       });
+      
+      // Navigate back immediately without showing thank you animation
+      onNavigate('home');
     } catch (error) {
       console.error('Error saving donations:', error);
       toast({
@@ -113,6 +115,7 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
         onLogout={onLogout}
         onNavigate={onNavigate}
         onBack={onBack}
+        isAuthenticated={!!user}
       />
       
       <div className="container mx-auto px-4 py-8 flex-1">

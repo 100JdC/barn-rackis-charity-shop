@@ -48,7 +48,7 @@ export const PendingDonations = ({ onItemsUpdate }: PendingDonationsProps) => {
         updated_at: new Date().toISOString()
       };
       
-      const result = await storage.updateItem(updatedItem.id, updatedItem);
+      const result = await storage.updateItem(item.id, updatedItem);
       if (result) {
         toast({
           title: "Success",
@@ -56,6 +56,8 @@ export const PendingDonations = ({ onItemsUpdate }: PendingDonationsProps) => {
         });
         await loadPendingItems();
         await onItemsUpdate();
+      } else {
+        throw new Error('Failed to update item');
       }
     } catch (error) {
       console.error('Error approving item:', error);
