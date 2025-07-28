@@ -163,10 +163,10 @@ const Category = () => {
 
   const handleDonate = async () => {
     if (!isAuthenticated && userRole !== 'admin') {
-      navigate('/');
+      navigate('/auth');
       return;
     }
-    // Handle donate functionality here
+    navigate('/?donate=true');
   };
 
   const handleItemDelete = async (item: Item) => {
