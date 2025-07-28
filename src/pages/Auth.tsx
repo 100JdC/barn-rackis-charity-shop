@@ -16,7 +16,7 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('signup');
+  const [activeTab, setActiveTab] = useState('login');
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -145,8 +145,8 @@ const Auth = () => {
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signup">Register</TabsTrigger>
                 <TabsTrigger value="login">Login</TabsTrigger>
+                <TabsTrigger value="signup">Register</TabsTrigger>
               </TabsList>
               
               <TabsContent value="signup">
@@ -262,7 +262,10 @@ const Auth = () => {
                   Already have an account?{' '}
                   <button
                     type="button"
-                    onClick={() => setActiveTab('login')}
+                    onClick={() => {
+                      setActiveTab('login');
+                      setError('');
+                    }}
                     className="text-primary hover:underline font-medium"
                   >
                     Login here
@@ -274,7 +277,10 @@ const Auth = () => {
                   Don't have an account?{' '}
                   <button
                     type="button"
-                    onClick={() => setActiveTab('signup')}
+                    onClick={() => {
+                      setActiveTab('signup');
+                      setError('');
+                    }}
                     className="text-primary hover:underline font-medium"
                   >
                     Register here

@@ -167,8 +167,8 @@ export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemF
       }
     }
     
-    // Clear subcategory, name, and photos when category changes
-    if (field === 'category') {
+    // Clear subcategory, name, and photos when category changes (but not when editing existing item)
+    if (field === 'category' && !isEditing) {
       updatedItems[index].subcategory = '';
       updatedItems[index].name = '';
       updatedItems[index].photos = [];
