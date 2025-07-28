@@ -5,17 +5,69 @@ import { useNavigate } from "react-router-dom";
 import { PageWrapper } from "@/components/PageWrapper";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { User } from "@supabase/supabase-js";
 
 const About = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  const [userRole, setUserRole] = useState<string>('');
+
+  useEffect(() => {
+    // Get current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        // Fetch user profile to get role
+        supabase
+          .from('profiles')
+          .select('role, username')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data }) => {
+            if (data) {
+              setUserRole(data.role || 'buyer');
+            }
+          });
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        supabase
+          .from('profiles')
+          .select('role, username')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data }) => {
+            if (data) {
+              setUserRole(data.role || 'buyer');
+            }
+          });
+      } else {
+        setUserRole('');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#001faa' }}>
       {/* Header */}
       <Header 
-        userRole="buyer" 
-        username=""
-        isAuthenticated={false}
+        userRole={userRole || "buyer"} 
+        username={user?.email || ""}
+        isAuthenticated={!!user}
+        onHome={() => navigate('/')}
+        onDonate={() => navigate('/?donate=true')}
+        onLogout={async () => {
+          await supabase.auth.signOut();
+          navigate('/');
+        }}
       />
 
       {/* Background logo */}
