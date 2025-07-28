@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 
 interface LoginFormProps {
-  onLogin: (role: 'admin' | 'donor' | 'buyer', username?: string) => void;
+  onLogin: (role: 'admin' | 'donor', username?: string) => void;
 }
 
 export const LoginForm = ({ onLogin }: LoginFormProps) => {
@@ -36,14 +36,14 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Button
-            onClick={() => onLogin('buyer')}
+            onClick={() => navigate('/items')}
             className="w-full bg-white/20 hover:bg-white/30 text-white h-12 text-lg border-white/30"
             variant="outline"
           >
             Browse our items
           </Button>
           <Button
-            onClick={() => navigate('/register')}
+            onClick={() => navigate('/auth')}
             className="w-full bg-white/20 hover:bg-white/30 text-white h-12 text-lg border-white/30"
             variant="outline"
           >

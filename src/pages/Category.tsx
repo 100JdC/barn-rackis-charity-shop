@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 const Category = () => {
   const { categoryName } = useParams<{ categoryName: string }>();
   const navigate = useNavigate();
-  const [userRole, setUserRole] = useState<UserRole>('buyer');
+  const [userRole, setUserRole] = useState<UserRole>('donor');
   const [username, setUsername] = useState<string>('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
@@ -57,7 +57,7 @@ const Category = () => {
           .single();
 
         const userUsername = profileData?.username || session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
-        const role: UserRole = profileData?.role || 'buyer';
+        const role: UserRole = (profileData?.role === 'admin' ? 'admin' : 'donor') as UserRole;
         
         console.log('User profile loaded in Category:', { userUsername, role, email: session.user.email });
         
@@ -70,7 +70,7 @@ const Category = () => {
         const currentSession = storage.getSession();
         if (!currentSession || currentSession.userRole !== 'admin') {
           setIsAuthenticated(false);
-          setUserRole('buyer');
+          setUserRole('donor');
           setUsername('');
           storage.clearSession();
         }
@@ -96,7 +96,7 @@ const Category = () => {
             .single();
 
           const userUsername = profileData?.username || session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
-          const role: UserRole = profileData?.role || 'buyer';
+          const role: UserRole = (profileData?.role === 'admin' ? 'admin' : 'donor') as UserRole;
           
           console.log('Initial session loaded in Category:', { userUsername, role, email: session.user.email });
           
@@ -107,7 +107,7 @@ const Category = () => {
         } else {
           console.log('No user session found');
           setIsAuthenticated(false);
-          setUserRole(null);
+          setUserRole('donor');
           setUsername('');
         }
       });
@@ -147,7 +147,7 @@ const Category = () => {
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
-      setUserRole('buyer');
+      setUserRole('donor');
       setUsername('');
       setIsAuthenticated(false);
       storage.clearSession();

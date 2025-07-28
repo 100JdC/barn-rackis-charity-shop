@@ -17,7 +17,7 @@ const ITEMS_PER_PAGE = 20;
 export default function Items() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [userRole, setUserRole] = useState<UserRole>('buyer');
+  const [userRole, setUserRole] = useState<UserRole>('donor');
   const [username, setUsername] = useState<string>('');
   const [items, setItems] = useState<Item[]>([]);
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
@@ -35,58 +35,80 @@ export default function Items() {
   useEffect(() => {
     let mounted = true;
 
-    const savedSession = storage.getSession();
-    if (savedSession && savedSession.userRole === 'admin') {
-      console.log('Found admin session in localStorage:', savedSession);
-      setIsAuthenticated(true);
-      setUserRole(savedSession.userRole as UserRole);
-      setUsername(savedSession.username);
-    }
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
       
       console.log('Auth state changed:', event, session?.user?.email);
       
       if (session?.user) {
-        const userUsername = session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
-        const role: UserRole = 'buyer'; // Will be updated from database
-        
-        setIsAuthenticated(true);
-        setUserRole(role);
-        setUsername(userUsername);
-        storage.saveSession(role, userUsername);
+        setTimeout(async () => {
+          try {
+            // Get the user's role from the database
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('role, username')
+              .eq('id', session.user.id)
+              .single();
+
+            const userUsername = profileData?.username || session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
+            const role: UserRole = (profileData?.role === 'admin' ? 'admin' : 'donor') as UserRole;
+            
+            console.log('User profile loaded:', { userUsername, role, email: session.user.email });
+            
+            setIsAuthenticated(true);
+            setUserRole(role);
+            setUsername(userUsername);
+            storage.saveSession(role, userUsername);
+          } catch (error) {
+            console.error('Error loading profile:', error);
+            setIsAuthenticated(true);
+            setUserRole('donor');
+            setUsername(session.user.email?.split('@')[0] || 'User');
+          }
+        }, 0);
       } else {
-        const currentSession = storage.getSession();
-        if (!currentSession || currentSession.userRole !== 'admin') {
-          setIsAuthenticated(false);
-          setUserRole('buyer');
-          setUsername('');
-          storage.clearSession();
-        }
+        setIsAuthenticated(false);
+          setUserRole('donor');
+        setUsername('');
+        storage.clearSession();
       }
     });
 
-    if (!savedSession || savedSession.userRole !== 'admin') {
-      supabase.auth.getSession().then(({ data: { session }, error }) => {
-        if (!mounted) return;
-        
-        if (error) {
-          console.error('Error getting session:', error);
-          return;
-        }
+    // Check for existing session on load
+    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
+      if (!mounted) return;
+      
+      if (error) {
+        console.error('Error getting session:', error);
+        return;
+      }
 
-        if (session?.user) {
-          const userUsername = session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
-          const role: UserRole = 'buyer'; // Will be updated from database
+      if (session?.user) {
+        try {
+          // Get the user's role from the database
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('role, username')
+            .eq('id', session.user.id)
+            .single();
+
+          const userUsername = profileData?.username || session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
+          const role: UserRole = (profileData?.role === 'admin' ? 'admin' : 'donor') as UserRole;
+          
+          console.log('Initial session loaded:', { userUsername, role, email: session.user.email });
           
           setIsAuthenticated(true);
           setUserRole(role);
           setUsername(userUsername);
           storage.saveSession(role, userUsername);
+        } catch (error) {
+          console.error('Error loading profile:', error);
+          setIsAuthenticated(true);
+          setUserRole('donor');
+          setUsername(session.user.email?.split('@')[0] || 'User');
         }
-      });
-    }
+      }
+    });
 
     return () => {
       mounted = false;
@@ -172,7 +194,7 @@ export default function Items() {
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
-      setUserRole('buyer');
+      setUserRole('donor');
       setUsername('');
       setIsAuthenticated(false);
       storage.clearSession();

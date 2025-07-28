@@ -106,42 +106,47 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
             <Instagram className="h-3 w-3 md:h-4 md:w-4" />
           </Button>
           
-          {(isAuthenticated || userRole === 'admin') && userRole && userRole !== 'buyer' && (
-            <div className="flex items-center gap-1 md:gap-3 bg-gray-50 px-2 md:px-3 py-1.5 rounded-lg">
-              <Badge className={`${getRoleColor(userRole)} text-xs font-medium`}>
-                {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
-              </Badge>
-              
-              <div className="hidden md:flex items-center gap-2 text-sm text-gray-700">
-                <User className="h-4 w-4" />
-                <span>{username || 'Demo User'}</span>
+          {/* Always show authentication status */}
+          <div className="flex items-center gap-1 md:gap-2">
+            {isAuthenticated ? (
+              <div className="flex items-center gap-1 md:gap-3 bg-gray-50 px-2 md:px-3 py-1.5 rounded-lg">
+                <Badge className={`${getRoleColor(userRole)} text-xs font-medium`}>
+                  {userRole === 'admin' ? 'ADMIN' : 'DONOR'}
+                </Badge>
+                
+                <div className="hidden md:flex items-center gap-2 text-sm text-gray-700">
+                  <User className="h-4 w-4" />
+                  <span className="font-medium">{username || 'User'}</span>
+                </div>
+                
+                {onLogout && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={onLogout}
+                    className="hover:bg-red-50 hover:text-red-600 px-1 md:px-2 ml-1"
+                    title="Logout"
+                  >
+                    <LogOut className="h-3 w-3 md:h-4 md:w-4" />
+                  </Button>
+                )}
               </div>
-            </div>
-          )}
-          
-          {/* Show logout button when authenticated or admin */}
-          {(isAuthenticated || userRole === 'admin') && onLogout && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={onLogout}
-              className="hover:bg-red-50 hover:text-red-600 px-2 md:px-3"
-            >
-              <LogOut className="h-3 w-3 md:h-4 md:w-4" />
-            </Button>
-          )}
-          
-          {/* Show home button when not authenticated */}
-          {!isAuthenticated && userRole !== 'admin' && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleHome}
-              className="hover:bg-blue-50 hover:text-blue-600 px-2 md:px-3"
-            >
-              <Home className="h-3 w-3 md:h-4 md:w-4" />
-            </Button>
-          )}
+            ) : (
+              <div className="flex items-center gap-1">
+                <Badge className="bg-gray-100 text-gray-600 text-xs font-medium border border-gray-200">
+                  NOT LOGGED IN
+                </Badge>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => navigate('/auth')}
+                  className="hover:bg-blue-50 hover:text-blue-600 px-2 md:px-3 text-xs font-medium"
+                >
+                  Login
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </header>

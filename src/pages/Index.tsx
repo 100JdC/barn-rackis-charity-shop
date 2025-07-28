@@ -16,7 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export default function Index() {
   const navigate = useNavigate();
-  const [userRole, setUserRole] = useState<UserRole>('buyer');
+  const [userRole, setUserRole] = useState<UserRole>('donor');
   const [username, setUsername] = useState<string>('');
   const [view, setView] = useState<'home' | 'donate'>('home');
   const [items, setItems] = useState<Item[]>([]);
@@ -28,57 +28,56 @@ export default function Index() {
   useEffect(() => {
     let mounted = true;
 
-    const savedSession = storage.getSession();
-    if (savedSession && savedSession.userRole === 'admin') {
-      console.log('Found admin session in localStorage:', savedSession);
-      setIsAuthenticated(true);
-      setUserRole(savedSession.userRole as UserRole);
-      setUsername(savedSession.username);
-    }
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
       
       console.log('Auth state changed:', event, session?.user?.email);
       
       if (session?.user) {
-        // Get the user's role from the database
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('role, username')
-          .eq('id', session.user.id)
-          .single();
+        setTimeout(async () => {
+          try {
+            // Get the user's role from the database
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('role, username')
+              .eq('id', session.user.id)
+              .single();
 
-        const userUsername = profileData?.username || session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
-        const role: UserRole = profileData?.role || 'buyer';
-        
-        console.log('User profile loaded:', { userUsername, role, email: session.user.email });
-        
-        setIsAuthenticated(true);
-        setUserRole(role);
-        setUsername(userUsername);
-        storage.saveSession(role, userUsername);
+            const userUsername = profileData?.username || session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
+            const role: UserRole = (profileData?.role === 'admin' ? 'admin' : 'donor') as UserRole;
+            
+            console.log('User profile loaded:', { userUsername, role, email: session.user.email });
+            
+            setIsAuthenticated(true);
+            setUserRole(role);
+            setUsername(userUsername);
+            storage.saveSession(role, userUsername);
+          } catch (error) {
+            console.error('Error loading profile:', error);
+            setIsAuthenticated(true);
+            setUserRole('donor');
+            setUsername(session.user.email?.split('@')[0] || 'User');
+          }
+        }, 0);
       } else {
-        const currentSession = storage.getSession();
-        if (!currentSession || currentSession.userRole !== 'admin') {
-          setIsAuthenticated(false);
-          setUserRole('buyer');
-          setUsername('');
-          storage.clearSession();
-        }
+        setIsAuthenticated(false);
+        setUserRole('donor');
+        setUsername('');
+        storage.clearSession();
       }
     });
 
-    if (!savedSession || savedSession.userRole !== 'admin') {
-      supabase.auth.getSession().then(async ({ data: { session }, error }) => {
-        if (!mounted) return;
-        
-        if (error) {
-          console.error('Error getting session:', error);
-          return;
-        }
+    // Check for existing session on load
+    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
+      if (!mounted) return;
+      
+      if (error) {
+        console.error('Error getting session:', error);
+        return;
+      }
 
-        if (session?.user) {
+      if (session?.user) {
+        try {
           // Get the user's role from the database
           const { data: profileData } = await supabase
             .from('profiles')
@@ -87,7 +86,7 @@ export default function Index() {
             .single();
 
           const userUsername = profileData?.username || session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
-          const role: UserRole = profileData?.role || 'buyer';
+          const role: UserRole = (profileData?.role === 'admin' ? 'admin' : 'donor') as UserRole;
           
           console.log('Initial session loaded:', { userUsername, role, email: session.user.email });
           
@@ -95,9 +94,14 @@ export default function Index() {
           setUserRole(role);
           setUsername(userUsername);
           storage.saveSession(role, userUsername);
+        } catch (error) {
+          console.error('Error loading profile:', error);
+          setIsAuthenticated(true);
+          setUserRole('donor');
+          setUsername(session.user.email?.split('@')[0] || 'User');
         }
-      });
-    }
+      }
+    });
 
     return () => {
       mounted = false;
@@ -124,7 +128,7 @@ export default function Index() {
     }
   };
 
-  const handleLogin = (role: 'admin' | 'donor' | 'buyer', loginUsername?: string) => {
+  const handleLogin = (role: 'admin' | 'donor', loginUsername?: string) => {
     console.log('Login successful:', role, loginUsername);
     setUserRole(role);
     setUsername(loginUsername || '');
@@ -147,7 +151,7 @@ export default function Index() {
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
-      setUserRole('buyer');
+      setUserRole('donor');
       setUsername('');
       setIsAuthenticated(false);
       setView('home');
@@ -188,7 +192,7 @@ export default function Index() {
   };
 
   const handleBrowseItems = () => {
-    setUserRole('buyer');
+    setUserRole('donor');
     navigate('/items');
   };
 
@@ -262,7 +266,7 @@ export default function Index() {
           </div>
 
           {/* Text content below the bear */}
-          {!isAuthenticated && userRole === 'buyer' && (
+          {!isAuthenticated && (
             <div className="text-white space-y-4 md:space-y-6 text-center max-w-4xl mx-auto px-2">
               <div className="text-sm md:text-lg text-white/90 space-y-2 md:space-y-3 leading-relaxed">
                 <p>A platform for students in Rackarbergsgatan Uppsala to exchange second-hand items during move-ins and move-outs.</p>

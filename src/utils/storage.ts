@@ -67,6 +67,8 @@ export const storage = {
 
   async getItems(): Promise<Item[]> {
     try {
+      console.log('Fetching items from Supabase...');
+      
       const { data, error } = await supabase
         .from('Item inventory')
         .select('*')
@@ -78,8 +80,11 @@ export const storage = {
       }
 
       if (!data) {
+        console.log('No data returned from Supabase');
         return [];
       }
+
+      console.log(`Successfully fetched ${data.length} items from database`);
 
       return data.map(item => ({
         id: item['Item ID']?.toString() || '',
