@@ -266,7 +266,7 @@ export default function Items() {
           userRole={userRole} 
           username={username}
           onLogout={(isAuthenticated || userRole === 'admin') ? handleLogout : undefined}
-          onDonate={() => navigate('/donate')}
+          onDonate={() => navigate('/?donate=true')}
           onHome={() => navigate('/')}
           isAuthenticated={isAuthenticated}
         />
@@ -336,7 +336,7 @@ export default function Items() {
         userRole={userRole} 
         username={username}
         onLogout={(isAuthenticated || userRole === 'admin') ? handleLogout : undefined}
-        onDonate={() => navigate('/donate')}
+        onDonate={() => navigate('/?donate=true')}
         onHome={() => navigate('/')}
         isAuthenticated={isAuthenticated}
       />

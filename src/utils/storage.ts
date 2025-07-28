@@ -181,7 +181,6 @@ export const storage = {
       if (updates.updated_by !== undefined) supabaseUpdates['Updated By'] = updates.updated_by;
       if (updates.created_at !== undefined) supabaseUpdates['Created At'] = updates.created_at;
       if (updates.updated_at !== undefined) supabaseUpdates['Updated At'] = updates.updated_at;
-      if (updates.sold_quantity !== undefined) supabaseUpdates['Sold Quantity'] = updates.sold_quantity;
 
       const { data, error } = await supabase
         .from('Item inventory')
@@ -220,7 +219,7 @@ export const storage = {
         updated_by: data['Updated By'] || '',
         created_at: data['Created At'] || new Date().toISOString(),
         updated_at: data['Updated At'] || new Date().toISOString(),
-        sold_quantity: data['Sold Quantity'] || 0
+        sold_quantity: 0
       };
     } catch (error) {
       console.error('Error updating item:', error);

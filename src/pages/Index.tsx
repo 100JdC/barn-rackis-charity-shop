@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { LoginForm } from "@/components/LoginForm";
 import { DonatePage } from "@/pages/DonatePage";
 import { Header } from "@/components/Header";
@@ -24,6 +24,14 @@ export default function Index() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showLoginForm, setShowLoginForm] = useState(false);
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    // Check if donate parameter is in URL
+    if (searchParams.get('donate') === 'true') {
+      setView('donate');
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     let mounted = true;
