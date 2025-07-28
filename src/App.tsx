@@ -8,8 +8,7 @@ import Index from "./pages/Index";
 import About from "./pages/About";
 import Items from "./pages/Items";
 import Category from "./pages/Category";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+import Auth from "./pages/Auth";
 import Impressum from "./pages/Impressum";
 import LegalNotice from "./pages/Legalnotice";
 import TermsAndConditions from "./pages/Terms_and_conditions";
@@ -28,8 +27,7 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/items" element={<Items />} />
           <Route path="/category/:categoryName" element={<Category />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/impressum" element={<Impressum />} />
           <Route path="/legal-notice" element={<LegalNotice />} />
           <Route path="/terms-and-conditions" element={<TermsAndConditions />} />

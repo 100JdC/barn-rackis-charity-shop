@@ -146,7 +146,7 @@ export default function Index() {
 
   const handleDonate = () => {
     if (!isAuthenticated && userRole !== 'admin') {
-      navigate('/login');
+      navigate('/auth');
       return;
     }
     
@@ -272,20 +272,11 @@ export default function Index() {
                   Browse our items
                 </Button>
                 <Button
-                  onClick={() => navigate('/register')}
+                  onClick={() => navigate('/auth')}
                   className="w-full bg-white/20 hover:bg-white/30 text-white h-10 md:h-12 text-sm md:text-lg border-white/30"
                   variant="outline"
                 >
-                  Register to donate
-                </Button>
-              </div>
-              <div className="text-center">
-                <Button
-                  onClick={() => navigate('/login')}
-                  className="text-white/80 hover:text-white text-sm md:text-lg underline"
-                  variant="link"
-                >
-                  Already have an account? Login here
+                  Admin Login
                 </Button>
               </div>
             </div>

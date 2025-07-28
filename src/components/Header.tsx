@@ -31,7 +31,7 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
     // Check if user is authenticated (either via Supabase or as admin)
     if (!isAuthenticated && userRole !== 'admin') {
       // Not authenticated, redirect to login
-      navigate('/login');
+      navigate('/auth');
     } else {
       // Authenticated, go to donate functionality
       if (onDonate) {
