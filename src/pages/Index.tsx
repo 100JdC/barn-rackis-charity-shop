@@ -4,9 +4,9 @@ import { LoginForm } from "@/components/LoginForm";
 import { DonatePage } from "@/pages/DonatePage";
 import { Header } from "@/components/Header";
 import { CategoryBrowser } from "@/components/CategoryBrowser";
+import { PendingDonations } from "@/components/PendingDonations";
 import { Footer } from "@/components/Footer";
 import { storage } from "@/utils/storage";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -309,6 +309,16 @@ export default function Index() {
                 >
                   Already have an account? Login here
                 </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Admin Panel for pending donations */}
+          {isAuthenticated && userRole === 'admin' && (
+            <div className="mb-6">
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 md:p-6">
+                <h2 className="text-xl md:text-2xl font-bold text-white mb-4">Admin Dashboard</h2>
+                <PendingDonations onItemsUpdate={loadItems} />
               </div>
             </div>
           )}
