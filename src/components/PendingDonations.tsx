@@ -48,8 +48,8 @@ export const PendingDonations = ({ onItemsUpdate }: PendingDonationsProps) => {
         updated_at: new Date().toISOString()
       };
       
-      const success = await storage.updateItem(updatedItem.id, updatedItem);
-      if (success) {
+      const result = await storage.updateItem(updatedItem.id, updatedItem);
+      if (result) {
         toast({
           title: "Success",
           description: `"${item.name}" has been approved and is now available.`
