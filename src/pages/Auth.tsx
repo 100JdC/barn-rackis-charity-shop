@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -52,7 +53,7 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password || !confirmPassword) {
+    if (!email || !username || !password || !confirmPassword) {
       setError('Please fill in all fields');
       return;
     }
@@ -71,11 +72,25 @@ const Auth = () => {
     setError('');
 
     try {
+      // Check if email already exists
+      const { data: existingUsers } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('username', username.toLowerCase());
+
+      if (existingUsers && existingUsers.length > 0) {
+        setError('Username already taken. Please choose another one.');
+        return;
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            username: username.toLowerCase()
+          }
         },
       });
 
@@ -154,6 +169,17 @@ const Auth = () => {
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-username">Username</Label>
+                  <Input
+                    id="signup-username"
+                    type="text"
+                    placeholder="Choose a username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     required
                   />
                 </div>

@@ -276,7 +276,16 @@ export default function Index() {
                   className="w-full bg-white/20 hover:bg-white/30 text-white h-10 md:h-12 text-sm md:text-lg border-white/30"
                   variant="outline"
                 >
-                  Admin Login
+                  Register to donate
+                </Button>
+              </div>
+              <div className="text-center">
+                <Button
+                  onClick={() => navigate('/auth')}
+                  className="text-white/80 hover:text-white text-sm md:text-lg underline"
+                  variant="link"
+                >
+                  Already have an account? Login here
                 </Button>
               </div>
             </div>
