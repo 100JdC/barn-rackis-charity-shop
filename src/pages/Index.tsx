@@ -202,7 +202,7 @@ export default function Index() {
         userRole={userRole}
         username={username}
         onLogout={handleLogout}
-        onNavigate={() => {}}
+        onNavigate={(newView) => newView === 'home' ? setView('home') : setView('home')}
         onBack={() => setView('home')}
       />
     );

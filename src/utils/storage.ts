@@ -188,7 +188,7 @@ export const storage = {
         .update(supabaseUpdates)
         .eq('Item ID', parseInt(id))
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Supabase error:', error);
