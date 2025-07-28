@@ -42,13 +42,19 @@ export const PendingDonations = ({ onItemsUpdate }: PendingDonationsProps) => {
 
   const handleApprove = async (item: Item) => {
     try {
+      console.log('Attempting to approve item:', item.id, item.name);
+      
       const updatedItem = {
         ...item,
         status: 'available' as const,
         updated_at: new Date().toISOString()
       };
       
+      console.log('Updated item data:', updatedItem);
+      
       const result = await storage.updateItem(item.id, updatedItem);
+      console.log('Update result:', result);
+      
       if (result) {
         toast({
           title: "Success",
@@ -57,13 +63,14 @@ export const PendingDonations = ({ onItemsUpdate }: PendingDonationsProps) => {
         await loadPendingItems();
         await onItemsUpdate();
       } else {
-        throw new Error('Failed to update item');
+        console.error('Update returned null/false');
+        throw new Error('Failed to update item - no result returned');
       }
     } catch (error) {
       console.error('Error approving item:', error);
       toast({
         title: "Error",
-        description: "Failed to approve item.",
+        description: `Failed to approve item: ${error.message || 'Unknown error'}`,
         variant: "destructive"
       });
     }
