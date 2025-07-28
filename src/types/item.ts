@@ -24,4 +24,4 @@ export interface Item {
   updated_at: string;
 }
 
-export type UserRole = 'admin' | 'donator' | 'buyer';
+export type UserRole = 'admin' | 'donor' | 'buyer';

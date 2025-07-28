@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 
 interface LoginFormProps {
-  onLogin: (role: 'admin' | 'donator' | 'buyer', username?: string) => void;
+  onLogin: (role: 'admin' | 'donor' | 'buyer', username?: string) => void;
 }
 
 export const LoginForm = ({ onLogin }: LoginFormProps) => {

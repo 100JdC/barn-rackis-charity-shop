@@ -50,7 +50,7 @@ export default function Items() {
       
       if (session?.user) {
         const userUsername = session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
-        const role: UserRole = session.user.email === 'jacob@admin.com' ? 'admin' : 'donator';
+        const role: UserRole = 'buyer'; // Will be updated from database
         
         setIsAuthenticated(true);
         setUserRole(role);
@@ -78,7 +78,7 @@ export default function Items() {
 
         if (session?.user) {
           const userUsername = session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
-          const role: UserRole = session.user.email === 'jacob@admin.com' ? 'admin' : 'donator';
+          const role: UserRole = 'buyer'; // Will be updated from database
           
           setIsAuthenticated(true);
           setUserRole(role);

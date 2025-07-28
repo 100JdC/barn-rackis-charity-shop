@@ -36,14 +36,23 @@ export default function Index() {
       setUsername(savedSession.username);
     }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
       
       console.log('Auth state changed:', event, session?.user?.email);
       
       if (session?.user) {
-        const userUsername = session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
-        const role: UserRole = session.user.email === 'info@rackisforbarn.com' ? 'admin' : 'donator';
+        // Get the user's role from the database
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('role, username')
+          .eq('id', session.user.id)
+          .single();
+
+        const userUsername = profileData?.username || session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
+        const role: UserRole = profileData?.role || 'buyer';
+        
+        console.log('User profile loaded:', { userUsername, role, email: session.user.email });
         
         setIsAuthenticated(true);
         setUserRole(role);
@@ -61,7 +70,7 @@ export default function Index() {
     });
 
     if (!savedSession || savedSession.userRole !== 'admin') {
-      supabase.auth.getSession().then(({ data: { session }, error }) => {
+      supabase.auth.getSession().then(async ({ data: { session }, error }) => {
         if (!mounted) return;
         
         if (error) {
@@ -70,8 +79,17 @@ export default function Index() {
         }
 
         if (session?.user) {
-          const userUsername = session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
-          const role: UserRole = session.user.email === 'info@rackisforbarn.com' ? 'admin' : 'donator';
+          // Get the user's role from the database
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('role, username')
+            .eq('id', session.user.id)
+            .single();
+
+          const userUsername = profileData?.username || session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
+          const role: UserRole = profileData?.role || 'buyer';
+          
+          console.log('Initial session loaded:', { userUsername, role, email: session.user.email });
           
           setIsAuthenticated(true);
           setUserRole(role);
@@ -106,14 +124,14 @@ export default function Index() {
     }
   };
 
-  const handleLogin = (role: 'admin' | 'donator' | 'buyer', loginUsername?: string) => {
+  const handleLogin = (role: 'admin' | 'donor' | 'buyer', loginUsername?: string) => {
     console.log('Login successful:', role, loginUsername);
     setUserRole(role);
     setUsername(loginUsername || '');
     setIsAuthenticated(true);
     setShowLoginForm(false);
     
-    if (role === 'donator') {
+    if (role === 'donor') {
       supabase.auth.getUser().then(({ data: { user } }) => {
         if (user && new Date(user.created_at).getTime() > Date.now() - 10000) {
           setView('donate');
