@@ -3,23 +3,32 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { PageWrapper } from "@/components/PageWrapper";
+import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
 const About = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <PageWrapper>
-        <div className="w-full max-w-4xl space-y-6">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/')}
-            className="mb-6 text-white hover:bg-white/20"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
-          </Button>
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#001faa' }}>
+      {/* Header */}
+      <Header 
+        userRole="buyer" 
+        username=""
+        isAuthenticated={false}
+      />
+
+      {/* Background logo */}
+      <div className="absolute inset-0 flex items-center justify-center z-0 opacity-30 pointer-events-none pt-20">
+        <img
+          src="/lovable-uploads/logos/standard_logo.png"
+          alt="Rackis for Barn Logo"
+          className="w-[600px] h-auto object-contain"
+        />
+      </div>
+      
+      <div className="relative z-10 flex-1 container mx-auto px-4 py-8">
+        <div className="w-full max-w-4xl mx-auto space-y-6">
 
           <Card className="bg-white/90 backdrop-blur-sm">
             <CardHeader>
@@ -104,7 +113,7 @@ const About = () => {
             </CardContent>
           </Card>
         </div>
-      </PageWrapper>
+      </div>
       <Footer />
     </div>
   );

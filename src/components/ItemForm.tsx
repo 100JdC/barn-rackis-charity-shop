@@ -70,33 +70,15 @@ interface ItemData {
 }
 
 export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemFormProps & { username?: string }) => {
-  const [items, setItems] = useState<ItemData[]>([{
-    name: '',
-    description: '',
-    category: 'bedding',
-    subcategory: '',
-    condition: 'lightly_used',
-    quantity: 1,
-    original_price: '',
-    suggested_price: '',
-    final_price: undefined,
-    status: 'available',
-    reserved_by: '',
-    location: '',
-    photos: [],
-    internal_notes: '',
-    donor_name: username || ''
-  }]);
-  
-  const isEditing = !!item;
-  const { toast } = useToast();
-
-  useEffect(() => {
-    if (item && isEditing) {
-      // For editing single item, map old 'thin duvet' to new 'regular duvet (blanket)'
+  const [items, setItems] = useState<ItemData[]>(() => {
+    // Initialize with proper default state
+    const defaultStatus = userRole === 'admin' ? 'available' : 'pending_approval';
+    
+    if (item) {
+      // If editing, load the item data immediately
       const mappedSubcategory = item.subcategory === 'thin duvet' ? 'regular duvet (blanket)' : item.subcategory;
       
-      setItems([{
+      return [{
         name: item.name,
         description: item.description || '',
         category: item.category,
@@ -112,9 +94,32 @@ export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemF
         photos: item.photos || [],
         internal_notes: item.internal_notes || '',
         donor_name: item.donor_name || username || ''
-      }]);
+      }];
+    } else {
+      // Default for new item
+      return [{
+        name: '',
+        description: '',
+        category: 'bedding',
+        subcategory: '',
+        condition: 'lightly_used',
+        quantity: 1,
+        original_price: '',
+        suggested_price: '',
+        final_price: undefined,
+        status: defaultStatus,
+        reserved_by: '',
+        location: '',
+        photos: [],
+        internal_notes: '',
+        donor_name: username || ''
+      }];
     }
-  }, [item, isEditing, username]);
+  });
+  
+  const isEditing = !!item;
+  const { toast } = useToast();
+
 
   const addNewItem = () => {
     setItems([...items, {

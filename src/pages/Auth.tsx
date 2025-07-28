@@ -16,6 +16,7 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('signup');
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -112,6 +113,20 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#001faa' }}>
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b border-gray-200 px-3 md:px-6 py-2 relative z-20">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <h1 className="text-xl md:text-2xl font-bold text-primary">Welcome to Rackis for barn</h1>
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/')}
+            className="hover:bg-gray-100"
+          >
+            Back to Home
+          </Button>
+        </div>
+      </header>
+
       {/* Background logo like other pages */}
       <div className="absolute inset-0 flex items-center justify-center z-0 opacity-30 pointer-events-none pt-20">
         <img
@@ -124,11 +139,11 @@ const Auth = () => {
       <div className="relative z-10 flex-1 flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-primary">Welcome to Rackis for barn</CardTitle>
+            <CardTitle className="text-2xl font-bold text-primary">Authentication</CardTitle>
             <CardDescription>Sign in to your account or create a new one to start donating</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="signup" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signup">Register</TabsTrigger>
                 <TabsTrigger value="login">Login</TabsTrigger>
@@ -241,14 +256,31 @@ const Auth = () => {
               </TabsContent>
             </Tabs>
             
-            <div className="mt-6 text-center">
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/')} 
-                className="w-full bg-white/50 hover:bg-white/70"
-              >
-                Back to Home
-              </Button>
+            <div className="mt-6 text-center space-y-3">
+              {activeTab === 'signup' && (
+                <p className="text-sm text-gray-600">
+                  Already have an account?{' '}
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('login')}
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Login here
+                  </button>
+                </p>
+              )}
+              {activeTab === 'login' && (
+                <p className="text-sm text-gray-600">
+                  Don't have an account?{' '}
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('signup')}
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Register here
+                  </button>
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
