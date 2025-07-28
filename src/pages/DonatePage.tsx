@@ -28,7 +28,7 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
       setUser(user);
       setLoading(false);
       
-      if (!user && userRole !== 'admin') {
+      if (!user) {
         toast({
           title: "Authentication Required",
           description: "Please log in to donate items.",
@@ -40,10 +40,10 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
     };
 
     checkAuth();
-  }, [onNavigate, toast, userRole]);
+  }, [onNavigate, toast]);
 
   const handleItemsSave = async (items: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>[]) => {
-    if (!user && userRole !== 'admin') {
+    if (!user) {
       toast({
         title: "Authentication Required",
         description: "Please log in to donate items.",
@@ -91,7 +91,7 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
 
   const handleThankYouComplete = () => {
     setShowThankYou(false);
-    onNavigate('items');
+    onNavigate('home');
   };
 
   if (loading) {
