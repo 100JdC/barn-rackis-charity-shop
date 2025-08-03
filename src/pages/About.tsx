@@ -70,14 +70,6 @@ const About = () => {
         }}
       />
 
-      {/* Background logo */}
-      <div className="absolute inset-0 flex items-center justify-center z-0 opacity-30 pointer-events-none pt-20">
-        <img
-          src="/lovable-uploads/logos/standard_logo.png"
-          alt="Rackis for Barn Logo"
-          className="w-[600px] h-auto object-contain"
-        />
-      </div>
       
       <div className="relative z-10 flex-1 container mx-auto px-4 py-8">
         <div className="w-full max-w-4xl mx-auto space-y-6">
