@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { CategoryBrowser } from "@/components/CategoryBrowser";
 import { PendingDonations } from "@/components/PendingDonations";
 import { Footer } from "@/components/Footer";
+import { BetaNotice } from "@/components/BetaNotice";
 import { storage } from "@/utils/storage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -231,6 +232,7 @@ export default function Index() {
           onHome={() => setView('home')}
           isAuthenticated={isAuthenticated}
         />
+        <BetaNotice />
         
         <div className="container mx-auto px-4 py-4">
           <div className="text-center mb-2">

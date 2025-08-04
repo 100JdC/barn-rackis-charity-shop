@@ -6,6 +6,7 @@ import { ItemDetail } from "@/components/ItemDetail";
 import { SearchAndFilters } from "@/components/SearchAndFilters";
 import { CategoryBrowser } from "@/components/CategoryBrowser";
 import { Footer } from "@/components/Footer";
+import { BetaNotice } from "@/components/BetaNotice";
 import { storage } from "@/utils/storage";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -270,6 +271,7 @@ export default function Items() {
           onHome={() => navigate('/')}
           isAuthenticated={isAuthenticated}
         />
+        <BetaNotice />
         
         <div className="flex-1 container mx-auto px-4 py-8">
           <div className="mb-4">
@@ -340,6 +342,7 @@ export default function Items() {
         onHome={() => navigate('/')}
         isAuthenticated={isAuthenticated}
       />
+      <BetaNotice />
       
       <div className="flex-1">
         <div className="container mx-auto px-4 py-8">

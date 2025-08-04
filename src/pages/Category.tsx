@@ -4,7 +4,7 @@ import { Header } from "@/components/Header";
 import { ItemCard } from "@/components/ItemCard";
 import { ItemDetail } from "@/components/ItemDetail";
 import { ItemForm } from "@/components/ItemForm";
-
+import { BetaNotice } from "@/components/BetaNotice";
 import { Footer } from "@/components/Footer";
 import { storage } from "@/utils/storage";
 import { Button } from "@/components/ui/button";
@@ -255,6 +255,7 @@ const Category = () => {
           onHome={handleHome}
           isAuthenticated={isAuthenticated}
         />
+        <BetaNotice />
         <div className="container mx-auto px-4 py-8 flex-1">
           <ItemDetail
             item={selectedItem}
@@ -284,6 +285,7 @@ const Category = () => {
           onHome={handleHome}
           isAuthenticated={isAuthenticated}
         />
+        <BetaNotice />
         <div className="container mx-auto px-4 py-8 flex-1">
           <ItemForm
             item={selectedItem}
@@ -336,6 +338,7 @@ const Category = () => {
           onHome={handleHome}
           isAuthenticated={isAuthenticated}
         />
+        <BetaNotice />
         
         <div className="container mx-auto px-4 py-8">
           <div className="mb-6">

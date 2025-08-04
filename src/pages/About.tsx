@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { PageWrapper } from "@/components/PageWrapper";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { BetaNotice } from "@/components/BetaNotice";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
@@ -69,6 +70,7 @@ const About = () => {
           navigate('/');
         }}
       />
+      <BetaNotice />
 
       
       <div className="relative z-10 flex-1 container mx-auto px-4 py-8">
