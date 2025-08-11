@@ -19,7 +19,7 @@ interface ItemFormProps {
 }
 
 const CATEGORY_SUBCATEGORIES = {
-  bedding: ['thick duvet', 'regular duvet (blanket)', 'pillow', 'duvet cover', 'pillow cover', 'matching duvet+pillow cover', 'matress cover', 'bedspread', 'other'],
+  bedding: ['thick duvet', 'regular duvet (blanket)', 'pillow', 'duvet cover', 'pillow cover', 'matching duvet+pillow cover', 'duvet and pillow set', 'matress cover', 'bedspread', 'other'],
   bathroom: ['mirror', 'container', 'towel', 'other'],
   decoration: ['plant', 'picture', 'light chain', 'lamp', 'other'],
   other_room_inventory: ['hangers', 'curtains', 'other'],
@@ -37,6 +37,7 @@ const SUBCATEGORY_PHOTOS: Record<string, string[]> = {
   'bedspread': ['/lovable-uploads/f394b99a-4fbc-4e8f-865e-e4d193184f6b.png'],
   'matress cover': ['/lovable-uploads/64001d16-d0ac-4d99-8624-4b82334fa3b7.png'],
   'matching duvet+pillow cover': ['/lovable-uploads/d9859291-db59-42d7-a21a-0a9491a92e39.png'],
+  'duvet and pillow set': ['/lovable-uploads/fd3f3d4a-5017-4ac8-8d4a-324524269498.png'],
   'pillow': ['/lovable-uploads/33d9e0cd-e2a5-4b47-809b-c8ec1d2b122e.png'],
   'duvet cover': ['/lovable-uploads/34ec46f2-e0c7-4af4-9664-dc56e99c3fdf.png'],
   'mirror': ['/lovable-uploads/54254c2e-2b34-4212-89f2-a57955c91c26.png'],
