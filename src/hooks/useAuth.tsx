@@ -87,6 +87,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         
         if (!mounted) return;
         
+        // Don't override manually cleared state during logout
+        if (event === 'SIGNED_OUT') {
+          console.log('🚪 Auth state: SIGNED_OUT detected');
+          setSession(null);
+          setUser(null);
+          setUserRole('donor');
+          setUsername('');
+          setLoading(false); // Ensure loading is false
+          return;
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -97,12 +108,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             }
           }, 0);
         } else {
-          setUserRole('donor');
-          setUsername('');
-        }
-        
-        if (event === 'SIGNED_OUT') {
-          console.log('🚪 Auth state: SIGNED_OUT detected');
           setUserRole('donor');
           setUsername('');
         }
@@ -155,32 +160,34 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log('🔑 Starting sign in...');
       setLoading(true);
       
       // Try to sign in with the provided credentials
-      // The handle_username_or_email_sign_in function will convert username to email if needed
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
+        setLoading(false); // Ensure loading is cleared on error
         throw error;
       }
 
+      console.log('✅ Sign in successful');
       toast({
         title: "Login successful",
         description: "Welcome back!",
       });
+      // Don't set loading false here - let auth state listener handle it
     } catch (error: any) {
+      setLoading(false); // Clear loading on error
       toast({
         title: "Login failed",
         description: error.message,
         variant: "destructive",
       });
       throw error;
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -218,50 +225,35 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const signOut = async () => {
     console.log('🚪 Starting logout process...');
     
-    try {
-      // Immediately clear UI state - don't wait for Supabase
-      console.log('🔄 Clearing local auth state immediately');
-      setUser(null);
-      setSession(null);
-      setUserRole('donor');
-      setUsername('');
-      setLoading(false); // Ensure loading is false immediately
-      
-      // Show success message immediately
-      toast({
-        title: "Logged out",
-        description: "You have been successfully logged out.",
-      });
+    // Immediately clear ALL state to prevent any loading loops
+    console.log('🔄 Clearing all auth state immediately');
+    setLoading(false); // CRITICAL: Set loading false FIRST
+    setUser(null);
+    setSession(null);
+    setUserRole('donor');
+    setUsername('');
+    
+    // Show success message immediately
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out.",
+    });
 
-      // Async Supabase cleanup in background (non-blocking)
+    console.log('✅ UI logout completed immediately');
+
+    // Background Supabase cleanup (completely non-blocking)
+    setTimeout(() => {
       console.log('🔧 Starting background Supabase cleanup');
       supabase.auth.signOut().then(({ error }) => {
         if (error) {
-          console.warn('⚠️ Supabase signOut warning (non-critical):', error);
+          console.warn('⚠️ Background signOut warning (non-critical):', error);
         } else {
-          console.log('✅ Supabase signOut completed');
+          console.log('✅ Background Supabase signOut completed');
         }
       }).catch((error) => {
-        console.warn('⚠️ Supabase signOut error (non-critical):', error);
+        console.warn('⚠️ Background signOut error (non-critical):', error);
       });
-
-      console.log('✅ Logout process completed immediately');
-      
-    } catch (error: any) {
-      console.error('❌ Logout error:', error);
-      
-      // Even if there's an error, ensure the user appears logged out
-      setUser(null);
-      setSession(null);
-      setUserRole('donor');
-      setUsername('');
-      setLoading(false);
-      
-      toast({
-        title: "Logged out",
-        description: "You have been logged out.",
-      });
-    }
+    }, 0);
   };
 
   const value = {
