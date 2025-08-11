@@ -137,9 +137,9 @@ export default function Index() {
       
       <main className="pt-16">
         <div className="bg-[#001da6] text-white min-h-[calc(100vh-4rem)]">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-1">
             {/* Header text */}
-            <div className="text-center mb-4">
+            <div className="text-center mb-2">
               <h1 className="text-2xl md:text-4xl font-bold text-white mb-2 md:mb-4 px-2">
                 Welcome to Rackis for Barn!
               </h1>
