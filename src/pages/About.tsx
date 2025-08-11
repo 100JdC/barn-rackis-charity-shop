@@ -132,7 +132,7 @@ const About = () => {
                 </div>
               </section>
               <section>
-                <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>What Does "Rackis för Barn" Mean?</h2>
+                <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>What Do the Swedish Words Mean?</h2>
                 <div className="bg-blue-50 p-4 rounded-lg space-y-3 text-gray-700">
                   <p>
                     🧸 <strong>Rackis</strong> – short for Rackarberget, a student housing area in Uppsala. That's where this whole idea started — students helping students.
