@@ -159,12 +159,17 @@ const Auth = () => {
                       className="bg-white"
                     />
                   </div>
+                  
+                  <div className="text-sm text-orange-600 bg-orange-50 p-3 rounded-lg border border-orange-200">
+                    <strong>⚠️ Security Notice:</strong> For safety reasons, please use a unique password that you don't use for other important accounts.
+                  </div>
+                  
                   {error && (
                     <Alert className="bg-red-50 border-red-200">
                       <AlertDescription className="text-red-700">{error}</AlertDescription>
                     </Alert>
                   )}
-                  <Button 
+                  <Button
                     type="submit" 
                     className="w-full bg-primary hover:bg-primary/90" 
                     disabled={loading}
