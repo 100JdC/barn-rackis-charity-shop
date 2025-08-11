@@ -70,6 +70,16 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
           <Button 
             variant="ghost" 
             size="sm" 
+            onClick={() => navigate('/about')}
+            className="hover:bg-gray-100 text-xs md:text-sm px-2 md:px-3 hidden sm:flex"
+          >
+            <span className="hidden md:inline">About Us</span>
+            <span className="md:hidden">About</span>
+          </Button>
+
+          <Button 
+            variant="ghost" 
+            size="sm" 
             onClick={handleHome}
             className="hover:bg-gray-100 text-xs md:text-sm px-2 md:px-3"
           >
@@ -95,16 +105,6 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
           >
             <Heart className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
             <span className="hidden md:inline">Donate</span>
-          </Button>
-          
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => navigate('/about')}
-            className="hover:bg-gray-100 text-xs md:text-sm px-2 md:px-3 hidden sm:flex"
-          >
-            <span className="hidden md:inline">About Us</span>
-            <span className="md:hidden">About</span>
           </Button>
 
           <Button 
