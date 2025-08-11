@@ -128,7 +128,7 @@ const HowBrowsingWorks = () => {
                 
                 <div className="space-y-4">
                   <div>
-                    <p className="font-medium text-gray-800 mb-3">1. Make a payment with subject of the transaction "Rackis för barn" to one of the following:</p>
+                    <p className="font-medium text-gray-800 mb-3">1. Make a payment with subject of the transaction "Rackis for barn" to one of the following:</p>
                     <div className="bg-gray-50 p-4 rounded-lg space-y-3">
                       <div className="flex items-start gap-3">
                         <CreditCard className="h-5 w-5 text-gray-600 mt-0.5" />
