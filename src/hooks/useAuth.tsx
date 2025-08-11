@@ -45,7 +45,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     // Get initial session
     const getInitialSession = async () => {
       try {
+        console.log('Getting initial session...');
         const { data: { session } } = await supabase.auth.getSession();
+        console.log('Initial session result:', session?.user?.email || 'No session');
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -55,6 +57,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       } catch (error) {
         console.error('Error getting initial session:', error);
       } finally {
+        console.log('Setting loading to false');
         setLoading(false);
       }
     };
@@ -80,6 +83,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           setUsername('');
         }
         
+        // Always ensure loading is false after auth state changes
         setLoading(false);
       }
     );
@@ -89,6 +93,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const loadUserProfile = async (userId: string) => {
     try {
+      console.log('Loading user profile for:', userId);
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('username, role')
@@ -97,15 +102,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       if (error) {
         console.error('Error loading profile:', error);
+        // Set defaults if profile loading fails
+        setUsername('User');
+        setUserRole('donor');
         return;
       }
 
       if (profile) {
+        console.log('Profile loaded:', profile);
         setUsername(profile.username || 'User');
         setUserRole((profile.role as UserRole) || 'donor');
       }
     } catch (error) {
       console.error('Error loading user profile:', error);
+      // Set defaults if profile loading fails
+      setUsername('User');
+      setUserRole('donor');
     }
   };
 
