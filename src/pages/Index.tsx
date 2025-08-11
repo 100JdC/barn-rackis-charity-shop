@@ -118,14 +118,14 @@ export default function Index() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#001faa' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#001da6' }}>
         <div className="text-lg text-white">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#001faa' }}>
+    <div className="min-h-screen" style={{ backgroundColor: '#001da6' }}>
       <Header 
         userRole={userRole}
         username={username}
@@ -136,7 +136,7 @@ export default function Index() {
       <BetaNotice />
       
       <main className="pt-16">
-        <div className="bg-[#1733a7] text-white min-h-[calc(100vh-4rem)]">
+        <div className="bg-[#001da6] text-white min-h-[calc(100vh-4rem)]">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Header text */}
             <div className="text-center mb-6">
