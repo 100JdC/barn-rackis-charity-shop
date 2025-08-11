@@ -1,46 +1,39 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { ItemForm } from "@/components/ItemForm";
 import { ThankYouAnimation } from "@/components/ThankYouAnimation";
 import { Footer } from "@/components/Footer";
 import { storage } from "@/utils/storage";
 import { useToast } from "@/hooks/use-toast";
-import type { Item, UserRole } from "@/types/item";
+import { useAuth } from "@/hooks/useAuth";
+import type { Item } from "@/types/item";
 import { supabase } from "@/integrations/supabase/client";
 
-interface DonatePageProps {
-  userRole: UserRole;
-  username?: string;
-  onLogout: () => void;
-  onNavigate: (view: string) => void;
-  onBack: () => void;
-}
-
-export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }: DonatePageProps) => {
+export const DonatePage = () => {
   const [showThankYou, setShowThankYou] = useState(false);
-  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { user, userRole, username, isAuthenticated, signOut } = useAuth();
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
       setLoading(false);
       
-      if (!user) {
+      if (!isAuthenticated) {
         toast({
           title: "Authentication Required",
           description: "Please log in to donate items.",
           variant: "destructive"
         });
-        onNavigate('home');
+        navigate('/auth');
         return;
       }
     };
 
     checkAuth();
-  }, [onNavigate, toast]);
+  }, [isAuthenticated, navigate, toast]);
 
   const handleItemsSave = async (items: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>[]) => {
     if (!user) {
@@ -49,7 +42,7 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
         description: "Please log in to donate items.",
         variant: "destructive"
       });
-      onNavigate('home');
+      navigate('/auth');
       return;
     }
 
@@ -79,8 +72,8 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
           : `Thank you for your donation! ${items.length} item${items.length > 1 ? 's have' : ' has'} been submitted for admin approval.`
       });
       
-      // Navigate back immediately without showing thank you animation
-      onNavigate('home');
+      // Navigate back to home
+      navigate('/');
     } catch (error) {
       console.error('Error saving donations:', error);
       toast({
@@ -93,7 +86,7 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
 
   const handleThankYouComplete = () => {
     setShowThankYou(false);
-    onNavigate('home');
+    navigate('/');
   };
 
   if (loading) {
@@ -112,10 +105,9 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
       <Header 
         userRole={userRole}
         username={username}
-        onLogout={onLogout}
-        onNavigate={onNavigate}
-        onBack={onBack}
-        isAuthenticated={!!user}
+        onDonate={() => navigate('/donate')}
+        onLogout={signOut}
+        isAuthenticated={isAuthenticated}
       />
       
       <div className="container mx-auto px-4 py-8 flex-1">
@@ -132,7 +124,7 @@ export const DonatePage = ({ userRole, username, onLogout, onNavigate, onBack }:
             item={null}
             userRole={userRole}
             onSubmit={handleItemsSave}
-            onCancel={onBack}
+            onCancel={() => navigate('/')}
             username={username}
           />
         </div>

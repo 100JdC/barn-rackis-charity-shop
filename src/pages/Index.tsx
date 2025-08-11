@@ -14,11 +14,9 @@ import type { Item } from "@/types/item";
 
 export default function Index() {
   const navigate = useNavigate();
-  const [view, setView] = useState<'home' | 'donate'>('home');
   const [items, setItems] = useState<Item[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
-  const [searchParams] = useSearchParams();
   
   const { 
     user, 
@@ -28,13 +26,6 @@ export default function Index() {
     loading: authLoading,
     signOut 
   } = useAuth();
-
-  useEffect(() => {
-    // Check if donate parameter is in URL
-    if (searchParams.get('donate') === 'true') {
-      setView('donate');
-    }
-  }, [searchParams]);
 
   useEffect(() => {
     loadItems();
@@ -62,7 +53,6 @@ export default function Index() {
   const handleLogout = async () => {
     try {
       await signOut();
-      setView('home');
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -78,7 +68,7 @@ export default function Index() {
       navigate('/auth');
       return;
     }
-    setView('donate');
+    navigate('/donate');
   };
 
   const handleCategorySelect = (category: string) => {
@@ -100,21 +90,6 @@ export default function Index() {
   const handleBrowseItems = () => {
     navigate(`/items?role=${userRole}`);
   };
-
-  // If showing donate page, render it
-  if (view === 'donate') {
-    return (
-      <DonatePage 
-        userRole={userRole}
-        username={username}
-        onBack={() => setView('home')}
-        onLogout={handleLogout}
-        onNavigate={(view: string) => {
-          if (view === 'home') setView('home');
-        }}
-      />
-    );
-  }
 
   if (authLoading) {
     return (

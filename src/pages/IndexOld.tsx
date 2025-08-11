@@ -206,15 +206,7 @@ export default function Index() {
   };
 
   if (view === 'donate') {
-    return (
-      <DonatePage
-        userRole={userRole}
-        username={username}
-        onLogout={handleLogout}
-        onNavigate={(newView) => newView === 'home' ? setView('home') : setView('home')}
-        onBack={() => setView('home')}
-      />
-    );
+    return <DonatePage />;
   }
 
   if (showLoginForm && !isAuthenticated && userRole !== 'admin') {

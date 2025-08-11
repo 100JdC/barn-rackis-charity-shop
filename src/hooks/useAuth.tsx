@@ -201,10 +201,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signOut = async () => {
     try {
+      setLoading(true);
       const { error } = await supabase.auth.signOut();
       if (error) {
         throw error;
       }
+
+      // Clear all local state
+      setUser(null);
+      setSession(null);
+      setUserRole('donor');
+      setUsername('');
 
       toast({
         title: "Logged out",
@@ -217,6 +224,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         variant: "destructive",
       });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
