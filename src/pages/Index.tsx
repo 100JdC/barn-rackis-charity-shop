@@ -59,7 +59,16 @@ export default function Index() {
   };
 
   const handleDonate = () => {
+    console.log('🎯 Donate clicked - Auth state:', { isAuthenticated, authLoading, userRole });
+    
+    // Don't navigate if auth is still loading
+    if (authLoading) {
+      console.log('⏳ Auth still loading, ignoring donate click');
+      return;
+    }
+    
     if (!isAuthenticated) {
+      console.log('🔒 Not authenticated, redirecting to auth');
       toast({
         title: "Authentication Required",
         description: "Please log in to donate items.",
@@ -68,6 +77,8 @@ export default function Index() {
       navigate('/auth');
       return;
     }
+    
+    console.log('✅ Authenticated, navigating to donate');
     navigate('/donate');
   };
 
@@ -94,7 +105,7 @@ export default function Index() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#001da6' }}>
-        <div className="text-lg text-white">Loading...</div>
+        <div className="text-lg text-white">Loading authentication...</div>
       </div>
     );
   }

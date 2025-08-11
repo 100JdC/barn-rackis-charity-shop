@@ -27,16 +27,16 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
   };
 
   const handleDonate = () => {
-    // Check if user is authenticated (either via Supabase or as admin)
-    if (!isAuthenticated && userRole !== 'admin') {
-      // Not authenticated, redirect to login
-      navigate('/auth');
+    console.log('🎯 Header donate clicked - Auth state:', { isAuthenticated, userRole });
+    
+    // Always use the onDonate callback if provided, this ensures consistent behavior
+    if (onDonate) {
+      onDonate();
     } else {
-      // Authenticated, go to donate functionality
-      if (onDonate) {
-        onDonate();
+      // Fallback: direct navigation (should rarely be used)
+      if (!isAuthenticated) {
+        navigate('/auth');
       } else {
-        // Fallback to direct navigation if onDonate not provided
         navigate('/donate');
       }
     }
