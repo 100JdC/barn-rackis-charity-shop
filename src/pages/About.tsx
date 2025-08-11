@@ -83,6 +83,54 @@ const About = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 text-lg">
+              {/* Quick Navigation Links at the top */}
+              <section>
+                <h2 className="text-2xl font-semibold mb-4 text-center" style={{ color: '#1733a7' }}>Learn More</h2>
+                <div className="grid md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-lg text-center text-white shadow-lg hover:shadow-xl transition-shadow">
+                    <h3 className="font-semibold mb-2">🎁 Donate Items</h3>
+                    <p className="text-blue-100 text-sm mb-3">
+                      Moving out? Register as a donor and list your items. We'll help find them new homes.
+                    </p>
+                    <Button 
+                      onClick={() => navigate('/how-donating-works')} 
+                      variant="secondary" 
+                      size="sm"
+                      className="w-full bg-white/20 border-white/30 text-white hover:bg-white/30"
+                    >
+                      Learn How to Donate
+                    </Button>
+                  </div>
+                  <div className="bg-gradient-to-br from-amber-500 to-yellow-500 p-4 rounded-lg text-center text-white shadow-lg hover:shadow-xl transition-shadow">
+                    <h3 className="font-semibold mb-2">🛍️ Shop Sustainably</h3>
+                    <p className="text-yellow-100 text-sm mb-3">
+                      Browse our inventory and find what you need for your Uppsala student life.
+                    </p>
+                    <Button 
+                      onClick={() => navigate('/how-browsing-works')} 
+                      variant="secondary" 
+                      size="sm"
+                      className="w-full bg-white/20 border-white/30 text-white hover:bg-white/30"
+                    >
+                      Learn How to Browse
+                    </Button>
+                  </div>
+                  <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-4 rounded-lg text-center text-white shadow-lg hover:shadow-xl transition-shadow">
+                    <h3 className="font-semibold mb-2">💛 Support Us</h3>
+                    <p className="text-blue-100 text-sm mb-3">
+                      Learn about the various ways you can support our mission and help children with cancer.
+                    </p>
+                    <Button 
+                      onClick={() => navigate('/how-supporting-works')} 
+                      variant="secondary" 
+                      size="sm"
+                      className="w-full bg-white/20 border-white/30 text-white hover:bg-white/30"
+                    >
+                      Learn How to Support
+                    </Button>
+                  </div>
+                </div>
+              </section>
               <section>
                 <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>What Does "Rackis för Barn" Mean?</h2>
                 <div className="bg-blue-50 p-4 rounded-lg space-y-3 text-gray-700">
@@ -155,57 +203,10 @@ const About = () => {
                 </p>
               </section>
 
-              <section>
-                <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Get Involved</h2>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="bg-white p-4 rounded-lg border border-gray-200 text-center">
-                    <h3 className="font-semibold mb-2" style={{ color: '#1733a7' }}>Donate Items</h3>
-                    <p className="text-gray-700 text-sm mb-3">
-                      Moving out? Register as a donor and list your items. We'll help find them new homes.
-                    </p>
-                    <Button 
-                      onClick={() => navigate('/how-donating-works')} 
-                      variant="outline" 
-                      size="sm"
-                      className="w-full"
-                    >
-                      Learn How to Donate
-                    </Button>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg border border-gray-200 text-center">
-                    <h3 className="font-semibold mb-2" style={{ color: '#1733a7' }}>Shop Sustainably</h3>
-                    <p className="text-gray-700 text-sm mb-3">
-                      Browse our inventory and find what you need for your Uppsala student life.
-                    </p>
-                    <Button 
-                      onClick={() => navigate('/how-browsing-works')} 
-                      variant="outline" 
-                      size="sm"
-                      className="w-full"
-                    >
-                      Learn How to Browse
-                    </Button>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg border border-gray-200 text-center">
-                    <h3 className="font-semibold mb-2" style={{ color: '#1733a7' }}>Support Us</h3>
-                    <p className="text-gray-700 text-sm mb-3">
-                      Learn about the various ways you can support our mission and help children with cancer.
-                    </p>
-                    <Button 
-                      onClick={() => navigate('/how-supporting-works')} 
-                      variant="outline" 
-                      size="sm"
-                      className="w-full"
-                    >
-                      Learn How to Support
-                    </Button>
-                  </div>
-                </div>
-              </section>
 
               <div className="bg-blue-50 p-4 rounded-lg text-center">
                 <p className="font-semibold" style={{ color: '#1733a7' }}>
-                  🌍 Good for students. Good for the planet. Good for children in need. 💛
+                  🌍 Bra för studenter. Bra för planeten. Bra för barn i nöd. 💛
                 </p>
               </div>
             </CardContent>
