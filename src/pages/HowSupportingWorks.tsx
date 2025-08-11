@@ -91,7 +91,7 @@ const HowSupportingWorks = () => {
             <CardContent className="space-y-6 text-lg">
               <div className="text-center mb-6">
                 <img 
-                  src="/lovable-uploads/84975080-89b6-4544-a1d5-f8661acb4bb1.png" 
+                  src="/lovable-uploads/5f81b929-5cf4-4b8f-bc85-a184fa9d345f.png" 
                   alt="Our team with donations at Rackarbergsgatan 32" 
                   className="rounded-lg shadow-sm mx-auto w-64 h-auto opacity-90"
                 />
