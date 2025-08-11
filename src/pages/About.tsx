@@ -87,6 +87,20 @@ const About = () => {
               <section>
                 <h2 className="text-2xl font-semibold mb-4 text-center" style={{ color: '#1733a7' }}>Learn More</h2>
                 <div className="grid md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-4 rounded-lg text-center text-white shadow-lg hover:shadow-xl transition-shadow">
+                    <h3 className="font-semibold mb-2">💛 Support Us</h3>
+                    <p className="text-blue-100 text-sm mb-3">
+                      Learn about the various ways you can support our mission and help children with cancer.
+                    </p>
+                    <Button 
+                      onClick={() => navigate('/how-supporting-works')} 
+                      variant="secondary" 
+                      size="sm"
+                      className="w-full bg-white/20 border-white/30 text-white hover:bg-white/30"
+                    >
+                      Learn How to Support
+                    </Button>
+                  </div>
                   <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-lg text-center text-white shadow-lg hover:shadow-xl transition-shadow">
                     <h3 className="font-semibold mb-2">🎁 Donate Items</h3>
                     <p className="text-blue-100 text-sm mb-3">
@@ -113,20 +127,6 @@ const About = () => {
                       className="w-full bg-white/20 border-white/30 text-white hover:bg-white/30"
                     >
                       Learn How to Browse
-                    </Button>
-                  </div>
-                  <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-4 rounded-lg text-center text-white shadow-lg hover:shadow-xl transition-shadow">
-                    <h3 className="font-semibold mb-2">💛 Support Us</h3>
-                    <p className="text-blue-100 text-sm mb-3">
-                      Learn about the various ways you can support our mission and help children with cancer.
-                    </p>
-                    <Button 
-                      onClick={() => navigate('/how-supporting-works')} 
-                      variant="secondary" 
-                      size="sm"
-                      className="w-full bg-white/20 border-white/30 text-white hover:bg-white/30"
-                    >
-                      Learn How to Support
                     </Button>
                   </div>
                 </div>
