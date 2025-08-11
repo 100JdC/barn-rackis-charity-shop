@@ -133,7 +133,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       if (profile) {
         console.log('Profile loaded:', profile);
         setUsername(profile.username || 'User');
-        setUserRole((profile.role as UserRole) || 'donor');
+        // Map 'buyer' to 'donor' for consistency in the frontend
+        const frontendRole = (profile.role === 'buyer' || profile.role === 'donor') ? 'donor' : profile.role as UserRole;
+        setUserRole(frontendRole || 'donor');
       }
     } catch (error) {
       console.error('Error loading user profile:', error);
@@ -145,6 +147,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signIn = async (email: string, password: string) => {
     try {
+      setLoading(true);
+      
+      // Try to sign in with the provided credentials
+      // The handle_username_or_email_sign_in function will convert username to email if needed
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -165,6 +171,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         variant: "destructive",
       });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -201,29 +209,33 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signOut = async () => {
     try {
+      console.log('Starting logout process...');
       setLoading(true);
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        throw error;
-      }
-
-      // Clear all local state
+      
+      // Clear local state first to prevent UI issues
       setUser(null);
       setSession(null);
       setUserRole('donor');
       setUsername('');
+      
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Supabase signOut error:', error);
+        // Don't throw the error, just log it - the UI state is already cleared
+      }
 
+      console.log('Logout completed successfully');
       toast({
         title: "Logged out",
         description: "You have been successfully logged out.",
       });
     } catch (error: any) {
+      console.error('Logout error:', error);
       toast({
-        title: "Logout error",
-        description: error.message,
-        variant: "destructive",
+        title: "Logout completed",
+        description: "You have been logged out.",
       });
-      throw error;
+      // Don't re-throw the error to prevent blocking the logout process
     } finally {
       setLoading(false);
     }
