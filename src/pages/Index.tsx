@@ -135,7 +135,7 @@ export default function Index() {
       />
       <BetaNotice />
       
-      <main className="pt-16">
+      <main className="pt-0">
         <div className="bg-[#001da6] text-white min-h-[calc(100vh-4rem)]">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-1">
             {/* Header text */}
