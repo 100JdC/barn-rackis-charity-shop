@@ -31,14 +31,14 @@ const Auth = () => {
     setError('');
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
         setError(error.message);
-      } else if (data.user) {
+      } else {
         toast({
           title: "Login successful",
           description: "Welcome back!",
@@ -84,7 +84,7 @@ const Auth = () => {
         return;
       }
 
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -97,7 +97,7 @@ const Auth = () => {
 
       if (error) {
         setError(error.message);
-      } else if (data.user) {
+      } else {
         toast({
           title: "Registration successful",
           description: "Please check your email for verification (if required)",

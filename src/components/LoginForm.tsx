@@ -47,16 +47,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
             className="w-full bg-white/20 hover:bg-white/30 text-white h-12 text-lg border-white/30"
             variant="outline"
           >
-            Register to donate
-          </Button>
-        </div>
-        <div className="text-center">
-          <Button
-            onClick={() => navigate('/login')}
-            className="text-white/80 hover:text-white text-lg underline"
-            variant="link"
-          >
-            Already have an account? Login here
+            Login / Register
           </Button>
         </div>
       </div>
