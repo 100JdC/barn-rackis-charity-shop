@@ -178,8 +178,8 @@ export default function Index() {
           <div className="text-center mb-12">
             <div className="relative">
               <img 
-                src="/lovable-uploads/Categories/micky.png" 
-                alt="Rackis Mascot"
+                src="/lovable-uploads/Categories/adi.jpg" 
+                alt="Rackis Bear Mascot"
                 className="w-48 h-48 mx-auto mb-6 object-contain"
                 onLoad={() => console.log('Bear image loaded')}
                 onError={(e) => {
