@@ -44,15 +44,11 @@ export const PendingDonations = ({ onItemsUpdate }: PendingDonationsProps) => {
     try {
       console.log('Attempting to approve item:', item.id, item.name);
       
-      const updatedItem = {
-        ...item,
-        status: 'available' as const,
+      const result = await storage.updateItem(item.id, {
+        status: 'available',
         updated_at: new Date().toISOString()
-      };
+      });
       
-      console.log('Updated item data:', updatedItem);
-      
-      const result = await storage.updateItem(item.id, updatedItem);
       console.log('Update result:', result);
       
       if (result) {
@@ -60,6 +56,11 @@ export const PendingDonations = ({ onItemsUpdate }: PendingDonationsProps) => {
           title: "Success",
           description: `"${item.name}" has been approved and is now available.`
         });
+        
+        // Remove the item from local state immediately
+        setPendingItems(prev => prev.filter(p => p.id !== item.id));
+        
+        // Also refresh data from server
         await loadPendingItems();
         await onItemsUpdate();
       } else {
@@ -85,6 +86,11 @@ export const PendingDonations = ({ onItemsUpdate }: PendingDonationsProps) => {
             title: "Success",
             description: `"${item.name}" has been rejected and removed.`
           });
+          
+          // Remove the item from local state immediately
+          setPendingItems(prev => prev.filter(p => p.id !== item.id));
+          
+          // Also refresh data from server
           await loadPendingItems();
           await onItemsUpdate();
         }

@@ -53,7 +53,7 @@ export const DonatePage = () => {
         const newItem: Item = {
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
           ...itemData as Item,
-          status: 'pending_approval', // Always set to pending_approval due to RLS policy
+          status: userRole === 'admin' ? 'available' : 'pending_approval',
           created_by: donorUsername,
           updated_by: donorUsername,
           donor_name: itemData.donor_name || donorUsername,
