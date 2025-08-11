@@ -93,7 +93,7 @@ const HowSupportingWorks = () => {
                 <img 
                   src="/lovable-uploads/84975080-89b6-4544-a1d5-f8661acb4bb1.png" 
                   alt="Our team with donations at Rackarbergsgatan 32" 
-                  className="rounded-lg shadow-md mx-auto max-w-full h-auto"
+                  className="rounded-lg shadow-sm mx-auto w-64 h-auto opacity-90"
                 />
               </div>
               
