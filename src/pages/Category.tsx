@@ -359,13 +359,13 @@ const Category = () => {
             </p>
             
             {/* Buying Information */}
-            <div className="mt-4 p-4 bg-white/10 rounded-lg border border-white/20">
-              <p className="text-white/90 text-sm">
-                💡 <strong>Buying Policy:</strong> Items can only be purchased in person at our location. 
+            <div className="mt-4 p-4 bg-yellow-400/90 rounded-lg border-2 border-yellow-500 shadow-lg">
+              <p className="text-black text-sm font-medium">
+                ⚠️ <strong>Important Buying Policy:</strong> Items can only be purchased in person at our location. 
                 However, pillow and duvet/blanket sets can be reserved in advance for 10€. 
                 <a 
                   href="/how-browsing-works" 
-                  className="text-white hover:underline font-medium ml-1"
+                  className="text-blue-700 hover:underline font-semibold ml-1"
                 >
                   Learn more about how to browse and buy →
                 </a>
