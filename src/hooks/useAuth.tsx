@@ -44,13 +44,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     let mounted = true;
     
-    // Safety timeout to prevent infinite loading
+    // Safety timeout to prevent infinite loading - reduced to 2 seconds
     const timeout = setTimeout(() => {
       if (mounted) {
-        console.warn('Auth loading timeout reached, forcing loading to false');
+        console.warn('⏰ Auth loading timeout reached, forcing loading to false');
         setLoading(false);
       }
-    }, 3000); // 3 seconds timeout
+    }, 2000); // 2 seconds timeout
 
     // Get initial session
     const getInitialSession = async () => {
@@ -83,18 +83,26 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth event:', event, session?.user?.email);
+        console.log('🔐 Auth event:', event, session?.user?.email || 'No session');
+        
+        if (!mounted) return;
+        
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          await loadUserProfile(session.user.id);
+          setTimeout(() => {
+            if (mounted) {
+              loadUserProfile(session.user.id);
+            }
+          }, 0);
         } else {
           setUserRole('donor');
           setUsername('');
         }
         
         if (event === 'SIGNED_OUT') {
+          console.log('🚪 Auth state: SIGNED_OUT detected');
           setUserRole('donor');
           setUsername('');
         }
@@ -208,47 +216,51 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const signOut = async () => {
+    console.log('🚪 Starting logout process...');
+    
     try {
-      console.log('Starting logout process...');
-      
-      // Clear local state immediately to prevent UI issues
-      const wasAuthenticated = isAuthenticated;
+      // Immediately clear UI state - don't wait for Supabase
+      console.log('🔄 Clearing local auth state immediately');
       setUser(null);
       setSession(null);
       setUserRole('donor');
       setUsername('');
+      setLoading(false); // Ensure loading is false immediately
       
-      // Only show loading if user was actually authenticated
-      if (wasAuthenticated) {
-        setLoading(true);
-      }
-      
-      // Sign out from Supabase
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Supabase signOut error:', error);
-        // Don't throw the error, the UI state is already cleared
-      }
+      // Show success message immediately
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
+      });
 
-      console.log('Logout completed successfully');
+      // Async Supabase cleanup in background (non-blocking)
+      console.log('🔧 Starting background Supabase cleanup');
+      supabase.auth.signOut().then(({ error }) => {
+        if (error) {
+          console.warn('⚠️ Supabase signOut warning (non-critical):', error);
+        } else {
+          console.log('✅ Supabase signOut completed');
+        }
+      }).catch((error) => {
+        console.warn('⚠️ Supabase signOut error (non-critical):', error);
+      });
+
+      console.log('✅ Logout process completed immediately');
       
-      // Only show success message if user was actually logged in
-      if (wasAuthenticated) {
-        toast({
-          title: "Logged out",
-          description: "You have been successfully logged out.",
-        });
-      }
     } catch (error: any) {
-      console.error('Logout error:', error);
-      // Always show a completion message even if there was an error
+      console.error('❌ Logout error:', error);
+      
+      // Even if there's an error, ensure the user appears logged out
+      setUser(null);
+      setSession(null);
+      setUserRole('donor');
+      setUsername('');
+      setLoading(false);
+      
       toast({
         title: "Logged out",
         description: "You have been logged out.",
       });
-      // Don't re-throw the error to prevent blocking the logout process
-    } finally {
-      setLoading(false);
     }
   };
 
