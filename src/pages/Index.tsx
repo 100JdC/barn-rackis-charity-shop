@@ -67,19 +67,14 @@ export default function Index() {
       return;
     }
     
-    if (!isAuthenticated) {
+    // Simple logic: logged in = donate page, not logged in = auth page
+    if (isAuthenticated) {
+      console.log('✅ Authenticated, navigating to donate');
+      navigate('/donate');
+    } else {
       console.log('🔒 Not authenticated, redirecting to auth');
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to donate items.",
-        variant: "destructive",
-      });
       navigate('/auth');
-      return;
     }
-    
-    console.log('✅ Authenticated, navigating to donate');
-    navigate('/donate');
   };
 
   const handleCategorySelect = (category: string) => {
