@@ -137,13 +137,13 @@ export default function Index() {
       
       <main className="pt-16">
         <div className="bg-[#001da6] text-white min-h-[calc(100vh-4rem)]">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-1">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-1">
             {/* Header text */}
-            <div className="text-center mb-2">
-              <h1 className="text-2xl md:text-4xl font-bold text-white mb-2 md:mb-4 px-2">
-                Welcome to Rackis for Barn!
+            <div className="text-center mb-1">
+              <h1 className="text-2xl md:text-4xl font-bold text-white mb-1 px-2">
+                Welcome to Rackis for barn!
               </h1>
-              <p className="text-lg md:text-xl text-white/90 mb-2 md:mb-4 px-2">
+              <p className="text-lg md:text-xl text-white/90 mb-1 px-2">
                 Find quality second-hand items for your student life in Uppsala
               </p>
             </div>
