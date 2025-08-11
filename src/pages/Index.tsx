@@ -136,91 +136,103 @@ export default function Index() {
       <BetaNotice />
       
       <main className="pt-16">
-        {/* Search Section */}
-        <div className="bg-white/80 backdrop-blur-sm border-b border-white/20 py-8">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="max-w-3xl mx-auto">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search items..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyPress={handleSearchKeyPress}
-                  className="w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-full focus:border-blue-500 focus:outline-none transition-colors bg-white/90 backdrop-blur-sm"
-                />
-                <button
-                  onClick={handleSearchClick}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition-colors"
-                >
-                  Search
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Admin Panel */}
-        {isAuthenticated && userRole === 'admin' && (
+        <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white min-h-[calc(100vh-4rem)]">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Admin Dashboard</h2>
-              <PendingDonations 
-                onItemsUpdate={loadItems}
-              />
+            {/* Header text */}
+            <div className="text-center mb-6">
+              <h1 className="text-2xl md:text-4xl font-bold text-white mb-2 md:mb-4 px-2">
+                Welcome to Rackis for Barn!
+              </h1>
+              <p className="text-lg md:text-xl text-white/90 mb-2 md:mb-4 px-2">
+                Find quality second-hand items for your student life in Uppsala
+              </p>
             </div>
-          </div>
-        )}
 
-        {/* Main Content */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Welcome Section */}
-          <div className="text-center mb-12">
-            <div className="relative">
-              <img 
-                src="/lovable-uploads/50d0870c-a6a5-46a2-99ad-d9bbf533e576.png" 
-                alt="Rackis Bear Mascot"
-                className="w-48 h-48 mx-auto mb-6 object-contain"
-                onLoad={() => console.log('Bear image loaded')}
-                onError={(e) => {
-                  console.error('Bear image failed to load');
-                  e.currentTarget.style.display = 'none';
-                }}
-              />
-              <div className="text-center space-y-4">
-                <h1 className="text-4xl font-bold text-gray-900">Welcome to Rackis for Barn!</h1>
-                <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                  A platform for students in Uppsala to exchange second-hand items during move-ins and move-outs.
-                </p>
-                <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-                  We collect useful items from outgoing students and sell them at fair prices to new tenants. 
-                  All profits go to Barncancerfonden, supporting children with cancer and their families.
-                </p>
+            {/* Centered bear image with search bar */}
+            <div className="flex flex-col items-center justify-center mb-4">
+              <div className="relative mt-0 mb-4">
+                <img
+                  src="/lovable-uploads/50d0870c-a6a5-46a2-99ad-d9bbf533e576.png"
+                  alt="Rackis Bear Mascot"
+                  className="w-full max-w-[280px] md:max-w-[350px] h-auto object-contain opacity-90"
+                  onLoad={() => console.log('Bear image loaded')}
+                />
+                
+                {/* Search bar positioned in the bear's sign */}
+                <div className="absolute top-[67%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 w-[85%] md:w-[90%] z-50 pointer-events-auto">
+                  <div className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-lg">
+                    <input
+                      type="text"
+                      placeholder="What do you need in Uppsala?"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onKeyPress={handleSearchKeyPress}
+                      className="flex-1 border-0 bg-transparent text-gray-800 placeholder-gray-500 text-xs md:text-sm h-6 md:h-7 p-0 focus:ring-0 focus:outline-none"
+                    />
+                    <button 
+                      onClick={handleSearchClick}
+                      className="bg-transparent hover:bg-transparent p-0 h-5 md:h-6"
+                    >
+                      <svg className="h-3 w-3 md:h-4 md:w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Action Buttons */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-            <button
-              onClick={handleBrowseItems}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold py-4 px-8 rounded-xl transition-colors shadow-lg hover:shadow-xl"
-            >
-              Browse our items
-            </button>
-            <button
-              onClick={handleDonate}
-              className="bg-green-600 hover:bg-green-700 text-white text-xl font-semibold py-4 px-8 rounded-xl transition-colors shadow-lg hover:shadow-xl"
-            >
-              {isAuthenticated ? 'Donate items' : 'Login to donate'}
-            </button>
-          </div>
+            {/* Text content below the bear */}
+            {!isAuthenticated && (
+              <div className="text-white space-y-4 md:space-y-6 text-center max-w-4xl mx-auto px-2">
+                <div className="text-sm md:text-lg text-white/90 space-y-2 md:space-y-3 leading-relaxed">
+                  <p>A platform for students in Uppsala to exchange second-hand items during move-ins and move-outs.</p>
+                  <p className="hidden md:block">We collect useful items from outgoing students and sell them at fair prices to new tenants.</p>
+                  <p className="hidden md:block">All profits go to Barncancerfonden, supporting children with cancer and their families.</p>
+                  <p className="md:hidden">We collect items from outgoing students and sell them at fair prices. All profits support Barncancerfonden.</p>
+                  <p>It's simple: buy and donate things you only need in Uppsala — sustainably and for a good cause.</p>
+                  <p className="font-semibold text-white">🧸 För barn. För studenterna. För miljön.</p>
+                </div>
+                <div className="text-center mt-4 md:mt-6">
+                  <button
+                    onClick={() => window.open('/about', '_blank')}
+                    className="text-white/90 hover:text-white text-sm md:text-lg underline px-2 whitespace-normal leading-relaxed break-words h-auto"
+                  >
+                     Find out more about the concept, the swedish words we use, who we are, and how you can contribute.
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 max-w-md mx-auto px-4">
+                  <button
+                    onClick={handleBrowseItems}
+                    className="w-full bg-white/20 hover:bg-white/30 text-white h-10 md:h-12 text-sm md:text-lg border border-white/30 rounded"
+                  >
+                    Browse our items
+                  </button>
+                  <button
+                    onClick={() => navigate('/auth')}
+                    className="w-full bg-white/20 hover:bg-white/30 text-white h-10 md:h-12 text-sm md:text-lg border border-white/30 rounded"
+                  >
+                    Login / Register
+                  </button>
+                </div>
+              </div>
+            )}
 
-          {/* Categories */}
-          <CategoryBrowser 
-            items={items}
-            onCategorySelect={handleCategorySelect}
-          />
+            {/* Admin Panel for pending donations */}
+            {isAuthenticated && userRole === 'admin' && (
+              <div className="mb-6">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 md:p-6">
+                  <h2 className="text-xl md:text-2xl font-bold text-white mb-4">Admin Dashboard</h2>
+                  <PendingDonations onItemsUpdate={loadItems} />
+                </div>
+              </div>
+            )}
+
+            <CategoryBrowser 
+              items={items} 
+              onCategorySelect={handleCategorySelect}
+            />
+          </div>
         </div>
       </main>
 
