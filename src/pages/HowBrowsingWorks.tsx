@@ -151,7 +151,8 @@ const HowBrowsingWorks = () => {
                     <p className="font-medium text-gray-800 mb-2">2. Send an email to info@rackisforbarn.com with:</p>
                     <ul className="list-disc pl-6 space-y-1 text-gray-700">
                       <li>A screenshot of your payment</li>
-                      <li>Your name and what you've bought</li>
+                      <li>Your name</li>
+                      <li>Betreff should be "Rackis för barn"</li>
                     </ul>
                   </div>
                 </div>
