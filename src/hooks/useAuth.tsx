@@ -66,9 +66,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         
         if (session?.user) {
           await loadUserProfile(session.user.id);
+        } else {
+          // No session - set defaults immediately
+          setUserRole('donor');
+          setUsername('');
         }
       } catch (error) {
         console.error('Error getting initial session:', error);
+        // Set defaults on error
+        if (mounted) {
+          setSession(null);
+          setUser(null);
+          setUserRole('donor');
+          setUsername('');
+        }
       } finally {
         if (mounted) {
           console.log('Setting loading to false');
