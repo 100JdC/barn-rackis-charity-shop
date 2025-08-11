@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { storage } from "@/utils/storage";
 import type { Item, UserRole } from "@/types/item";
+import { linkifyText } from "@/utils/linkUtils";
 
 interface ItemCardProps {
   item: Item;
@@ -137,7 +138,7 @@ export const ItemCard = ({ item, userRole, onView, onEdit, onDelete }: ItemCardP
           </div>
           
           {item.description && (
-            <p className="text-gray-600 text-sm line-clamp-2">{item.description}</p>
+            <p className="text-gray-600 text-sm line-clamp-2">{linkifyText(item.description)}</p>
           )}
           
           <div className="flex justify-between items-center">

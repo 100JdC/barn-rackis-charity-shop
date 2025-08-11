@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { storage } from "@/utils/storage";
 import type { Item, UserRole } from "@/types/item";
+import { linkifyText } from "@/utils/linkUtils";
 
 interface ItemDetailProps {
   item: Item;
@@ -143,7 +144,7 @@ export const ItemDetail = ({ item, userRole, onEdit, onDelete }: ItemDetailProps
             <>
               <div>
                 <h3 className="font-semibold mb-2">Description</h3>
-                <p className="text-gray-700">{item.description}</p>
+                <p className="text-gray-700">{linkifyText(item.description)}</p>
               </div>
               <Separator />
             </>
