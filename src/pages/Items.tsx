@@ -354,7 +354,7 @@ export default function Items() {
             <div className="mt-4 p-4 bg-yellow-400/90 rounded-lg border-2 border-yellow-500 shadow-lg">
               <p className="text-black text-sm font-medium">
                 ⚠️ <strong>Important Buying Policy:</strong> Items can only be purchased in person at our location. 
-                However, pillow and duvet/blanket sets can be reserved in advance for 10€. 
+                However, pillow and duvet/blanket sets can be bought in advance for 10€. 
                 <a 
                   href="/how-browsing-works" 
                   className="text-blue-700 hover:underline font-semibold ml-1"

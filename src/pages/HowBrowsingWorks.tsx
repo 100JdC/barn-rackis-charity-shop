@@ -103,10 +103,19 @@ const HowBrowsingWorks = () => {
                   </ul>
                 </div>
 
-                <h3 className="text-2xl font-semibold text-gray-800 mt-8 mb-4">Reserving Duvets & Pillows</h3>
-                <p className="text-gray-700">
-                  The only items you can reserve in advance are duvets and pillows.
+                <h3 className="text-2xl font-semibold text-gray-800 mt-8 mb-4">Buying Duvets & Pillows in Advance</h3>
+                <p className="text-gray-700 mb-4">
+                  The only items you can buy in advance are duvets and pillows as a set. This way, you'll have a bedding set ready for your first night in Uppsala!
                 </p>
+                
+                <div className="bg-yellow-50 p-4 rounded-lg mb-4 border border-yellow-200">
+                  <h4 className="font-semibold text-yellow-800 mb-2">⚠️ Important Conditions:</h4>
+                  <ul className="text-yellow-700 space-y-1 text-sm">
+                    <li>• This only applies as long as we have enough items in stock</li>
+                    <li>• You will receive a confirmation within 24 hours of your order</li>
+                    <li>• We reserve the right to inform you if items are sold out and refund your money</li>
+                  </ul>
+                </div>
                 
                 <div className="bg-green-50 p-4 rounded-lg my-4">
                   <div className="flex items-center gap-2 mb-2">
@@ -115,7 +124,7 @@ const HowBrowsingWorks = () => {
                   </div>
                 </div>
 
-                <h4 className="text-xl font-semibold text-gray-800 mt-6 mb-3">To reserve:</h4>
+                <h4 className="text-xl font-semibold text-gray-800 mt-6 mb-3">To buy in advance:</h4>
                 
                 <div className="space-y-4">
                   <div>
@@ -142,7 +151,7 @@ const HowBrowsingWorks = () => {
                     <p className="font-medium text-gray-800 mb-2">2. Send an email to info@rackisforbarn.com with:</p>
                     <ul className="list-disc pl-6 space-y-1 text-gray-700">
                       <li>A screenshot of your payment</li>
-                      <li>Your name and what you've reserved</li>
+                      <li>Your name and what you've bought</li>
                     </ul>
                   </div>
                 </div>
