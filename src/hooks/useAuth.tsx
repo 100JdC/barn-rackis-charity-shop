@@ -210,29 +210,40 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const signOut = async () => {
     try {
       console.log('Starting logout process...');
-      setLoading(true);
       
-      // Clear local state first to prevent UI issues
+      // Clear local state immediately to prevent UI issues
+      const wasAuthenticated = isAuthenticated;
       setUser(null);
       setSession(null);
       setUserRole('donor');
       setUsername('');
       
+      // Only show loading if user was actually authenticated
+      if (wasAuthenticated) {
+        setLoading(true);
+      }
+      
+      // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Supabase signOut error:', error);
-        // Don't throw the error, just log it - the UI state is already cleared
+        // Don't throw the error, the UI state is already cleared
       }
 
       console.log('Logout completed successfully');
-      toast({
-        title: "Logged out",
-        description: "You have been successfully logged out.",
-      });
+      
+      // Only show success message if user was actually logged in
+      if (wasAuthenticated) {
+        toast({
+          title: "Logged out",
+          description: "You have been successfully logged out.",
+        });
+      }
     } catch (error: any) {
       console.error('Logout error:', error);
+      // Always show a completion message even if there was an error
       toast({
-        title: "Logout completed",
+        title: "Logged out",
         description: "You have been logged out.",
       });
       // Don't re-throw the error to prevent blocking the logout process

@@ -31,8 +31,32 @@ const Auth = () => {
     setError('');
 
     try {
+      let loginEmail = email;
+      
+      // Check if input is username (not email format)
+      if (!email.includes('@')) {
+        // Call edge function to convert username to email
+        try {
+          const response = await fetch('https://shbycmjlvphxheogazru.supabase.co/functions/v1/username-to-email', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || ''}`
+            },
+            body: JSON.stringify({ username: email.toLowerCase() })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            loginEmail = data.email;
+          }
+        } catch (fetchError) {
+          console.log('Username lookup failed, trying as email:', fetchError);
+        }
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: loginEmail,
         password,
       });
 
@@ -46,7 +70,7 @@ const Auth = () => {
         navigate('/');
       }
     } catch (err) {
-      setError('An unexpected error occurred');
+      setError('Username or password incorrect');
     } finally {
       setLoading(false);
     }
@@ -217,11 +241,11 @@ const Auth = () => {
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
+                    <Label htmlFor="login-email">Email or Username</Label>
                     <Input
                       id="login-email"
-                      type="email"
-                      placeholder="Enter your email"
+                      type="text"
+                      placeholder="Enter your email or username"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
