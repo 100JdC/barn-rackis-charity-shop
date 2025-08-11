@@ -84,6 +84,28 @@ const About = () => {
             </CardHeader>
             <CardContent className="space-y-6 text-lg">
               <section>
+                <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>What Does "Rackis för Barn" Mean?</h2>
+                <div className="bg-blue-50 p-4 rounded-lg space-y-3 text-gray-700">
+                  <p>
+                    🧸 <strong>Rackis</strong> – short for Rackarberget, a student housing area in Uppsala. That's where this whole idea started — students helping students.
+                  </p>
+                  <p>
+                    👶 <strong>Barn</strong> – means children. All our profits go to Barncancerfonden, which supports kids with cancer in Sweden.
+                  </p>
+                  <p>
+                    🎓 <strong>Studenterna</strong> – means the students. In Swedish, you often add a syllable to the end of a word instead of putting "the" in front. So student becomes studenterna — the students.
+                  </p>
+                  <p>
+                    🌍 <strong>Miljön</strong> – means the environment. Same thing here: miljö = environment → miljön = the environment.
+                    By giving things a second life, we help reduce waste and make Uppsala a little greener.
+                  </p>
+                  <p className="font-semibold text-center" style={{ color: '#1733a7' }}>
+                    In short: students helping students, helping the planet — and helping children with cancer. 🧡
+                  </p>
+                </div>
+              </section>
+
+              <section>
                 <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Our Mission</h2>
                 <p className="text-gray-700">
                   Rackis for Barn is a platform designed specifically for students in Uppsala to exchange 
@@ -135,19 +157,49 @@ const About = () => {
 
               <section>
                 <h2 className="text-2xl font-semibold mb-3" style={{ color: '#1733a7' }}>Get Involved</h2>
-                <div className="space-y-3 text-gray-700">
-                  <p>
-                    <strong>Donate Items:</strong> Moving out? Register as a donor and list your items. 
-                    We'll help find them new homes.
-                  </p>
-                  <p>
-                    <strong>Shop Sustainably:</strong> Browse our inventory and find what you need 
-                    for your Uppsala student life.
-                  </p>
-                  <p>
-                    <strong>Spread the Word:</strong> Tell your friends about this sustainable way 
-                    to handle move-ins and move-outs.
-                  </p>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="bg-white p-4 rounded-lg border border-gray-200 text-center">
+                    <h3 className="font-semibold mb-2" style={{ color: '#1733a7' }}>Donate Items</h3>
+                    <p className="text-gray-700 text-sm mb-3">
+                      Moving out? Register as a donor and list your items. We'll help find them new homes.
+                    </p>
+                    <Button 
+                      onClick={() => navigate('/how-donating-works')} 
+                      variant="outline" 
+                      size="sm"
+                      className="w-full"
+                    >
+                      Learn How to Donate
+                    </Button>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg border border-gray-200 text-center">
+                    <h3 className="font-semibold mb-2" style={{ color: '#1733a7' }}>Shop Sustainably</h3>
+                    <p className="text-gray-700 text-sm mb-3">
+                      Browse our inventory and find what you need for your Uppsala student life.
+                    </p>
+                    <Button 
+                      onClick={() => navigate('/how-browsing-works')} 
+                      variant="outline" 
+                      size="sm"
+                      className="w-full"
+                    >
+                      Learn How to Browse
+                    </Button>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg border border-gray-200 text-center">
+                    <h3 className="font-semibold mb-2" style={{ color: '#1733a7' }}>Support Us</h3>
+                    <p className="text-gray-700 text-sm mb-3">
+                      Learn about the various ways you can support our mission and help children with cancer.
+                    </p>
+                    <Button 
+                      onClick={() => navigate('/how-supporting-works')} 
+                      variant="outline" 
+                      size="sm"
+                      className="w-full"
+                    >
+                      Learn How to Support
+                    </Button>
+                  </div>
                 </div>
               </section>
 

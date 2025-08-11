@@ -12,6 +12,9 @@ import Auth from "./pages/Auth";
 import Impressum from "./pages/Impressum";
 import LegalNotice from "./pages/Legalnotice";
 import TermsAndConditions from "./pages/Terms_and_conditions";
+import HowDonatingWorks from "./pages/HowDonatingWorks";
+import HowBrowsingWorks from "./pages/HowBrowsingWorks";
+import HowSupportingWorks from "./pages/HowSupportingWorks";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +31,9 @@ const App = () => (
           <Route path="/items" element={<Items />} />
           <Route path="/category/:categoryName" element={<Category />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/how-donating-works" element={<HowDonatingWorks />} />
+          <Route path="/how-browsing-works" element={<HowBrowsingWorks />} />
+          <Route path="/how-supporting-works" element={<HowSupportingWorks />} />
           <Route path="/impressum" element={<Impressum />} />
           <Route path="/legal-notice" element={<LegalNotice />} />
           <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
