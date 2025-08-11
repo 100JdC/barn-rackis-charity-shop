@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
@@ -19,6 +19,7 @@ const Auth = () => {
   const [activeTab, setActiveTab] = useState('login');
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signIn, signUp } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,46 +32,10 @@ const Auth = () => {
     setError('');
 
     try {
-      let loginEmail = email;
-      
-      // Check if input is username (not email format)
-      if (!email.includes('@')) {
-        // Try to find the email for this username using profiles table
-        try {
-          const { data: profiles, error: profileError } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('username', email.toLowerCase())
-            .limit(1);
-            
-          if (!profileError && profiles && profiles.length > 0) {
-            // Get the user's email from auth metadata or try to get user info
-            // Since we can't access auth.users directly, we'll try the original email
-            // The database function should handle username-to-email conversion
-            loginEmail = email; // Keep as username, let Supabase handle it
-          }
-        } catch (lookupError) {
-          console.log('Username lookup failed, trying as email:', lookupError);
-          // If lookup fails, proceed with original input
-        }
-      }
-
-      const { error } = await supabase.auth.signInWithPassword({
-        email: loginEmail,
-        password,
-      });
-
-      if (error) {
-        setError(error.message);
-      } else {
-        toast({
-          title: "Login successful",
-          description: "Welcome back!",
-        });
-        navigate('/');
-      }
-    } catch (err) {
-      setError('Username or password incorrect');
+      await signIn(email, password);
+      navigate('/');
+    } catch (err: any) {
+      setError(err.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -97,39 +62,10 @@ const Auth = () => {
     setError('');
 
     try {
-      // Check if email already exists
-      const { data: existingUsers } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('username', username.toLowerCase());
-
-      if (existingUsers && existingUsers.length > 0) {
-        setError('Username already taken. Please choose another one.');
-        return;
-      }
-
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            username: username.toLowerCase()
-          }
-        },
-      });
-
-      if (error) {
-        setError(error.message);
-      } else {
-        toast({
-          title: "Registration successful",
-          description: "Please check your email for verification (if required)",
-        });
-        navigate('/');
-      }
-    } catch (err) {
-      setError('An unexpected error occurred');
+      await signUp(email, password, username);
+      navigate('/');
+    } catch (err: any) {
+      setError(err.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -241,11 +177,11 @@ const Auth = () => {
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="login-email">Email or Username</Label>
+                    <Label htmlFor="login-email">Email</Label>
                     <Input
                       id="login-email"
-                      type="text"
-                      placeholder="Enter your email or username"
+                      type="email"
+                      placeholder="Enter your email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
