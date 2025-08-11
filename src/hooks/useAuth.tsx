@@ -42,12 +42,25 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const isAuthenticated = !!session?.user;
 
   useEffect(() => {
+    let mounted = true;
+    
+    // Safety timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      if (mounted) {
+        console.warn('Auth loading timeout reached, forcing loading to false');
+        setLoading(false);
+      }
+    }, 10000); // 10 seconds timeout
+
     // Get initial session
     const getInitialSession = async () => {
       try {
         console.log('Getting initial session...');
         const { data: { session } } = await supabase.auth.getSession();
         console.log('Initial session result:', session?.user?.email || 'No session');
+        
+        if (!mounted) return;
+        
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -57,8 +70,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       } catch (error) {
         console.error('Error getting initial session:', error);
       } finally {
-        console.log('Setting loading to false');
-        setLoading(false);
+        if (mounted) {
+          console.log('Setting loading to false');
+          setLoading(false);
+          clearTimeout(timeout);
+        }
       }
     };
 
@@ -84,11 +100,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
         
         // Always ensure loading is false after auth state changes
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const loadUserProfile = async (userId: string) => {
