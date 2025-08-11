@@ -183,24 +183,24 @@ export default function Index() {
             </div>
 
             {/* Text content below the bear */}
-            {!isAuthenticated && (
-              <div className="text-white space-y-4 md:space-y-6 text-center max-w-4xl mx-auto px-2">
-                <div className="text-sm md:text-lg text-white/90 space-y-2 md:space-y-3 leading-relaxed">
-                  <p>A platform for students in Uppsala to exchange second-hand items during move-ins and move-outs.</p>
-                  <p className="hidden md:block">We collect useful items from outgoing students and sell them at fair prices to new tenants.</p>
-                  <p className="hidden md:block">All profits go to Barncancerfonden, supporting children with cancer and their families.</p>
-                  <p className="md:hidden">We collect items from outgoing students and sell them at fair prices. All profits support Barncancerfonden.</p>
-                  <p>It's simple: buy and donate things you only need in Uppsala — sustainably and for a good cause.</p>
-                  <p className="font-semibold text-white">🧸 För barn. För studenterna. För miljön.</p>
-                </div>
-                <div className="text-center mt-4 md:mt-6">
-                  <button
-                    onClick={() => window.open('/about', '_blank')}
-                    className="text-white/90 hover:text-white text-sm md:text-lg underline px-2 whitespace-normal leading-relaxed break-words h-auto"
-                  >
-                     Find out more about the concept, the swedish words we use, who we are, and how you can contribute.
-                  </button>
-                </div>
+            <div className="text-white space-y-4 md:space-y-6 text-center max-w-4xl mx-auto px-2">
+              <div className="text-sm md:text-lg text-white/90 space-y-2 md:space-y-3 leading-relaxed">
+                <p>A platform for students in Uppsala to exchange second-hand items during move-ins and move-outs.</p>
+                <p className="hidden md:block">We collect useful items from outgoing students and sell them at fair prices to new tenants.</p>
+                <p className="hidden md:block">All profits go to Barncancerfonden, supporting children with cancer and their families.</p>
+                <p className="md:hidden">We collect items from outgoing students and sell them at fair prices. All profits support Barncancerfonden.</p>
+                <p>It's simple: buy and donate things you only need in Uppsala — sustainably and for a good cause.</p>
+                <p className="font-semibold text-white">🧸 För barn. För studenterna. För miljön.</p>
+              </div>
+              <div className="text-center mt-4 md:mt-6">
+                <button
+                  onClick={() => window.open('/about', '_blank')}
+                  className="text-white/90 hover:text-white text-sm md:text-lg underline px-2 whitespace-normal leading-relaxed break-words h-auto"
+                >
+                   Find out more about the concept, the swedish words we use, who we are, and how you can contribute.
+                </button>
+              </div>
+              {!isAuthenticated && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 max-w-md mx-auto px-4">
                   <button
                     onClick={handleBrowseItems}
@@ -215,8 +215,24 @@ export default function Index() {
                     Login / Register
                   </button>
                 </div>
-              </div>
-            )}
+              )}
+              {isAuthenticated && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 max-w-md mx-auto px-4">
+                  <button
+                    onClick={handleBrowseItems}
+                    className="w-full bg-white/20 hover:bg-white/30 text-white h-10 md:h-12 text-sm md:text-lg border border-white/30 rounded"
+                  >
+                    Browse our items
+                  </button>
+                  <button
+                    onClick={handleDonate}
+                    className="w-full bg-white/20 hover:bg-white/30 text-white h-10 md:h-12 text-sm md:text-lg border border-white/30 rounded"
+                  >
+                    Donate items
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* Admin Panel for pending donations */}
             {isAuthenticated && userRole === 'admin' && (

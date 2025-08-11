@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         console.warn('Auth loading timeout reached, forcing loading to false');
         setLoading(false);
       }
-    }, 10000); // 10 seconds timeout
+    }, 3000); // 3 seconds timeout
 
     // Get initial session
     const getInitialSession = async () => {
