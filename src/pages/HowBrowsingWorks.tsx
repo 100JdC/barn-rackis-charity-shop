@@ -1,4 +1,5 @@
-import { ArrowLeft } from "lucide-react";
+
+import { ArrowLeft, MapPin, Clock, Euro, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -85,13 +86,86 @@ const HowBrowsingWorks = () => {
           <Card className="bg-white/90 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-3xl text-center" style={{ color: '#1733a7' }}>
-                How Browsing Works
+                How to Browse
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 text-lg">
-              <div className="text-center text-gray-600">
-                <p>Content coming soon! We're working on detailed instructions for how to browse and purchase items.</p>
-                <p className="mt-4">Check back soon for step-by-step guidance on the browsing process.</p>
+              <div className="prose prose-lg max-w-none">
+                <p className="text-gray-700 leading-relaxed">
+                  Our online browsing tool gives you a taste of what we have in store — but please note:
+                </p>
+                
+                <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400 my-6">
+                  <p className="text-blue-800 font-medium mb-2">Important to know:</p>
+                  <ul className="text-blue-700 space-y-1">
+                    <li><strong>Not all items are listed online.</strong> The browsing section shows a selection of what we currently have, but there's always more waiting for you at our shop in Rackarbergsgatan.</li>
+                    <li><strong>Purchases happen in person.</strong> We don't ship items — you can only buy things by visiting us at Rackarbergsgatan.</li>
+                  </ul>
+                </div>
+
+                <h3 className="text-2xl font-semibold text-gray-800 mt-8 mb-4">Reserving Duvets & Pillows</h3>
+                <p className="text-gray-700">
+                  The only items you can reserve in advance are duvets and pillows.
+                </p>
+                
+                <div className="bg-green-50 p-4 rounded-lg my-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Euro className="h-5 w-5 text-green-600" />
+                    <span className="font-semibold text-green-800">Price: 100 SEK or 10 € for both together</span>
+                  </div>
+                </div>
+
+                <h4 className="text-xl font-semibold text-gray-800 mt-6 mb-3">To reserve:</h4>
+                
+                <div className="space-y-4">
+                  <div>
+                    <p className="font-medium text-gray-800 mb-2">1. Make a payment to one of the following:</p>
+                    <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                      <div className="flex items-start gap-3">
+                        <CreditCard className="h-5 w-5 text-gray-600 mt-0.5" />
+                        <div>
+                          <p className="font-medium text-gray-800">Bank transfer (IBAN):</p>
+                          <p className="text-gray-700 font-mono">DE38370501981930264617 – Jacob Lehmann</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <CreditCard className="h-5 w-5 text-gray-600 mt-0.5" />
+                        <div>
+                          <p className="font-medium text-gray-800">PayPal:</p>
+                          <p className="text-gray-700">lina-lehmann@gmx.de</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="font-medium text-gray-800 mb-2">2. Send an email to info@rackisforbarn.com with:</p>
+                    <ul className="list-disc pl-6 space-y-1 text-gray-700">
+                      <li>A screenshot of your payment</li>
+                      <li>Your name and what you've reserved</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <h3 className="text-2xl font-semibold text-gray-800 mt-8 mb-4">Where to Find Us</h3>
+                <div className="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400">
+                  <div className="flex items-start gap-3 mb-3">
+                    <MapPin className="h-5 w-5 text-yellow-600 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-yellow-800">Visit us at:</p>
+                      <p className="text-yellow-700 font-semibold">Rackarbergsgatan 32, Uppsala</p>
+                    </div>
+                  </div>
+                  <p className="text-yellow-700">
+                    Explore our full range of second-hand items and give them a new home — while supporting Barncancerfonden Mellansverige.
+                  </p>
+                  <div className="flex items-center gap-2 mt-3">
+                    <Clock className="h-4 w-4 text-yellow-600" />
+                    <p className="text-yellow-700 font-medium">
+                      Please check our opening times on Instagram before you come by.
+                    </p>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
