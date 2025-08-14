@@ -58,7 +58,7 @@ interface ItemData {
   category: Item['category'];
   subcategory: string;
   condition: Item['condition'];
-  quantity: number;
+  quantity: number | '';
   original_price: number | '';
   suggested_price: number | '';
   final_price?: number;
@@ -104,7 +104,7 @@ export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemF
         category: 'bedding',
         subcategory: '',
         condition: 'lightly_used',
-        quantity: 1,
+        quantity: '',
         original_price: '',
         suggested_price: '',
         final_price: undefined,
@@ -129,7 +129,7 @@ export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemF
       category: 'bedding',
       subcategory: '',
       condition: 'lightly_used',
-      quantity: 1,
+      quantity: '',
       original_price: '',
       suggested_price: '',
       final_price: undefined,
@@ -193,9 +193,10 @@ export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemF
       !item.subcategory || 
       item.original_price === '' || 
       item.suggested_price === '' ||
+      item.quantity === '' ||
       parseFloat(item.original_price.toString()) < 0 || 
       parseFloat(item.suggested_price.toString()) < 0 ||
-      item.quantity < 1
+      parseInt(item.quantity.toString()) < 1
     );
 
     if (invalidItems.length > 0) {
@@ -210,6 +211,7 @@ export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemF
     // Convert to the expected format
     const formattedItems = items.map(item => ({
       ...item,
+      quantity: parseInt(item.quantity.toString()) || 1,
       original_price: parseFloat(item.original_price.toString()) || 0,
       suggested_price: parseFloat(item.suggested_price.toString()) || 0,
       final_price: item.final_price || undefined,
@@ -346,7 +348,8 @@ export const ItemForm = ({ item, userRole, username, onSubmit, onCancel }: ItemF
                     type="number"
                     min="1"
                     value={itemData.quantity}
-                    onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
+                    onChange={(e) => updateItem(index, 'quantity', e.target.value === '' ? '' : parseInt(e.target.value) || '')}
+                    placeholder="Enter quantity"
                     required
                   />
                 </div>
