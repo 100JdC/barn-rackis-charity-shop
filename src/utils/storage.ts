@@ -11,12 +11,16 @@ interface StoredUser {
 }
 
 export const storage = {
+  // SECURITY: Deprecated session methods - use Supabase Auth instead
+  // These are kept for backwards compatibility only
   saveSession(role: string, username: string) {
+    console.warn('DEPRECATED: saveSession() - Use Supabase Auth instead');
     localStorage.setItem('userRole', role);
     localStorage.setItem('username', username);
   },
 
   getSession() {
+    console.warn('DEPRECATED: getSession() - Use Supabase Auth instead');
     return {
       userRole: localStorage.getItem('userRole'),
       username: localStorage.getItem('username')
@@ -24,6 +28,7 @@ export const storage = {
   },
 
   clearSession() {
+    console.warn('DEPRECATED: clearSession() - Use Supabase Auth instead');
     localStorage.removeItem('userRole');
     localStorage.removeItem('username');
   },

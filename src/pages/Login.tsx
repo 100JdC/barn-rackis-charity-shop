@@ -28,17 +28,8 @@ const Login = () => {
     setError("");
 
     try {
-      // Check for admin credentials first - allow admin to login without email verification
-      if ((emailOrUsername.toLowerCase() === "jacob@admin.com" || emailOrUsername.toLowerCase() === "jacob") && password === "Rackis") {
-        console.log('Admin login successful');
-        storage.saveSession('admin', 'Jacob');
-        toast({
-          title: "Welcome back, Admin!",
-          description: "You have been successfully logged in."
-        });
-        navigate('/');
-        return;
-      }
+      // SECURITY: Removed hardcoded admin credentials
+      // All authentication now goes through Supabase Auth for security
 
       // Check if input is an email or username for regular users
       const isEmail = emailOrUsername.includes('@');

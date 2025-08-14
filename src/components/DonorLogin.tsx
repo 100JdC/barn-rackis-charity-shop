@@ -30,27 +30,25 @@ export const DonorLogin = ({ onLogin, onBack }: DonorLoginProps) => {
     setError("");
 
     try {
-      // Check for admin credentials first
-      if (username === "Jacob" && password === "Rackis") {
-        storage.saveSession('admin', username);
-        window.location.reload(); // Refresh to trigger admin login
-        return;
-      }
-
-      // Check if user exists and password matches
+      // SECURITY: Removed hardcoded admin credentials
+      // All authentication now goes through Supabase Auth
+      
+      // For backwards compatibility with the old donor system,
+      // check localStorage for registered users
       const users = await storage.getUsers();
       const user = users.find(u => u.username.toLowerCase() === username.trim().toLowerCase());
       
       if (!user) {
-        setError("User not found. Please register first.");
+        setError("User not found. Please use the main login system or register first.");
         return;
       }
 
       if (!user.password || user.password !== password) {
-        setError("Invalid password");
+        setError("Invalid password. Please use the main login system for secure authentication.");
         return;
       }
       
+      // Note: This legacy system should be migrated to Supabase Auth
       onLogin(username.trim());
     } catch (error) {
       console.error('Login error:', error);
