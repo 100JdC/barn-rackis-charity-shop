@@ -239,6 +239,13 @@ export type Database = {
             referencedRelation: "Item inventory"
             referencedColumns: ["Item ID"]
           },
+          {
+            foreignKeyName: "photos_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items_public_view"
+            referencedColumns: ["Item ID"]
+          },
         ]
       }
       profiles: {
@@ -279,7 +286,45 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      items_public_view: {
+        Row: {
+          Category: string | null
+          Condition: string | null
+          "Created At": string | null
+          Description: string | null
+          "Item ID": number | null
+          Name: string | null
+          "Photos Count": number | null
+          Quantity: number | null
+          Status: string | null
+          Subcategory: string | null
+        }
+        Insert: {
+          Category?: string | null
+          Condition?: string | null
+          "Created At"?: string | null
+          Description?: string | null
+          "Item ID"?: number | null
+          Name?: string | null
+          "Photos Count"?: number | null
+          Quantity?: number | null
+          Status?: string | null
+          Subcategory?: string | null
+        }
+        Update: {
+          Category?: string | null
+          Condition?: string | null
+          "Created At"?: string | null
+          Description?: string | null
+          "Item ID"?: number | null
+          Name?: string | null
+          "Photos Count"?: number | null
+          Quantity?: number | null
+          Status?: string | null
+          Subcategory?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       create_admin_user: {
