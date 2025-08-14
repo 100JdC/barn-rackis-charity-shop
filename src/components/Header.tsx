@@ -31,8 +31,10 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
     
     // Always use the onDonate callback if provided, this ensures consistent behavior
     if (onDonate) {
+      console.log('🔄 Using parent onDonate callback');
       onDonate();
     } else {
+      console.log('⚠️ No onDonate callback provided to Header');
       // Fallback: direct navigation (should rarely be used)
       if (!isAuthenticated) {
         navigate('/auth');

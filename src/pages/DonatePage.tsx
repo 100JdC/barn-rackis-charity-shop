@@ -19,9 +19,12 @@ export const DonatePage = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
+      console.log('🔐 DonatePage: Checking authentication...', { isAuthenticated, userRole, user: !!user });
+      
       setLoading(false);
       
-      if (!isAuthenticated) {
+      if (!isAuthenticated || !user) {
+        console.log('❌ DonatePage: Not authenticated, redirecting to auth');
         toast({
           title: "Authentication Required",
           description: "Please log in to donate items.",
@@ -30,13 +33,18 @@ export const DonatePage = () => {
         navigate('/auth');
         return;
       }
+      
+      console.log('✅ DonatePage: Authentication verified');
     };
 
     checkAuth();
-  }, [isAuthenticated, navigate, toast]);
+  }, [isAuthenticated, user, navigate, toast]);
 
   const handleItemsSave = async (items: Omit<Item, 'id' | 'created_by' | 'updated_by' | 'created_at' | 'updated_at'>[]) => {
+    console.log('💾 DonatePage: Starting donation save...', { itemCount: items.length, userRole, user: !!user });
+    
     if (!user) {
+      console.log('❌ DonatePage: No user found during save');
       toast({
         title: "Authentication Required",
         description: "Please log in to donate items.",

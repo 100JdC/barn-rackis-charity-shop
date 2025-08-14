@@ -33,11 +33,12 @@ export default function Index() {
 
   const loadItems = async () => {
     try {
+      console.log('🔄 Index: Loading items... Auth state:', { isAuthenticated, userRole, user: !!user });
       const loadedItems = await storage.getItems();
-      console.log('Items loaded:', loadedItems.length);
+      console.log('✅ Index: Items loaded:', loadedItems.length);
       setItems(loadedItems);
     } catch (error) {
-      console.error('Error loading items:', error);
+      console.error('❌ Index: Error loading items:', error);
       toast({
         title: "Error",
         description: "Failed to load items. Please check your connection.",
@@ -59,7 +60,7 @@ export default function Index() {
   };
 
   const handleDonate = () => {
-    console.log('🎯 Donate clicked - Auth state:', { isAuthenticated, authLoading, userRole });
+    console.log('🎯 Donate clicked - Auth state:', { isAuthenticated, authLoading, userRole, user: !!user });
     
     // Don't navigate if auth is still loading
     if (authLoading) {
@@ -67,9 +68,10 @@ export default function Index() {
       return;
     }
     
-    // Simple logic: logged in = donate page, not logged in = auth page
-    if (isAuthenticated) {
-      console.log('✅ Authenticated, navigating to donate');
+    // For authenticated users, always go to donate page
+    // For unauthenticated users, go to auth page
+    if (isAuthenticated && user) {
+      console.log('✅ Authenticated user, navigating to donate');
       navigate('/donate');
     } else {
       console.log('🔒 Not authenticated, redirecting to auth');

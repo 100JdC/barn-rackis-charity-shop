@@ -72,7 +72,7 @@ export const storage = {
 
   async getItems(): Promise<Item[]> {
     try {
-      console.log('Fetching items from Supabase...');
+      console.log('🔍 Fetching items from Supabase...');
       
       const { data, error } = await supabase
         .from('Item inventory')
@@ -80,16 +80,21 @@ export const storage = {
         .order('Created At', { ascending: false });
 
       if (error) {
-        console.error('Supabase error:', error);
+        console.error('❌ Supabase error:', error);
+        console.error('Error details:', { message: error.message, code: error.code, hint: error.hint });
         throw error;
       }
 
       if (!data) {
-        console.log('No data returned from Supabase');
+        console.log('⚠️ No data returned from Supabase');
         return [];
       }
 
-      console.log(`Successfully fetched ${data.length} items from database`);
+      console.log(`✅ Successfully fetched ${data.length} items from database`);
+      console.log('Auth state during fetch:', {
+        user: (await supabase.auth.getUser()).data.user?.email || 'No user',
+        session: !!(await supabase.auth.getSession()).data.session
+      });
 
       return data.map(item => ({
         id: item['Item ID']?.toString() || '',
