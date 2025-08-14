@@ -243,6 +243,13 @@ export type Database = {
             foreignKeyName: "photos_item_id_fkey"
             columns: ["item_id"]
             isOneToOne: false
+            referencedRelation: "items_public_secure"
+            referencedColumns: ["Item ID"]
+          },
+          {
+            foreignKeyName: "photos_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
             referencedRelation: "items_public_view"
             referencedColumns: ["Item ID"]
           },
@@ -286,6 +293,54 @@ export type Database = {
       }
     }
     Views: {
+      items_public_secure: {
+        Row: {
+          Category: string | null
+          Condition: string | null
+          "Created At": string | null
+          Description: string | null
+          "Final Price (SEK)": string | null
+          "Item ID": number | null
+          Name: string | null
+          "Photos Count": number | null
+          Quantity: number | null
+          Status: string | null
+          Subcategory: string | null
+          "Suggested Price (SEK)": string | null
+          "Updated At": string | null
+        }
+        Insert: {
+          Category?: string | null
+          Condition?: string | null
+          "Created At"?: string | null
+          Description?: string | null
+          "Final Price (SEK)"?: string | null
+          "Item ID"?: number | null
+          Name?: string | null
+          "Photos Count"?: number | null
+          Quantity?: number | null
+          Status?: string | null
+          Subcategory?: string | null
+          "Suggested Price (SEK)"?: string | null
+          "Updated At"?: string | null
+        }
+        Update: {
+          Category?: string | null
+          Condition?: string | null
+          "Created At"?: string | null
+          Description?: string | null
+          "Final Price (SEK)"?: string | null
+          "Item ID"?: number | null
+          Name?: string | null
+          "Photos Count"?: number | null
+          Quantity?: number | null
+          Status?: string | null
+          Subcategory?: string | null
+          "Suggested Price (SEK)"?: string | null
+          "Updated At"?: string | null
+        }
+        Relationships: []
+      }
       items_public_view: {
         Row: {
           Category: string | null
