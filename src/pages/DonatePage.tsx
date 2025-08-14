@@ -57,9 +57,10 @@ export const DonatePage = () => {
     try {
       const donorUsername = username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Anonymous Donor';
       
-      for (const itemData of items) {
+      for (let i = 0; i < items.length; i++) {
+        const itemData = items[i];
         const newItem: Item = {
-          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          id: (Date.now() + i).toString(),
           ...itemData as Item,
           status: userRole === 'admin' ? 'available' : 'pending_approval',
           created_by: donorUsername,
