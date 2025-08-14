@@ -144,11 +144,16 @@ const Category = () => {
   };
 
   const handleDonate = async () => {
+    console.log('🎯 Category: Donate clicked - Auth state:', { isAuthenticated, userRole });
+    
     if (!isAuthenticated && userRole !== 'admin') {
+      console.log('🔒 Category: Not authenticated, redirecting to auth');
       navigate('/auth');
       return;
     }
-    navigate('/?donate=true');
+    
+    console.log('✅ Category: Authenticated, navigating to donate page');
+    navigate('/donate');
   };
 
   const handleItemDelete = async (item: Item) => {

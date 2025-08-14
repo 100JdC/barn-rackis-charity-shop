@@ -63,7 +63,14 @@ const HowSupportingWorks = () => {
         username={user?.email || ""}
         isAuthenticated={!!user}
         onHome={() => navigate('/')}
-        onDonate={() => navigate('/?donate=true')}
+        onDonate={() => {
+          console.log('🎯 HowSupportingWorks: Donate clicked');
+          if (user) {
+            navigate('/donate');
+          } else {
+            navigate('/auth');
+          }
+        }}
         onLogout={async () => {
           await supabase.auth.signOut();
           navigate('/');

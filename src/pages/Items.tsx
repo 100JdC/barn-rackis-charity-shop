@@ -263,7 +263,14 @@ export default function Items() {
           userRole={userRole} 
           username={username}
           onLogout={(isAuthenticated || userRole === 'admin') ? handleLogout : undefined}
-          onDonate={() => navigate('/?donate=true')}
+          onDonate={() => {
+            console.log('🎯 Items: Donate clicked from item detail view');
+            if (isAuthenticated) {
+              navigate('/donate');
+            } else {
+              navigate('/auth');
+            }
+          }}
           onHome={() => navigate('/')}
           isAuthenticated={isAuthenticated}
         />
@@ -334,7 +341,14 @@ export default function Items() {
         userRole={userRole} 
         username={username}
         onLogout={(isAuthenticated || userRole === 'admin') ? handleLogout : undefined}
-        onDonate={() => navigate('/?donate=true')}
+        onDonate={() => {
+          console.log('🎯 Items: Donate clicked from main items view');
+          if (isAuthenticated) {
+            navigate('/donate');
+          } else {
+            navigate('/auth');
+          }
+        }}
         onHome={() => navigate('/')}
         isAuthenticated={isAuthenticated}
       />
