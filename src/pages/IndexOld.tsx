@@ -56,11 +56,9 @@ export default function Index() {
             const role: UserRole = (profileData?.role === 'admin' ? 'admin' : 'donor') as UserRole;
             
             console.log('User profile loaded:', { userUsername, role, email: session.user.email });
-            
             setIsAuthenticated(true);
             setUserRole(role);
             setUsername(userUsername);
-            storage.saveSession(role, userUsername);
           } catch (error) {
             console.error('Error loading profile:', error);
             setIsAuthenticated(true);
@@ -72,7 +70,6 @@ export default function Index() {
         setIsAuthenticated(false);
         setUserRole('donor');
         setUsername('');
-        storage.clearSession();
       }
     });
 
@@ -98,11 +95,9 @@ export default function Index() {
           const role: UserRole = (profileData?.role === 'admin' ? 'admin' : 'donor') as UserRole;
           
           console.log('Initial session loaded:', { userUsername, role, email: session.user.email });
-          
           setIsAuthenticated(true);
           setUserRole(role);
           setUsername(userUsername);
-          storage.saveSession(role, userUsername);
         } catch (error) {
           console.error('Error loading profile:', error);
           setIsAuthenticated(true);
@@ -165,7 +160,6 @@ export default function Index() {
       setIsAuthenticated(false);
       setView('home');
       setShowLoginForm(false);
-      storage.clearSession();
       toast({
         title: "Logged out",
         description: "You have been successfully logged out."

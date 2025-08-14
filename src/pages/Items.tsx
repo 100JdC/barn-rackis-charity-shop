@@ -59,7 +59,6 @@ export default function Items() {
             setIsAuthenticated(true);
             setUserRole(role);
             setUsername(userUsername);
-            storage.saveSession(role, userUsername);
           } catch (error) {
             console.error('Error loading profile:', error);
             setIsAuthenticated(true);
@@ -69,9 +68,8 @@ export default function Items() {
         }, 0);
       } else {
         setIsAuthenticated(false);
-          setUserRole('donor');
+        setUserRole('donor');
         setUsername('');
-        storage.clearSession();
       }
     });
 
@@ -98,14 +96,13 @@ export default function Items() {
           
           console.log('Initial session loaded:', { userUsername, role, email: session.user.email });
           
-          setIsAuthenticated(true);
-          setUserRole(role);
-          setUsername(userUsername);
-          storage.saveSession(role, userUsername);
-        } catch (error) {
-          console.error('Error loading profile:', error);
-          setIsAuthenticated(true);
-          setUserRole('donor');
+        setIsAuthenticated(true);
+        setUserRole(role);
+        setUsername(userUsername);
+      } catch (error) {
+        console.error('Error loading profile:', error);
+        setIsAuthenticated(true);
+        setUserRole('donor');
           setUsername(session.user.email?.split('@')[0] || 'User');
         }
       }
@@ -198,7 +195,6 @@ export default function Items() {
       setUserRole('donor');
       setUsername('');
       setIsAuthenticated(false);
-      storage.clearSession();
       toast({
         title: "Logged out",
         description: "You have been successfully logged out."

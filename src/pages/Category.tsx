@@ -33,15 +33,7 @@ const Category = () => {
   useEffect(() => {
     let mounted = true;
 
-    // Check for admin session in localStorage first
-    const savedSession = storage.getSession();
-    if (savedSession && savedSession.userRole === 'admin') {
-      console.log('Found admin session in localStorage:', savedSession);
-      setIsAuthenticated(true);
-      setUserRole('admin');
-      setUsername(savedSession.username);
-    }
-
+    // SECURITY: Use Supabase Auth instead of localStorage session
     // Set up Supabase auth listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
@@ -64,54 +56,45 @@ const Category = () => {
         setIsAuthenticated(true);
         setUserRole(role);
         setUsername(userUsername);
-        storage.saveSession(role, userUsername);
       } else {
-        // Only reset if we don't have an admin session
-        const currentSession = storage.getSession();
-        if (!currentSession || currentSession.userRole !== 'admin') {
-          setIsAuthenticated(false);
-          setUserRole('donor');
-          setUsername('');
-          storage.clearSession();
-        }
+        setIsAuthenticated(false);
+        setUserRole('donor');
+        setUsername('');
       }
     });
 
-    // Check for existing Supabase session if no admin session
-    if (!savedSession || savedSession.userRole !== 'admin') {
-      supabase.auth.getSession().then(async ({ data: { session }, error }) => {
-        if (!mounted) return;
+    // Check for existing Supabase session
+    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
+      if (!mounted) return;
+      
+      if (error) {
+        console.error('Error getting session:', error);
+        return;
+      }
+
+      if (session?.user) {
+        // Get the user's role from the database
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('role, username')
+          .eq('id', session.user.id)
+          .single();
+
+        const userUsername = profileData?.username || session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
+        const role: UserRole = (profileData?.role === 'admin' ? 'admin' : 'donor') as UserRole;
         
-        if (error) {
-          console.error('Error getting session:', error);
-          return;
-        }
-
-        if (session?.user) {
-          // Get the user's role from the database
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('role, username')
-            .eq('id', session.user.id)
-            .single();
-
-          const userUsername = profileData?.username || session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User';
-          const role: UserRole = (profileData?.role === 'admin' ? 'admin' : 'donor') as UserRole;
-          
-          console.log('Initial session loaded in Category:', { userUsername, role, email: session.user.email });
-          
-          setIsAuthenticated(true);
-          setUserRole(role);
-          setUsername(userUsername);
-          storage.saveSession(role, userUsername);
-        } else {
-          console.log('No user session found');
-          setIsAuthenticated(false);
-          setUserRole('donor');
-          setUsername('');
-        }
-      });
-    }
+        console.log('Initial session loaded in Category:', { userUsername, role, email: session.user.email });
+        
+        setIsAuthenticated(true);
+        setUserRole(role);
+        setUsername(userUsername);
+      } else {
+        console.log('No user session found');
+        setIsAuthenticated(false);
+        setUserRole('donor');
+        setUsername('');
+      }
+    });
 
     return () => {
       mounted = false;
@@ -150,7 +133,6 @@ const Category = () => {
       setUserRole('donor');
       setUsername('');
       setIsAuthenticated(false);
-      storage.clearSession();
       navigate('/');
     } catch (error) {
       console.error('Logout error:', error);
