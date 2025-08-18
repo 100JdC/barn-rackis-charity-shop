@@ -1,5 +1,5 @@
 
-import { ArrowLeft, User, LogOut, Search, Heart, Instagram, Home } from "lucide-react";
+import { ArrowLeft, User, LogOut, Search, Heart, Instagram, Home, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +12,7 @@ interface HeaderProps {
   onNavigate?: (view: string) => void;
   onHome?: () => void;
   onDonate?: () => void;
-        isAuthenticated?: boolean;
+  isAuthenticated?: boolean;
 }
 
 export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHome, onDonate, isAuthenticated }: HeaderProps) => {
@@ -97,6 +97,19 @@ export const Header = ({ userRole, username, onBack, onLogout, onNavigate, onHom
             <Heart className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
             <span className="hidden md:inline">Donate</span>
           </Button>
+
+          {/* Admin-only reservations link */}
+          {isAuthenticated && userRole === 'admin' && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate('/admin/reservations')}
+              className="hover:bg-red-50 hover:text-red-600 text-xs md:text-sm px-2 md:px-3"
+            >
+              <Settings className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
+              <span className="hidden md:inline">Reservations</span>
+            </Button>
+          )}
           
           <Button 
             variant="ghost" 

@@ -11,6 +11,7 @@ import Items from "./pages/Items";
 import Category from "./pages/Category";
 import Auth from "./pages/Auth";
 import { DonatePage } from "./pages/DonatePage";
+import AdminReservations from "./pages/AdminReservations";
 import Impressum from "./pages/Impressum";
 import LegalNotice from "./pages/Legalnotice";
 import TermsAndConditions from "./pages/Terms_and_conditions";
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/category/:categoryName" element={<Category />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/donate" element={<DonatePage />} />
+            <Route path="/admin/reservations" element={<AdminReservations />} />
             <Route path="/how-donating-works" element={<HowDonatingWorks />} />
             <Route path="/how-browsing-works" element={<HowBrowsingWorks />} />
             <Route path="/how-supporting-works" element={<HowSupportingWorks />} />
