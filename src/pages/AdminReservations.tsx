@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
@@ -8,26 +7,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Edit, Check, X } from "lucide-react";
+import { Plus, Edit, Check, X, ChevronsUpDown, Trash2, Package } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { storage } from "@/utils/storage";
 import { useToast } from "@/hooks/use-toast";
 import type { Item } from "@/types/item";
+
+interface ReservationItem {
+  itemId: string;
+  itemName: string;
+  quantity: number;
+}
 
 interface Reservation {
   id: string;
   customerName: string;
   customerEmail?: string;
   customerPhone?: string;
-  itemId: string;
-  itemName: string;
-  quantity: number;
+  items: ReservationItem[];
   reservedDate: string;
   isPaid: boolean;
+  isPickedUp: boolean;
   notes?: string;
   createdBy: string;
 }
@@ -48,11 +53,14 @@ export default function AdminReservations() {
     customerName: '',
     customerEmail: '',
     customerPhone: '',
-    itemId: '',
-    quantity: 1,
     isPaid: false,
+    isPickedUp: false,
     notes: ''
   });
+  
+  const [selectedItems, setSelectedItems] = useState<ReservationItem[]>([]);
+  const [itemSearchOpen, setItemSearchOpen] = useState(false);
+  const [itemSearchValue, setItemSearchValue] = useState('');
 
   useEffect(() => {
     if (!isAuthenticated || userRole !== 'admin') {
@@ -84,7 +92,6 @@ export default function AdminReservations() {
   };
 
   const loadReservations = async (): Promise<Reservation[]> => {
-    // Load from localStorage for now (can be migrated to Supabase later)
     const stored = localStorage.getItem('admin_reservations');
     return stored ? JSON.parse(stored) : [];
   };
@@ -94,35 +101,62 @@ export default function AdminReservations() {
     setReservations(newReservations);
   };
 
+  const addItemToReservation = (item: Item) => {
+    const existingItem = selectedItems.find(si => si.itemId === item.id);
+    if (existingItem) {
+      setSelectedItems(selectedItems.map(si => 
+        si.itemId === item.id 
+          ? { ...si, quantity: si.quantity + 1 }
+          : si
+      ));
+    } else {
+      setSelectedItems([...selectedItems, {
+        itemId: item.id,
+        itemName: item.name,
+        quantity: 1
+      }]);
+    }
+    setItemSearchValue('');
+    setItemSearchOpen(false);
+  };
+
+  const removeItemFromReservation = (itemId: string) => {
+    setSelectedItems(selectedItems.filter(si => si.itemId !== itemId));
+  };
+
+  const updateItemQuantity = (itemId: string, quantity: number) => {
+    if (quantity <= 0) {
+      removeItemFromReservation(itemId);
+      return;
+    }
+    setSelectedItems(selectedItems.map(si => 
+      si.itemId === itemId ? { ...si, quantity } : si
+    ));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.customerName || !formData.itemId) {
+    if (!formData.customerName || selectedItems.length === 0) {
       toast({
         title: "Validation Error",
-        description: "Customer name and item are required",
+        description: "Customer name and at least one item are required",
         variant: "destructive"
       });
       return;
     }
 
-    const selectedItem = items.find(item => item.id === formData.itemId);
-    if (!selectedItem) {
-      toast({
-        title: "Error",
-        description: "Selected item not found",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (formData.quantity > selectedItem.quantity) {
-      toast({
-        title: "Error",
-        description: `Only ${selectedItem.quantity} items available`,
-        variant: "destructive"
-      });
-      return;
+    // Validate quantities
+    for (const selectedItem of selectedItems) {
+      const item = items.find(i => i.id === selectedItem.itemId);
+      if (!item || selectedItem.quantity > item.quantity) {
+        toast({
+          title: "Error",
+          description: `Only ${item?.quantity || 0} of ${selectedItem.itemName} available`,
+          variant: "destructive"
+        });
+        return;
+      }
     }
 
     try {
@@ -131,11 +165,10 @@ export default function AdminReservations() {
         customerName: formData.customerName,
         customerEmail: formData.customerEmail,
         customerPhone: formData.customerPhone,
-        itemId: formData.itemId,
-        itemName: selectedItem.name,
-        quantity: formData.quantity,
+        items: selectedItems,
         reservedDate: editingReservation?.reservedDate || new Date().toISOString(),
         isPaid: formData.isPaid,
+        isPickedUp: formData.isPickedUp,
         notes: formData.notes,
         createdBy: username || 'Admin'
       };
@@ -149,11 +182,13 @@ export default function AdminReservations() {
 
       await saveReservations(updatedReservations);
       
-      // Update item status to reserved
-      await storage.updateItem(formData.itemId, {
-        status: 'reserved',
-        reserved_by: formData.customerName
-      });
+      // Update item statuses to reserved
+      for (const selectedItem of selectedItems) {
+        await storage.updateItem(selectedItem.itemId, {
+          status: 'reserved',
+          reserved_by: formData.customerName
+        });
+      }
 
       toast({
         title: "Success",
@@ -162,7 +197,7 @@ export default function AdminReservations() {
 
       resetForm();
       setIsDialogOpen(false);
-      loadData(); // Reload to get updated items
+      loadData();
     } catch (error) {
       console.error('Error saving reservation:', error);
       toast({
@@ -179,11 +214,11 @@ export default function AdminReservations() {
       customerName: reservation.customerName,
       customerEmail: reservation.customerEmail || '',
       customerPhone: reservation.customerPhone || '',
-      itemId: reservation.itemId,
-      quantity: reservation.quantity,
       isPaid: reservation.isPaid,
+      isPickedUp: reservation.isPickedUp,
       notes: reservation.notes || ''
     });
+    setSelectedItems(reservation.items);
     setIsDialogOpen(true);
   };
 
@@ -195,18 +230,20 @@ export default function AdminReservations() {
       const updatedReservations = reservations.filter(r => r.id !== reservationId);
       await saveReservations(updatedReservations);
       
-      // Update item status back to available
-      await storage.updateItem(reservation.itemId, {
-        status: 'available',
-        reserved_by: ''
-      });
+      // Update item statuses back to available
+      for (const item of reservation.items) {
+        await storage.updateItem(item.itemId, {
+          status: 'available',
+          reserved_by: ''
+        });
+      }
 
       toast({
         title: "Success",
         description: "Reservation deleted"
       });
 
-      loadData(); // Reload to get updated items
+      loadData();
     } catch (error) {
       console.error('Error deleting reservation:', error);
       toast({
@@ -242,18 +279,49 @@ export default function AdminReservations() {
     }
   };
 
+  const togglePickupStatus = async (reservationId: string) => {
+    const reservation = reservations.find(r => r.id === reservationId);
+    if (!reservation) return;
+
+    try {
+      const updatedReservation = { ...reservation, isPickedUp: !reservation.isPickedUp };
+      const updatedReservations = reservations.map(r => 
+        r.id === reservationId ? updatedReservation : r
+      );
+      await saveReservations(updatedReservations);
+
+      toast({
+        title: "Success",
+        description: `Pickup status ${updatedReservation.isPickedUp ? 'marked as picked up' : 'marked as not picked up'}`
+      });
+    } catch (error) {
+      console.error('Error updating pickup status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update pickup status",
+        variant: "destructive"
+      });
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       customerName: '',
       customerEmail: '',
       customerPhone: '',
-      itemId: '',
-      quantity: 1,
       isPaid: false,
+      isPickedUp: false,
       notes: ''
     });
+    setSelectedItems([]);
     setEditingReservation(null);
+    setItemSearchValue('');
   };
+
+  const filteredItems = items.filter(item =>
+    item.name.toLowerCase().includes(itemSearchValue.toLowerCase()) ||
+    item.category?.toLowerCase().includes(itemSearchValue.toLowerCase())
+  );
 
   if (userRole !== 'admin') {
     return (
@@ -300,31 +368,33 @@ export default function AdminReservations() {
                     New Reservation
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>
                       {editingReservation ? 'Edit Reservation' : 'Create New Reservation'}
                     </DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={handleSubmit} className="space-y-4 py-4">
-                    <div>
-                      <Label htmlFor="customerName">Customer Name *</Label>
-                      <Input
-                        id="customerName"
-                        value={formData.customerName}
-                        onChange={(e) => setFormData({...formData, customerName: e.target.value})}
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="customerEmail">Customer Email</Label>
-                      <Input
-                        id="customerEmail"
-                        type="email"
-                        value={formData.customerEmail}
-                        onChange={(e) => setFormData({...formData, customerEmail: e.target.value})}
-                      />
+                  <form onSubmit={handleSubmit} className="space-y-6 py-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="customerName">Customer Name *</Label>
+                        <Input
+                          id="customerName"
+                          value={formData.customerName}
+                          onChange={(e) => setFormData({...formData, customerName: e.target.value})}
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="customerEmail">Customer Email</Label>
+                        <Input
+                          id="customerEmail"
+                          type="email"
+                          value={formData.customerEmail}
+                          onChange={(e) => setFormData({...formData, customerEmail: e.target.value})}
+                        />
+                      </div>
                     </div>
                     
                     <div>
@@ -337,41 +407,108 @@ export default function AdminReservations() {
                     </div>
                     
                     <div>
-                      <Label htmlFor="itemId">Item *</Label>
-                      <Select value={formData.itemId} onValueChange={(value) => setFormData({...formData, itemId: value})}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select an item" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-background border shadow-lg z-50">
-                          {items.map((item) => (
-                            <SelectItem key={item.id} value={item.id}>
-                              {item.name} (Available: {item.quantity})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Label>Items *</Label>
+                      <div className="space-y-2">
+                        <Popover open={itemSearchOpen} onOpenChange={setItemSearchOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={itemSearchOpen}
+                              className="w-full justify-between"
+                            >
+                              <span className="flex items-center">
+                                <Package className="h-4 w-4 mr-2" />
+                                Search and add items...
+                              </span>
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0">
+                            <Command>
+                              <CommandInput
+                                placeholder="Search items..."
+                                value={itemSearchValue}
+                                onValueChange={setItemSearchValue}
+                              />
+                              <CommandEmpty>No items found.</CommandEmpty>
+                              <CommandGroup>
+                                <CommandList className="max-h-[200px]">
+                                  {filteredItems.map((item) => (
+                                    <CommandItem
+                                      key={item.id}
+                                      value={item.name}
+                                      onSelect={() => addItemToReservation(item)}
+                                      className="cursor-pointer"
+                                    >
+                                      <div className="flex justify-between w-full">
+                                        <span>{item.name}</span>
+                                        <span className="text-muted-foreground">
+                                          Available: {item.quantity}
+                                        </span>
+                                      </div>
+                                    </CommandItem>
+                                  ))}
+                                </CommandList>
+                              </CommandGroup>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                        
+                        {selectedItems.length > 0 && (
+                          <div className="space-y-2 mt-3">
+                            <Label className="text-sm font-medium">Selected Items:</Label>
+                            {selectedItems.map((selectedItem) => (
+                              <div key={selectedItem.itemId} className="flex items-center justify-between p-3 border rounded-lg bg-muted/50">
+                                <div className="flex-1">
+                                  <span className="font-medium">{selectedItem.itemName}</span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Input
+                                    type="number"
+                                    min="1"
+                                    value={selectedItem.quantity}
+                                    onChange={(e) => updateItemQuantity(selectedItem.itemId, parseInt(e.target.value) || 1)}
+                                    className="w-16 h-8"
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => removeItemFromReservation(selectedItem.itemId)}
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                     
-                    <div>
-                      <Label htmlFor="quantity">Quantity</Label>
-                      <Input
-                        id="quantity"
-                        type="number"
-                        min="1"
-                        value={formData.quantity}
-                        onChange={(e) => setFormData({...formData, quantity: parseInt(e.target.value) || 1})}
-                      />
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="isPaid"
-                        checked={formData.isPaid}
-                        onChange={(e) => setFormData({...formData, isPaid: e.target.checked})}
-                        className="rounded"
-                      />
-                      <Label htmlFor="isPaid">Paid</Label>
+                    <div className="flex items-center space-x-6">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="isPaid"
+                          checked={formData.isPaid}
+                          onChange={(e) => setFormData({...formData, isPaid: e.target.checked})}
+                          className="rounded"
+                        />
+                        <Label htmlFor="isPaid">Paid</Label>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="isPickedUp"
+                          checked={formData.isPickedUp}
+                          onChange={(e) => setFormData({...formData, isPickedUp: e.target.checked})}
+                          className="rounded"
+                        />
+                        <Label htmlFor="isPickedUp">Picked Up</Label>
+                      </div>
                     </div>
                     
                     <div>
@@ -411,10 +548,10 @@ export default function AdminReservations() {
                   <TableRow>
                     <TableHead>Customer</TableHead>
                     <TableHead>Contact</TableHead>
-                    <TableHead>Item</TableHead>
-                    <TableHead>Quantity</TableHead>
+                    <TableHead>Items</TableHead>
                     <TableHead>Reserved Date</TableHead>
-                    <TableHead>Payment Status</TableHead>
+                    <TableHead>Payment</TableHead>
+                    <TableHead>Pickup</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -425,13 +562,20 @@ export default function AdminReservations() {
                         {reservation.customerName}
                       </TableCell>
                       <TableCell>
-                        <div className="text-sm">
+                        <div className="text-sm space-y-1">
                           {reservation.customerEmail && <div>{reservation.customerEmail}</div>}
                           {reservation.customerPhone && <div>{reservation.customerPhone}</div>}
                         </div>
                       </TableCell>
-                      <TableCell>{reservation.itemName}</TableCell>
-                      <TableCell>{reservation.quantity}</TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          {reservation.items.map((item, index) => (
+                            <div key={index} className="text-sm">
+                              {item.itemName} <span className="text-muted-foreground">(x{item.quantity})</span>
+                            </div>
+                          ))}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         {new Date(reservation.reservedDate).toLocaleDateString()}
                       </TableCell>
@@ -450,6 +594,25 @@ export default function AdminReservations() {
                             <>
                               <X className="h-3 w-3 mr-1" />
                               Unpaid
+                            </>
+                          )}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={reservation.isPickedUp ? "default" : "outline"}
+                          className="cursor-pointer"
+                          onClick={() => togglePickupStatus(reservation.id)}
+                        >
+                          {reservation.isPickedUp ? (
+                            <>
+                              <Package className="h-3 w-3 mr-1" />
+                              Picked Up
+                            </>
+                          ) : (
+                            <>
+                              <X className="h-3 w-3 mr-1" />
+                              Pending
                             </>
                           )}
                         </Badge>
