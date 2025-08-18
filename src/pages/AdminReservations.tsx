@@ -300,13 +300,13 @@ export default function AdminReservations() {
                     New Reservation
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>
                       {editingReservation ? 'Edit Reservation' : 'Create New Reservation'}
                     </DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={handleSubmit} className="space-y-4">
+                  <form onSubmit={handleSubmit} className="space-y-4 py-4">
                     <div>
                       <Label htmlFor="customerName">Customer Name *</Label>
                       <Input
@@ -342,7 +342,7 @@ export default function AdminReservations() {
                         <SelectTrigger>
                           <SelectValue placeholder="Select an item" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-background border shadow-lg z-50">
                           {items.map((item) => (
                             <SelectItem key={item.id} value={item.id}>
                               {item.name} (Available: {item.quantity})
@@ -384,7 +384,7 @@ export default function AdminReservations() {
                       />
                     </div>
                     
-                    <div className="flex justify-end space-x-2">
+                    <div className="flex justify-end space-x-2 pt-4">
                       <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                         Cancel
                       </Button>
