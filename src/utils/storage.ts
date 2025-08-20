@@ -72,57 +72,90 @@ export const storage = {
 
   async getItems(): Promise<Item[]> {
     try {
-      console.log('🔍 Fetching items from Supabase...');
+      console.log('🔍 Fetching items from Supabase with security controls...');
       
-      const { data, error } = await supabase
-        .from('Item inventory')
-        .select('*')
-        .order('Created At', { ascending: false });
+      // Check if user is authenticated and get their role
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        // Check user role to determine which view to use
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        
+        if (profile?.role === 'admin') {
+          console.log('Using admin view for full access');
+          const { data, error } = await supabase
+            .from('items_admin_complete')
+            .select('*')
+            .order('Created At', { ascending: false });
 
-      if (error) {
-        console.error('❌ Supabase error:', error);
-        console.error('Error details:', { message: error.message, code: error.code, hint: error.hint });
-        throw error;
+          if (error) {
+            console.error('❌ Supabase error:', error);
+            throw error;
+          }
+
+          return this.mapItemsData(data || []);
+        } else {
+          console.log('Using authenticated buyer view');
+          const { data, error } = await supabase
+            .from('Item inventory')
+            .select('*')
+            .order('Created At', { ascending: false });
+
+          if (error) {
+            console.error('❌ Supabase error:', error);
+            throw error;
+          }
+
+          return this.mapItemsData(data || []);
+        }
+      } else {
+        console.log('Using secure public view');
+        const { data, error } = await supabase
+          .from('items_public_safe')
+          .select('*')
+          .order('Created At', { ascending: false });
+
+        if (error) {
+          console.error('❌ Supabase error:', error);
+          throw error;
+        }
+
+        return this.mapItemsData(data || []);
       }
-
-      if (!data) {
-        console.log('⚠️ No data returned from Supabase');
-        return [];
-      }
-
-      console.log(`✅ Successfully fetched ${data.length} items from database`);
-      console.log('Auth state during fetch:', {
-        user: (await supabase.auth.getUser()).data.user?.email || 'No user',
-        session: !!(await supabase.auth.getSession()).data.session
-      });
-
-      return data.map(item => ({
-        id: item['Item ID']?.toString() || '',
-        name: item.Name || '',
-        description: item.Description || '',
-        category: (item.Category || 'other') as Item['category'],
-        subcategory: item.Subcategory || '',
-        condition: (item.Condition || 'lightly_used') as Item['condition'],
-        original_price: item['Original Price (SEK)'] || 0,
-        suggested_price: parseFloat(item['Suggested Price (SEK)'] || '0'),
-        final_price: parseFloat(item['Final Price (SEK)'] || '0'),
-        quantity: item.Quantity || 1,
-        status: (item.Status || 'available') as Item['status'],
-        reserved_by: item['Reserved By'] || '',
-        location: item.Location || '',
-        internal_notes: item['Internal Notes'] || '',
-        photos: [],
-        donor_name: item['Donor Name'] || '',
-        created_by: item['Created By'] || '',
-        updated_by: item['Updated By'] || '',
-        created_at: item['Created At'] || new Date().toISOString(),
-        updated_at: item['Updated At'] || new Date().toISOString(),
-        sold_quantity: 0
-      }));
     } catch (error) {
       console.error('Error fetching items:', error);
       return [];
     }
+  },
+
+  mapItemsData(data: any[]): Item[] {
+    return data.map(item => ({
+      id: item['Item ID']?.toString() || '',
+      name: item.Name || '',
+      description: item.Description || '',
+      category: (item.Category || 'other') as Item['category'],
+      subcategory: item.Subcategory || '',
+      condition: (item.Condition || 'lightly_used') as Item['condition'],
+      original_price: item['Original Price (SEK)'] || 0,
+      suggested_price: parseFloat(item['Suggested Price (SEK)'] || '0'),
+      final_price: parseFloat(item['Final Price (SEK)'] || '0'),
+      quantity: item.Quantity || 1,
+      status: (item.Status || 'available') as Item['status'],
+      reserved_by: item['Reserved By'] || '',
+      location: item.Location || '',
+      internal_notes: item['Internal Notes'] || '',
+      photos: [],
+      donor_name: item['Donor Name'] || '',
+      created_by: item['Created By'] || '',
+      updated_by: item['Updated By'] || '',
+      created_at: item['Created At'] || new Date().toISOString(),
+      updated_at: item['Updated At'] || new Date().toISOString(),
+      sold_quantity: 0
+    }));
   },
 
   async saveItems(items: Item[]): Promise<void> {

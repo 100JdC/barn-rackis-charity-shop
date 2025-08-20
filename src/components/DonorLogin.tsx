@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 import { storage } from "@/utils/storage";
 import { PageWrapper } from "@/components/PageWrapper";
 
@@ -62,9 +64,18 @@ export const DonorLogin = ({ onLogin, onBack }: DonorLoginProps) => {
     <PageWrapper>
       <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm shadow-xl">
         <CardHeader>
-          <CardTitle className="text-center text-2xl" style={{ color: '#1733a7' }}>Login</CardTitle>
+          <CardTitle className="text-center text-2xl flex items-center justify-center gap-2" style={{ color: '#1733a7' }}>
+            <AlertTriangle className="h-6 w-6 text-amber-500" />
+            Donor Login (Deprecated)
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <Alert className="border-amber-200 bg-amber-50">
+            <AlertTriangle className="h-4 w-4 text-amber-500" />
+            <AlertDescription className="text-amber-700">
+              This login system is deprecated for security reasons. Please use the main authentication system at /auth for secure access.
+            </AlertDescription>
+          </Alert>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="username">Username</Label>
