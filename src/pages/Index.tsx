@@ -178,7 +178,7 @@ export default function Index() {
               </div>
               <div className="text-center mt-4 md:mt-6">
                 <button
-                  onClick={() => window.open('/about', '_blank')}
+                  onClick={() => navigate('/about')}
                   className="text-white/90 hover:text-white text-sm md:text-lg underline px-2 whitespace-normal leading-relaxed break-words h-auto"
                 >
                    Find out more about the concept, the swedish words we use, who we are, and how you can contribute.
