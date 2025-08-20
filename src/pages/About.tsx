@@ -180,7 +180,7 @@ const About = () => {
                   <p>
                     <strong>For Buyers:</strong> Moving into a new place in Uppsala? Browse our collection 
                     of second-hand items at fair prices. Everything you need to make your student housing 
-                    feel like home.
+                    feel like home. You can find us in Rackarbergsgatan 32 — check our Instagram for opening times.
                   </p>
                   <p>
                     <strong>For a Good Cause:</strong> All profits from sales go directly to Barncancerfonden, 
