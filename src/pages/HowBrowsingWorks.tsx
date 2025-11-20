@@ -133,34 +133,8 @@ const HowBrowsingWorks = () => {
 
                 <h4 className="text-xl font-semibold text-gray-800 mt-6 mb-3">To buy in advance:</h4>
                 
-                <div className="space-y-4">
-                  <div>
-                    <p className="font-medium text-gray-800 mb-3">1. Make a payment with subject of the transaction "Rackis for barn" to one of the following:</p>
-                    <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-                      <div className="flex items-start gap-3">
-                        <CreditCard className="h-5 w-5 text-gray-600 mt-0.5" />
-                        <div>
-                          <p className="font-medium text-gray-800">Bank transfer (IBAN):</p>
-                          <p className="text-gray-700 font-mono">DE38370501981930264617 – Jacob Lehmann</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <CreditCard className="h-5 w-5 text-gray-600 mt-0.5" />
-                        <div>
-                          <p className="font-medium text-gray-800">PayPal:</p>
-                          <p className="text-gray-700">lina-lehmann@gmx.de</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="font-medium text-gray-800 mb-2">2. Send an email to info@rackisforbarn.com with:</p>
-                    <ul className="list-disc pl-6 space-y-1 text-gray-700">
-                      <li>A screenshot of your payment</li>
-                      <li>Your name</li>
-                    </ul>
-                  </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-gray-800">Send us an email at <a href="mailto:info@rackisforbarn.com" className="text-blue-600 hover:underline font-medium">info@rackisforbarn.com</a> with your name and we'll arrange the details.</p>
                 </div>
 
                 <h3 className="text-2xl font-semibold text-gray-800 mt-8 mb-4">Where to Find Us</h3>
