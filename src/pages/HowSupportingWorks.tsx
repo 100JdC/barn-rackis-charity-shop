@@ -121,10 +121,6 @@ const HowSupportingWorks = () => {
                   <p>If you'd like to join, just send us a message on Instagram or email us at <a href="mailto:info@rackisforbarn.com" className="text-blue-600 hover:underline">info@rackisforbarn.com</a></p>
                 </div>
 
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold mb-2" style={{ color: '#1733a7' }}>Our Thanks</h3>
-                  <p>After each sorting session, we'll relax together with pizza and beer — our way of saying thanks for your time.</p>
-                </div>
               </div>
             </CardContent>
           </Card>
